@@ -47,7 +47,7 @@ while true
 
     % perform IOD using velocity measurements to get IOD positions
     
-    RR = IOD3V_V3(V(1:3,:),A,B,C,mu,'ordered',true);
+    RR = viod_main(V(1:3,:),A,B,C,mu);
     
     % get geometry of IOD orbit from IOD position and velocity measurements
     
@@ -79,7 +79,7 @@ for i = 3:obsv_cap
     
     % perform IOD using velocity measurements to get IOD positions
     
-    RR = IOD3V_V3(V(1:i,:),A,B,C,mu,'ordered',true);
+    RR = viod_main(V(1:i,:),A,B,C,mu);
     R_est(i,:) = RR(i,:);
     
     

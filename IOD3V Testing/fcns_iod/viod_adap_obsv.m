@@ -76,7 +76,7 @@ comb_n = size(C,1);
 A = spalloc(comb_n*4,obsv_cap*2,7*obsv_cap*(obsv_cap-1));
 B = zeros(comb_n*4,1);
 
-R_est = IOD3V_V3(V,A,B,C,mu,'ordered',true);
+R_est = viod_main(V,A,B,C,mu);
 
 end
 

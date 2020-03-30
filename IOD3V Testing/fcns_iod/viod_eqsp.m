@@ -26,7 +26,7 @@ comb_n = size(C,1);
 A = spalloc(comb_n*4,i*2,7*i*(i-1)); % LHS matrix of eq. 36, see line 6
 B = zeros(comb_n*4,1);               % RHS matrix of eq. 36, see line 6
 
-R_est = IOD3V_V3(V,A,B,C,mu,'ordered',true);
+R_est = viod_main(V,A,B,C,mu);
 
 end
 

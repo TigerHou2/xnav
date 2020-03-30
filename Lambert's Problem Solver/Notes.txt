@@ -1,0 +1,13 @@
+Attempts:
+
+- Orbit Rotation Match
+	- Find orbit in absolute frame, get three positions corresponding to the three velocities
+	- Iterate through sets of three points to check if a single rotation + translation can match those points to the positions
+		- Sub-attempt: 
+			- eliminate sets first by checking eccentricity
+			- failed because three points cannot uniquely define an ellipse
+		- Sub-attempt: 
+			- select one position, convert remaining two positions to be relative to the first
+			- select a point from the corresponding set, and search for valid candidate points at proper position in remaining two sets
+				- search within a radius in the 2nd set (because rotation is unknown). Then search in a fixed direction in the third set.
+		

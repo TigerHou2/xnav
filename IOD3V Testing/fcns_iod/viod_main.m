@@ -8,7 +8,8 @@ function [r,k] = viod_main(V,A,B,C,mu)
 %
 % The spacecraft's orbit is calculated from velocity vectors
 %   collected at different points in the orbit. The velocity measurements
-%   must be provided in order to properly determine orbit orientation.
+%   must be provided in order to properly determine orbit orientation. 
+%   Adjacent measurements must have a delta-f of less than 180 degrees.
 %
 % Arguments:
 %   N:      [km/s]      N-by-3 matrix containing N velocity vectors
@@ -100,9 +101,9 @@ function [r,k] = decomp(V,A,B,C,k,mu,order)
         %   whether the orientation of the orbit is correct.
         % furthermore, we only need to check two vectors instead of all
         
-        norm_v = cross(V(1,:),V(2,:));
-        norm_r = cross(r(1,:),r(2,:));
-        if dot(norm_v,norm_r) < 0
+        norm_v = cross(V(1,:),V(2,:)); % velocity change normal
+        
+        if dot(norm_v,k) < 0
             k = -k;
             [r,k] = decomp(V,A,B,C,k,mu,false);
         end

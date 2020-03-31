@@ -15,16 +15,17 @@ clear;clc
 Parameters
 
 % choose functions to run
-run_predictive = false;
 run_observed   = true;
-run_analytic   = false;
 run_equispace  = true;
 
 % choose display options
-show_orbits = true;
+show_orbits = false;
 
 % choose code profiling options
 do_profile = false;
+
+% choose error compare method (true = use all vel, false = use final vel)
+do_avg_err = true;
 
 % spacecraft conditions
 
@@ -41,16 +42,16 @@ v = cross([0,0,1],r);
 v = v / norm(v) * sqrt(mu*(2/norm(r)-2/(r1+r2)/AU));
 
 noise     = 10;             % 1 sigma sensor noise [m/s]
-start_day = 3000;            % measurement start day [days]
+start_day = 0.001;            % measurement start day [days]
 
 % observation conditions
 
 obsv_cap = 20; % max number of observation allowed
-da = deg2rad(8);
+da = deg2rad(3);
 
 % seed for random number generator
 
-rng_val = 2;
+rng_val = 5;
 rng(rng_val);
 
 % plotting
@@ -61,7 +62,7 @@ res      = 100;                         % # points to plot for orbit
 
 % Monte Carlo settings
 
-samp_size = 1;
+samp_size = 10;
 
 % symbolic math preallocation
 
@@ -80,44 +81,6 @@ if do_profile
 end
 
 
-%% Simulation (Adaptive v1, predictive time propagation)
-
-if run_predictive
-
-    disp('Running predictive sim...')
-    tic
-
-    errs_pred = zeros(3,samp_size);
-    time_pred = zeros(samp_size,1);
-
-    for i = 1:samp_size
-        [R_est,R,V,T] = viod_adap_pred(r,v,mu,start_day,obsv_cap,da,noise,x);
-        ap_pred = TimeProp_V3(R_est(end,:),V(end,:),mu,time_ref-T(end),x);
-        errs_pred(:,i) = (ap_pred - ap_ref)';
-        time_pred(i) = T(end)-T(1);
-        
-        if show_orbits
-            figure(1)
-            hold on
-            disp_orbit(R_est,V,mu,res,dur,start_day)
-            disp_obsv(R)
-            hold off
-        end
-    end
-    
-    if show_orbits
-        hold on
-        disp_orbit(r,v,mu,res,dur,start_day,1)
-        hold off
-    end
-
-    toc
-    disp('Predictive sim complete!')
-    disp(' ')
-    
-end
-
-
 %% Simulation (Adaptive v2, observed time propagation)
 
 if run_observed
@@ -132,8 +95,15 @@ if run_observed
 
     for i = 1:samp_size
         [R_est,R,V,T] = viod_adap_obsv(r,v,mu,start_day,obsv_cap,da,noise,x);
-    %     [R_est,R,V,T] = viod_adap_obsv(r,v,mu,start_day,obsv_cap,delta_ang(i),noise);
-        ap_obsv = TimeProp_V3(R_est(end,:),V(end,:),mu,time_ref-T(end),x);
+        if do_avg_err
+            ap_obsv = zeros(1,3);
+            for j = 1:obsv_cap
+                ap_obsv = ap_obsv + TimeProp_V3(R_est(j,:),V(j,:),mu,time_ref-T(j),x);
+            end
+            ap_obsv = ap_obsv / obsv_cap;
+        else
+            ap_obsv = TimeProp_V3(R_est(end,:),V(end,:),mu,time_ref-T(end),x);
+        end
         errs_obsv(:,i) = (ap_obsv - ap_ref)';
         time_obsv(i) = T(end)-T(1);
 
@@ -161,44 +131,6 @@ if run_observed
 end
 
 
-%% Simulation (Adaptive v3, analytic time propagation)
-
-if run_analytic
-
-    disp('Running analytic sim...')
-    tic
-
-    errs_anlt = zeros(3,samp_size);
-    time_anlt = zeros(samp_size,1);
-
-    for i = 1:samp_size
-        [R_est,R,V,T] = viod_adap_analytic(r,v,mu,start_day,obsv_cap,da,noise,x);
-        ap_anlt = TimeProp_V3(R_est(end,:),V(end,:),mu,time_ref-T(end),x);
-        errs_anlt(:,i) = (ap_anlt - ap_ref)';
-        time_anlt(i) = T(end)-T(1);
-        
-        if show_orbits
-            figure(3)
-            hold on
-            disp_orbit(R_est,V,mu,res,dur,start_day)
-            disp_obsv(R)
-            hold off
-        end
-    end
-    
-    if show_orbits
-        hold on
-        disp_orbit(r,v,mu,res,dur,start_day,1)
-        hold off
-    end
-
-    toc
-    disp('Analytic sim complete!')
-    disp(' ')
-    
-end
-
-
 %% Simulation (Equispaced)
 
 if run_equispace
@@ -211,7 +143,15 @@ if run_equispace
 
     for i = 1:samp_size
         [R_est,R,V,T] = viod_eqsp(r,v,mu,start_day,end_day(i),obsv_cap,noise,x);
-        ap_eqsp = TimeProp_V3(R_est(end,:),V(end,:),mu,time_ref-T(end),x);
+        if do_avg_err
+            ap_eqsp = zeros(1,3);
+            for j = 1:obsv_cap
+                ap_eqsp = ap_eqsp + TimeProp_V3(R_est(j,:),V(j,:),mu,time_ref-T(j),x);
+            end
+            ap_eqsp = ap_eqsp / obsv_cap;
+        else
+            ap_eqsp = TimeProp_V3(R_est(end,:),V(end,:),mu,time_ref-T(end),x);
+        end
         errs_eqsp(:,i) = (ap_eqsp - ap_ref)';
         time_eqsp(i) = T(end)-T(1);
         
@@ -239,16 +179,6 @@ end
 
 %% Result Comparison
 
-if run_predictive
-    errs_norm_pred = vecnorm(errs_pred);
-    disp(['======== Predictive Adaptive VIOD ========' newline ...
-          '    Error Mean: ' num2str(mean(errs_norm_pred)) ' km' ...
-          ' (' num2str(mean(errs_norm_pred)/AU) ' AU)' newline ...
-          '   Error Stdev: ' num2str(std(errs_norm_pred)) ' km' ...
-          ' (' num2str(std(errs_norm_pred)/AU) ' AU)' newline ...
-          ' Avg Obsv Time: ' num2str(mean(time_pred)) ' days' newline])
-end
-
 if run_observed
     errs_norm_obsv = vecnorm(errs_obsv);
     disp(['======== Observed Adaptive VIOD ========' newline ...
@@ -258,17 +188,7 @@ if run_observed
           ' (' num2str(std(errs_norm_obsv)/AU) ' AU)' newline ...
           ' Avg Obsv Time: ' num2str(mean(time_obsv)) ' days' newline])
 end
-  
-if run_analytic
-    errs_norm_anlt = vecnorm(errs_anlt);
-    disp(['======== Analytic Adaptive VIOD ========' newline ...
-          '    Error Mean: ' num2str(mean(errs_norm_anlt)) ' km' ...
-          ' (' num2str(mean(errs_norm_anlt)/AU) ' AU)' newline ...
-          '   Error Stdev: ' num2str(std(errs_norm_anlt)) ' km' ...
-          ' (' num2str(std(errs_norm_anlt)/AU) ' AU)' newline ...
-          ' Avg Obsv Time: ' num2str(mean(time_anlt)) ' days' newline])
-end
-  
+
 if run_equispace
     errs_norm_eqsp = vecnorm(errs_eqsp);
     disp(['======== Equispace VIOD ========' newline ...

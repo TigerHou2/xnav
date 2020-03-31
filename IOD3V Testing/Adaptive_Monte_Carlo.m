@@ -21,7 +21,7 @@ run_analytic   = false;
 run_equispace  = true;
 
 % choose display options
-show_orbits = false;
+show_orbits = true;
 
 % choose code profiling options
 do_profile = false;
@@ -41,16 +41,16 @@ v = cross([0,0,1],r);
 v = v / norm(v) * sqrt(mu*(2/norm(r)-2/(r1+r2)/AU));
 
 noise     = 10;             % 1 sigma sensor noise [m/s]
-start_day = 0.001;            % measurement start day [days]
+start_day = 3000;            % measurement start day [days]
 
 % observation conditions
 
-obsv_cap = 80; % max number of observation allowed
-da = deg2rad(0.5);
+obsv_cap = 20; % max number of observation allowed
+da = deg2rad(8);
 
 % seed for random number generator
 
-rng_val = 6;
+rng_val = 2;
 rng(rng_val);
 
 % plotting
@@ -61,7 +61,7 @@ res      = 100;                         % # points to plot for orbit
 
 % Monte Carlo settings
 
-samp_size = 10;
+samp_size = 1;
 
 % symbolic math preallocation
 

@@ -4,8 +4,8 @@
 %
 % Monte Carlo simulation of two variants of the adaptive meshing IOD
 % method, along with comparison to IOD based on equispaced time.
-
-
+%
+%
 %% Initial Conditions
 
 % clear workspace and load data
@@ -62,7 +62,7 @@ res      = 100;                         % # points to plot for orbit
 
 % Monte Carlo settings
 
-samp_size = 10;
+samp_size = 1;
 
 % symbolic math preallocation
 

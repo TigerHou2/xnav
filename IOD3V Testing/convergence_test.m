@@ -154,7 +154,7 @@ ylabel('Error at Apoapsis (km)')
 
 %% Measurement Noise
 
-noise_vect = [0,0.1,0.5,1,3,10,20];
+noise_vect = [1e-5,1e-3,0.1,1,5,10,20];
 
 % ======== Equal Turn ========
 

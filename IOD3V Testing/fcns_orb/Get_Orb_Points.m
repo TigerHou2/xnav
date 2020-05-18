@@ -58,10 +58,9 @@ if a > 0
     end
 else
     for i = start_day-dur:dur/res:start_day+dur
-        r1 = TimeProp_Universal_V2(r, v, mu, i);
+        r1 = TimeProp_V4(r, v, mu, i);
         pos = [pos; r1];
     end
 end
 
 end
-

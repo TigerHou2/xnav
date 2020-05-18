@@ -1,7 +1,5 @@
 %% Adaptive_Meshing_3.m
 %
-% Created:  03/25/2020
-% Modified: 03/27/2020
 % Author:   Tiger Hou
 %
 % Optimizes velocity observation times to reduce influence of sensor noise
@@ -93,7 +91,7 @@ while true
         % propagate forward in orbit by delta-t, get position and velocity
 
         T(i) = start_day + (i-1) * delta_t;
-        [R(i,:),V(i,:)] = TimeProp_Universal_V2(r,v,mu,T(i));
+        [R(i,:),V(i,:)] = TimeProp_V4(r,v,mu,T(i));
 
         % add noise to simulate velocity measurements w/ error
 
@@ -160,7 +158,7 @@ for i = 3:obsv_cap
         
         % simulate propagating forward using current orbit estimate
         step = step + step_size;
-        [rt,vt] = TimeProp_Universal_V2(rr,vv,mu,step);
+        [rt,vt] = TimeProp_V4(rr,vv,mu,step);
         
         diff = acos(dot(vv,vt)/norm(vv)/norm(vt));
         
@@ -182,7 +180,7 @@ for i = 3:obsv_cap
     % propagate time, collect next measurement
     
     T(i+1) = T(i) + delta_t;
-    [R(i+1,:),V(i+1,:)] = TimeProp_Universal_V2(r,v,mu,T(i+1));
+    [R(i+1,:),V(i+1,:)] = TimeProp_V4(r,v,mu,T(i+1));
     
     % add noise
     
@@ -208,8 +206,8 @@ T_ad2 = zeros(obsv_cap,1); % time since periapsis
 
 
 % find true inertial angle change and divide evenly
-[~,v_ini] = TimeProp_Universal_V2(r,v,mu,T(1));
-[~,v_end] = TimeProp_Universal_V2(r,v,mu,T(obsv_cap));
+[~,v_ini] = TimeProp_V4(r,v,mu,T(1));
+[~,v_end] = TimeProp_V4(r,v,mu,T(obsv_cap));
 delta_angle_ad2 = acos(dot(v_ini,v_end)/norm(v_ini)/norm(v_end)) / (obsv_cap-1);
 % delta_angle_ad2 = delta_angle;
 
@@ -222,7 +220,7 @@ for i = 1:obsv_cap
     % propagate time, collect next measurement
     
     T_ad2(i) = next_t;
-    [R_ad2(i,:),V_ad2(i,:)] = TimeProp_Universal_V2(r,v,mu,T_ad2(i));
+    [R_ad2(i,:),V_ad2(i,:)] = TimeProp_V4(r,v,mu,T_ad2(i));
     
     % store ground truth data to use for propagating
     
@@ -247,7 +245,7 @@ for i = 1:obsv_cap
     while true
         
         step = step + step_size;
-        [r_next,v_next] = TimeProp_Universal_V2(rt,vt,mu,step);
+        [r_next,v_next] = TimeProp_V4(rt,vt,mu,step);
         
         angle = acos(dot(vv,v_next)/norm(vv)/norm(v_next));
         
@@ -296,7 +294,7 @@ for i = 1:length(Teq)
     
     % propagate
     
-    [Req(i,:),Veq(i,:)] = TimeProp_Universal_V2(r,v,mu,Teq(i));
+    [Req(i,:),Veq(i,:)] = TimeProp_V4(r,v,mu,Teq(i));
     
     % add noise
     
@@ -368,15 +366,15 @@ legend('True Orbit','Central Body',...
 time_pos = dur/2;
 adap_sel = obsv_cap;
 
-ap_true = TimeProp_Universal_V2(r,v,mu,time_pos);
-ap_adap = TimeProp_Universal_V2(R_est(adap_sel,:),V(adap_sel,:),mu,time_pos-T(adap_sel));
-ap_adv2 = TimeProp_Universal_V2(R_ad2_est(obsv_cap,:),V_ad2(obsv_cap,:),mu,time_pos-T_ad2(obsv_cap));
-ap_eqsp = TimeProp_Universal_V2(Req_est,Veq(1,:),mu,time_pos-Teq(1));
+ap_true = TimeProp_V4(r,v,mu,time_pos);
+ap_adap = TimeProp_V4(R_est(adap_sel,:),V(adap_sel,:),mu,time_pos-T(adap_sel));
+ap_adv2 = TimeProp_V4(R_ad2_est(obsv_cap,:),V_ad2(obsv_cap,:),mu,time_pos-T_ad2(obsv_cap));
+ap_eqsp = TimeProp_V4(Req_est,Veq(1,:),mu,time_pos-Teq(1));
 
 ap_stat = zeros(1,3);
 samp_size = 5;
 for i = obsv_cap-samp_size+1:obsv_cap
-    ap_stat = ap_stat + TimeProp_Universal_V2(R_est(i,:),V(i,:),mu,time_pos-T(i));
+    ap_stat = ap_stat + TimeProp_V4(R_est(i,:),V(i,:),mu,time_pos-T(i));
 end
 ap_stat = ap_stat / samp_size;
 

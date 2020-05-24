@@ -60,15 +60,11 @@ res      = 100;                         % # points to plot for orbit
 
 samp_size = 40;
 
-% symbolic math preallocation
-
-syms x
-
 % True Position Reference
 
 time_ref = dur/2; % apoapsis
-ap_ref = TimeProp_V3(r,v,mu,time_ref,x);
-v0 = TimeProp_V3(r,v,mu,start_day,x);
+ap_ref = TimeProp_V4(r,v,mu,time_ref);
+v0 = TimeProp_V4(r,v,mu,start_day);
 
 
 %% Measurement Count
@@ -88,16 +84,16 @@ for i = 1:length(da_vect)
     for ss = 1:samp_size
     
         [R_est,R,V,T] = ...
-            viod_adap_obsv(r,v,mu,start_day,count_vect(i),da_vect(i),noise,x);
+            viod_adap_obsv(r,v,mu,start_day,count_vect(i),da_vect(i),noise);
         if do_avg_err
             ap_obsv = zeros(1,3);
             for j = 1:count_vect(i)
                 ap_obsv = ap_obsv + ...
-                          TimeProp_V3(R_est(j,:),V(j,:),mu,time_ref-T(j),x);
+                          TimeProp_V4(R_est(j,:),V(j,:),mu,time_ref-T(j));
             end
             ap_obsv = ap_obsv / count_vect(i);
         else
-            ap_obsv = TimeProp_V3(R_est(end,:),V(end,:),mu,time_ref-T(end),x);
+            ap_obsv = TimeProp_V4(R_est(end,:),V(end,:),mu,time_ref-T(end));
         end
         
     end
@@ -118,16 +114,16 @@ for i = 1:length(da_vect)
     for ss = 1:samp_size
         
         [R_est,R,V,T] = ...
-            viod_eqsp(r,v,mu,start_day,end_day(i),count_vect(i),noise,x);
+            viod_eqsp(r,v,mu,start_day,end_day(i),count_vect(i),noise);
         if do_avg_err
             ap_eqsp = zeros(1,3);
             for j = 1:count_vect(i)
                 ap_eqsp = ap_eqsp + ...
-                          TimeProp_V3(R_est(j,:),V(j,:),mu,time_ref-T(j),x);
+                          TimeProp_V4(R_est(j,:),V(j,:),mu,time_ref-T(j));
             end
             ap_eqsp = ap_eqsp / count_vect(i);
         else
-            ap_eqsp = TimeProp_V3(R_est(end,:),V(end,:),mu,time_ref-T(end),x);
+            ap_eqsp = TimeProp_V4(R_est(end,:),V(end,:),mu,time_ref-T(end));
         end
         
     end
@@ -154,7 +150,7 @@ ylabel('Error at Apoapsis (km)')
 
 %% Measurement Noise
 
-noise_vect = [1e-5,1e-3,0.1,1,5,10,20];
+noise_vect = [1e-3,1e-2,0.1,1,5,10,30];
 
 % ======== Equal Turn ========
 
@@ -168,16 +164,16 @@ for i = 1:length(noise_vect)
     for ss = 1:samp_size
     
         [R_est,R,V,T] = ...
-            viod_adap_obsv(r,v,mu,start_day,obsv_cap,da,noise_vect(i),x);
+            viod_adap_obsv(r,v,mu,start_day,obsv_cap,da,noise_vect(i));
         if do_avg_err
             ap_obsv = zeros(1,3);
             for j = 1:obsv_cap
                 ap_obsv = ap_obsv + ...
-                          TimeProp_V3(R_est(j,:),V(j,:),mu,time_ref-T(j),x);
+                          TimeProp_V4(R_est(j,:),V(j,:),mu,time_ref-T(j));
             end
             ap_obsv = ap_obsv / obsv_cap;
         else
-            ap_obsv = TimeProp_V3(R_est(end,:),V(end,:),mu,time_ref-T(end),x);
+            ap_obsv = TimeProp_V4(R_est(end,:),V(end,:),mu,time_ref-T(end));
         end
         
     end
@@ -199,16 +195,16 @@ for i = 1:length(noise_vect)
     for ss = 1:samp_size
     
         [R_est,R,V,T] = ...
-            viod_eqsp(r,v,mu,start_day,end_day(i),obsv_cap,noise_vect(i),x);
+            viod_eqsp(r,v,mu,start_day,end_day(i),obsv_cap,noise_vect(i));
         if do_avg_err
             ap_eqsp = zeros(1,3);
             for j = 1:obsv_cap
                 ap_eqsp = ap_eqsp + ...
-                          TimeProp_V3(R_est(j,:),V(j,:),mu,time_ref-T(j),x);
+                          TimeProp_V4(R_est(j,:),V(j,:),mu,time_ref-T(j));
             end
             ap_eqsp = ap_eqsp / obsv_cap;
         else
-            ap_eqsp = TimeProp_V3(R_est(end,:),V(end,:),mu,time_ref-T(end),x);
+            ap_eqsp = TimeProp_V4(R_est(end,:),V(end,:),mu,time_ref-T(end));
         end
         
     end

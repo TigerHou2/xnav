@@ -1,4 +1,4 @@
-function [R_est,R,V,T] = viod_eqsp(r,v,mu,start_day,end_day,obsv_count,noise,x)
+function [R_est,R,V,T] = viod_eqsp(r,v,mu,start_day,end_day,obsv_count,noise)
 %VIOD_EQSP Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -10,7 +10,7 @@ for i = 1:obsv_count
     
     % propagate
     
-    [R(i,:),V(i,:)] = TimeProp_V3(r,v,mu,T(i),x);
+    [R(i,:),V(i,:)] = TimeProp_V4(r,v,mu,T(i));
     
     % add noise
     

@@ -2,7 +2,7 @@ function [r,k] = IOD3V_V3(N,A,B,C,mu,varargin)
 %IOD3V_EXT Solves the three-velocity initial orbit determination problem.
 %
 % Created:  01/30/2020
-% Modified: 02/03/2020
+% Modified: 05/22/2020
 % Author:   Tiger Hou
 %
 % The spacecraft's orbit is calculated from three velocity vectors
@@ -31,7 +31,6 @@ function [r,k] = IOD3V_V3(N,A,B,C,mu,varargin)
 %       'ordered',  [boolean]: if true, assume v1,v2,v3 measured in order
 %       'omega'  ,  [1x3]:     angular velocity vector of central body
 %       'prograde', [boolean]: true -> prograde, false -> retrograde
-%       'display',  [boolean]: if true, prints assumptions on command line
 %
 % Sources:
 %   - [1] Initial Orbit Determination from Three Velocity Vectors

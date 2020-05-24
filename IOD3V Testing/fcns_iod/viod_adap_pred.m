@@ -1,4 +1,4 @@
-function [R_est,R,V,T] = viod_adap_pred(r,v,mu,start_day,obsv_cap,da,noise,x)
+function [R_est,R,V,T] = viod_adap_pred(r,v,mu,start_day,obsv_cap,da,noise)
 %VIOD_ADAP_PRED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -35,7 +35,7 @@ while true
         % propagate forward in orbit by delta-t, get position and velocity
 
         T(i) = start_day + (i-1) * delta_t;
-        [R(i,:),V(i,:)] = TimeProp_V3(r,v,mu,T(i),x);
+        [R(i,:),V(i,:)] = TimeProp_V4(r,v,mu,T(i));
 
         % add noise to simulate velocity measurements w/ error
 
@@ -100,7 +100,7 @@ for i = 3:obsv_cap
         
         % simulate propagating forward using current orbit estimate
         step = step + step_size;
-        [~,vt] = TimeProp_V3(rr,vv,mu,step,x);
+        [~,vt] = TimeProp_V4(rr,vv,mu,step);
         
         diff = acos(dot(vv,vt)/norm(vv)/norm(vt));
         
@@ -122,7 +122,7 @@ for i = 3:obsv_cap
     % propagate time, collect next measurement
     
     T(i+1) = T(i) + delta_t;
-    [R(i+1,:),V(i+1,:)] = TimeProp_V3(r,v,mu,T(i+1),x);
+    [R(i+1,:),V(i+1,:)] = TimeProp_V4(r,v,mu,T(i+1));
     
     % add noise
     

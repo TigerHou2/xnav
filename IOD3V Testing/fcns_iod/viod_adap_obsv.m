@@ -1,4 +1,4 @@
-function [R_est,R,V,T] = viod_adap_obsv(r,v,mu,start_day,obsv_cap,da,noise,x)
+function [R_est,R,V,T] = viod_adap_obsv(r,v,mu,start_day,obsv_cap,da,noise)
 %VIOD_ADAP_OBSV Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -12,15 +12,15 @@ next_t = start_day;
 
 % symbolic math setup
 
-syms k ff real
-assume(k,'positive')
+% syms k ff real
+% assume(k,'positive')
 
 for i = 1:obsv_cap
     
     % propagate time, collect next measurement
     
     T(i) = next_t;
-    [R(i,:),V(i,:)] = TimeProp_V3(r,v,mu,T(i),x);
+    [R(i,:),V(i,:)] = TimeProp_V4(r,v,mu,T(i));
     
     % store ground truth data to use for propagating
     
@@ -32,39 +32,39 @@ for i = 1:obsv_cap
     n_vec = randn(1,3);
     n_vec = n_vec ./ vecnorm(n_vec,2,2) * noise / 1000;
     V(i,:) = V(i,:) + n_vec;
-%     vv = V(i,:);
+    vv = V(i,:);
     
     % propagate to find proper dt
     
-    dt = get_dt(rt,vt,mu,da,k,ff);
-    next_t = T(i) + dt;
+%     dt = get_dt(rt,vt,mu,da,k,ff);
+%     next_t = T(i) + dt;
     
-%     step = 0;
-%     step_size = 0.5;
-%     
-%     angle_prev = 0;
-%     
-%     while true
-%         
-%         step = step + step_size;
-%         [~,v_next] = TimeProp_Universal_V2(rt,vt,mu,step);
-%         
-%         angle = acos(dot(vv,v_next)/norm(vv)/norm(v_next));
-%         
-%         if angle > da
-%             next_t = T(i) + step;
-%             break
-%         end
-%         
-%         if abs(angle-da) > abs(angle-angle_prev)
-%             step_size = step_size * 1.2;
-%         else
-%             step_size = step_size * 0.8;
-%         end
-%         
-%         angle_prev = angle;
-%         
-%     end
+    step = 0;
+    step_size = 0.5;
+    
+    angle_prev = 0;
+    
+    while true
+        
+        step = step + step_size;
+        [~,v_next] = TimeProp_V4(rt,vt,mu,step);
+        
+        angle = acos(dot(vv,v_next)/norm(vv)/norm(v_next));
+        
+        if angle > da
+            next_t = T(i) + step;
+            break
+        end
+        
+        if abs(angle-da) > abs(angle-angle_prev)
+            step_size = step_size * 1.2;
+        else
+            step_size = step_size * 0.8;
+        end
+        
+        angle_prev = angle;
+        
+    end
     
 end
 

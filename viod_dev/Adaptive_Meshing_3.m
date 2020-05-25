@@ -2,19 +2,16 @@
 %
 % Author:   Tiger Hou
 %
-% Optimizes velocity observation times to reduce influence of sensor noise
-% during small true anomaly changes, attempts to generate better orbit
-% estimates.
+% Compares two velocity orbit determination methods:
+% --- measurements separated by equal time
+% --- measurements separated by equal angular change in velocity
 
 
 %% Initial Conditions
 
-
 % clear workspace and load data
-
 close all hidden
 clear;clc
-
 Parameters
 
 % plot settings
@@ -22,7 +19,7 @@ ptSize = 26;
 
 % spacecraft conditions
 r1 = earth.a; % departure planet
-r2 = jupiter.a; % arrival planet
+r2 = neptune.a; % arrival planet
 mu = sun.mu; % gravitational parameter [km^3/s^2]
 
 theta = pi/4;
@@ -41,11 +38,9 @@ obsv_cap = 12; % max number of observations allowed
 delta_t = 5; % days, time between observations
 delta_angle = deg2rad(10); % rad, change in inertial angle before next obsv
 
-
 % seed random number generator
 rng_val = 1;
 rng(rng_val);
-
 
 % plotting
 ah = norm(r)/(2 - norm(r)*dot(v,v)/mu);
@@ -53,7 +48,7 @@ dur      = 2*pi*sqrt(ah^3/mu)/3600/24;  % orbit propagation duration [days]
 res      = 100;                         % # points to plot for orbit
 
 
-%% Simulation (Adaptive)
+%% Simulation (Equal Angular Change)
 % takes velocity measurements at a fixed angular separation
 
 tic
@@ -125,15 +120,15 @@ comb_n = size(C,1);
 A = spalloc(comb_n*4,obsv_cap*2,7*obsv_cap*(obsv_cap-1));
 B = zeros(comb_n*4,1);
 
-Rad_est = IOD3V_V3(Vad,A,B,C,mu,'ordered',true);
+Rad_est = VIOD(Vad,A,B,C,mu);
 
-disp(['Adaptive Simulation v2 complete! (' num2str(Tad(obsv_cap)-Tad(1)) ' days)'])
+disp(['Equal time simulation complete! (' num2str(Tad(obsv_cap)-Tad(1)) ' days)'])
 
 toc
 disp(' ')
 
 
-%% Simulation (Equispaced)
+%% Simulation (Equal Time Change)
 
 rng(rng_val);
 
@@ -161,7 +156,7 @@ comb_n = size(C,1);
 A = spalloc(comb_n*4,i*2,7*i*(i-1)); % LHS matrix of eq. 36, see line 6
 B = zeros(comb_n*4,1);               % RHS matrix of eq. 36, see line 6
 
-RReq = IOD3V_V3(Veq(1:i,:),A,B,C,mu,'ordered',true);
+RReq = VIOD(Veq(1:i,:),A,B,C,mu);
 Req_est = RReq(1,:);
 
 
@@ -200,8 +195,8 @@ scatter3(Req(:,1),Req(:,2),Req(:,3),ptSize,'MarkerEdgeColor','Red');
 hold off
 
 legend('True Orbit','Central Body',...
-       'Adaptive Orbit','Adaptive Points',...
-       'Equispace Orbit','Equispace Points')
+       'Equal Angle Orbit','Equal Angle Points',...
+       'Equal Time Orbit','Equal Time Points')
 
 
 %% Accuracy Check
@@ -215,9 +210,9 @@ ap_eq = TimeProp_V4(Req_est,Veq(1,:),mu,time_pos-Teq(1));
 diff_ad = norm(ap_true - ap_ad);
 diff_eq = norm(ap_true - ap_eq);
 
-disp([' Adaptive Velocity OD Error: ' num2str(diff_ad) ' km (' ...
+disp(['Equal Angle VIOD Error: ' num2str(diff_ad) ' km (' ...
         num2str(diff_ad/AU) ' AU)'])
-disp(['Equispace Velocity OD Error: ' num2str(diff_eq) ' km (' ...
+disp(['Equal Time VIOD Error:  ' num2str(diff_eq) ' km (' ...
         num2str(diff_eq/AU) ' AU)'])
 disp(' ')
 
@@ -226,8 +221,8 @@ disp(' ')
 
 hold on
 scatter3(ap_true(:,1),ap_true(:,2),ap_true(:,3),ptSize,'MarkerFaceColor','Black','DisplayName','True Position')
-scatter3(ap_ad(:,1),ap_ad(:,2),ap_ad(:,3),ptSize,'MarkerFaceColor','Blue', 'DisplayName','Adaptive Position')
-scatter3(ap_eq(:,1),ap_eq(:,2),ap_eq(:,3),ptSize,'MarkerFaceColor','Red',  'DisplayName','Equispace Position')
+scatter3(ap_ad(:,1),ap_ad(:,2),ap_ad(:,3),ptSize,'MarkerFaceColor','Blue', 'DisplayName','Equal Angle Position')
+scatter3(ap_eq(:,1),ap_eq(:,2),ap_eq(:,3),ptSize,'MarkerFaceColor','Red',  'DisplayName','Equal Time Position')
 hold off
 legend('Location','East')
 % latexify(19,19)
@@ -243,8 +238,8 @@ diff_eq_vec = (ap_true - ap_eq);
 diff_ad_out = dot(diff_ad_vec,h)/norm(h);
 diff_eq_out = dot(diff_eq_vec,h)/norm(h);
 
-disp([' Out of Plane Adaptive OD Error: ' newline '    ' ...
+disp(['Out of Plane Equal Angle OD Error: ' newline '    ' ...
         num2str(diff_ad_out) ' km (' num2str(diff_ad_out/AU) ' AU)'])
-disp(['Out of Plane Equispace OD Error: ' newline '    ' ...
+disp(['Out of Plane Equal Time OD Error:  ' newline '    ' ...
         num2str(diff_eq_out) ' km (' num2str(diff_eq_out/AU) ' AU)'])
 disp(' ')

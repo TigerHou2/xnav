@@ -21,6 +21,7 @@ venus.e = 0.0068;
 % Earth
 earth.a = 1;
 earth.e = 0.0167;
+earth.mu = 3.986004418e5;
 
 % Mars
 mars.a = 1.5237;

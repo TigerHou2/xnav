@@ -1,0 +1,128 @@
+%General Mission Analysis Tool(GMAT) Script
+%Created: 2020-05-26 12:11:37
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft sc;
+GMAT sc.DateFormat = TAIModJulian;
+GMAT sc.Epoch = '21545';
+GMAT sc.CoordinateSystem = SunMJ2000Eq;
+GMAT sc.DisplayStateType = Keplerian;
+GMAT sc.SMA = 161716517.9069936;
+GMAT sc.ECC = 0.1220939867622716;
+GMAT sc.INC = 23.61223326056682;
+GMAT sc.RAAN = 357.816348057623;
+GMAT sc.AOP = 55.08102474936664;
+GMAT sc.TA = 360;
+GMAT sc.DryMass = 850;
+GMAT sc.Cd = 2.2;
+GMAT sc.Cr = 1.8;
+GMAT sc.DragArea = 15;
+GMAT sc.SRPArea = 1;
+GMAT sc.NAIFId = -10029001;
+GMAT sc.NAIFIdReferenceFrame = -9029001;
+GMAT sc.OrbitColor = Red;
+GMAT sc.TargetColor = Teal;
+GMAT sc.OrbitErrorCovariance = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+GMAT sc.CdSigma = 1e+070;
+GMAT sc.CrSigma = 1e+070;
+GMAT sc.Id = 'SatId';
+GMAT sc.Attitude = CoordinateSystemFixed;
+GMAT sc.SPADSRPScaleFactor = 1;
+GMAT sc.ModelFile = 'aura.3ds';
+GMAT sc.ModelOffsetX = 0;
+GMAT sc.ModelOffsetY = 0;
+GMAT sc.ModelOffsetZ = 0;
+GMAT sc.ModelRotationX = 0;
+GMAT sc.ModelRotationY = 0;
+GMAT sc.ModelRotationZ = 0;
+GMAT sc.ModelScale = 1;
+GMAT sc.AttitudeDisplayStateType = 'Quaternion';
+GMAT sc.AttitudeRateDisplayStateType = 'AngularVelocity';
+GMAT sc.AttitudeCoordinateSystem = EarthMJ2000Eq;
+GMAT sc.EulerAngleSequence = '321';
+
+
+%----------------------------------------
+%---------- ForceModels
+%----------------------------------------
+
+Create ForceModel prop_sc_ForceModel;
+GMAT prop_sc_ForceModel.CentralBody = Sun;
+GMAT prop_sc_ForceModel.PointMasses = {Earth, Jupiter, Neptune, Sun};
+GMAT prop_sc_ForceModel.Drag = None;
+GMAT prop_sc_ForceModel.SRP = On;
+GMAT prop_sc_ForceModel.RelativisticCorrection = Off;
+GMAT prop_sc_ForceModel.ErrorControl = RSSStep;
+GMAT prop_sc_ForceModel.SRP.Flux = 1367;
+GMAT prop_sc_ForceModel.SRP.SRPModel = Spherical;
+GMAT prop_sc_ForceModel.SRP.Nominal_Sun = 149597870.691;
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator prop_sc;
+GMAT prop_sc.FM = prop_sc_ForceModel;
+GMAT prop_sc.Type = RungeKutta89;
+GMAT prop_sc.InitialStepSize = 60;
+GMAT prop_sc.Accuracy = 9.999999999999999e-012;
+GMAT prop_sc.MinStep = 0.001;
+GMAT prop_sc.MaxStep = 2700;
+GMAT prop_sc.MaxStepAttempts = 50;
+GMAT prop_sc.StopIfAccuracyIsViolated = true;
+
+%----------------------------------------
+%---------- Coordinate Systems
+%----------------------------------------
+
+Create CoordinateSystem SunMJ2000Eq;
+GMAT SunMJ2000Eq.Origin = Sun;
+GMAT SunMJ2000Eq.Axes = MJ2000Eq;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create OrbitView SolarView;
+GMAT SolarView.SolverIterations = Current;
+GMAT SolarView.UpperLeft = [ 0.00209819555182543 0 ];
+GMAT SolarView.Size = [ 0.5002098195551825 0.4502018842530283 ];
+GMAT SolarView.RelativeZOrder = 127;
+GMAT SolarView.Maximized = false;
+GMAT SolarView.Add = {sc, Earth, Sun, Neptune};
+GMAT SolarView.CoordinateSystem = SunMJ2000Eq;
+GMAT SolarView.DrawObject = [ true true true true ];
+GMAT SolarView.DataCollectFrequency = 1;
+GMAT SolarView.UpdatePlotFrequency = 50;
+GMAT SolarView.NumPointsToRedraw = 0;
+GMAT SolarView.ShowPlot = true;
+GMAT SolarView.MaxPlotPoints = 20000;
+GMAT SolarView.ShowLabels = true;
+GMAT SolarView.ViewPointReference = sc;
+GMAT SolarView.ViewPointVector = sc;
+GMAT SolarView.ViewDirection = [ 0 0 -1 ];
+GMAT SolarView.ViewScaleFactor = 1;
+GMAT SolarView.ViewUpCoordinateSystem = EarthMJ2000Eq;
+GMAT SolarView.ViewUpAxis = Z;
+GMAT SolarView.EclipticPlane = Off;
+GMAT SolarView.XYPlane = On;
+GMAT SolarView.WireFrame = Off;
+GMAT SolarView.Axes = On;
+GMAT SolarView.Grid = Off;
+GMAT SolarView.SunLine = Off;
+GMAT SolarView.UseInitialView = On;
+GMAT SolarView.StarCount = 7000;
+GMAT SolarView.EnableStars = On;
+GMAT SolarView.EnableConstellations = On;
+
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+
+BeginMissionSequence;
+Propagate prop_sc(sc) {sc.Sun.TA = 90};

@@ -1,14 +1,16 @@
 function [r] = viod(N,mu)
 %VIOD Solves the three-velocity initial orbit determination problem.
 %
-% Author:   Tiger Hou
+% Author:
+%   Tiger Hou
 %
-% The spacecraft's orbit is calculated from three velocity vectors
+% Description:
+%   The spacecraft's orbit is calculated from three velocity vectors
 %   collected at different points in the orbit. The orbit is specified by
 %   either providing retrograde/prograde information, or by providing the
 %   order of measurements.
 %
-% LIMITATIONS:
+% Limitations:
 %   - Assumes measurements are taken within half a revolution.
 %   - Assumes the measurements are provided in order.
 %
@@ -22,6 +24,10 @@ function [r] = viod(N,mu)
 %
 % Sources:
 %   - [1] Initial Orbit Determination from Three Velocity Vectors
+
+% clean up unused velocity measurements
+N_orig = N;
+N = vclean(N);
 
 n = size(N,1);
 C = combnk(1:n,2);           % permutations of two velocity vectors i,j
@@ -97,5 +103,9 @@ for i = 1:reps
     r(:,i)  = rw(:,i) + ru(:,i);
 end
 r = r';
+
+r_resize = zeros(size(N_orig));
+r_resize(1:size(r,1),1:size(r,2)) = r;
+r = r_resize;
         
 end

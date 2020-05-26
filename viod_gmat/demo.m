@@ -1,8 +1,10 @@
-function [tempout] = demo(temp)
+function demo
 %DEMO Summary of this function goes here
 %   Detailed explanation goes here
 
-tempout = 100 * temp;
+x = linspace(0,2*pi,100);
+y = sin(x);
+plot(x,y);
 
 end
 

@@ -163,8 +163,10 @@ GMAT report_demo.WriteReport = true;
 %---------- MATLAB Functions
 %----------------------------------------
 
-Create MatlabFunction viod;
+Create MatlabFunction viod demo test;
 GMAT viod.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
+GMAT demo.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
+GMAT test.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
 
 %----------------------------------------
 %---------- Arrays, Variables, Strings
@@ -198,4 +200,6 @@ EndFor
 
 mu = SolarSystem.Earth.Mu;
 [r] = viod(v,mu);
+demo;
+test;
 Report report_demo r;

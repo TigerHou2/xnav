@@ -1,4 +1,4 @@
-function [r] = monteScatter(v,mu,noise,rRef,itr,idx,bias)
+function [r,runTime] = monteScatter(v,mu,noise,rRef,itr,idx,bias)
 %MONTESCATTER Generates a scatter plot od OD errors from Monte Carlo sims
 %
 % Author: 
@@ -21,6 +21,8 @@ function [r] = monteScatter(v,mu,noise,rRef,itr,idx,bias)
 % Outputs:
 %   Scatter plot of OD errors.
 
+
+tic
 
 latexify
 r2_vect = nan(itr,3);
@@ -54,6 +56,8 @@ xlabel('$\delta_x, km$')
 ylabel('$\delta_y, km$')
 zlabel('$\delta_z, km$')
 latexify
+
+runTime = toc;
 
 end
 

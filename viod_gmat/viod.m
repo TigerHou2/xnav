@@ -9,8 +9,9 @@ function [r] = viod(N,mu)
 %   collected at different points in the orbit.
 %
 % Limitations:
-%   - Assumes measurements are taken within half a revolution.
 %   - Assumes the measurements are provided in order.
+%   - Assumes 50%+ of adjacent measurements are less than half an orbit
+%   away from each other
 %
 % Arguments:
 %   N:      [km/s]      N-by-3 matrix containing N velocity vectors
@@ -39,10 +40,13 @@ B = zeros(comb_n*4,1);               % RHS matrix of eq. 36, see line 6
 k = V(:,end);
 
 % check if orbit plane normal is in the right direction
-% --- we do this be knowing all velocities are in order and within
-% --- half a revolution. therefore the cross product of the first and last
-% --- measurements should be in the direction of the orbit normal.
-if dot(k,cross(N(1,:),N(end,:))') < 0
+% we assume more than half of the measurements are taken less than half an
+% orbit apart from its adjacent measurements.
+kEst = zeros(1,3);
+for i = 1:size(N,1)-1
+    kEst = kEst + cross(N(i,:),N(i+1,:));
+end
+if dot(k,kEst') < 0
     k = -k;
 end
 

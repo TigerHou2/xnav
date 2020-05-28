@@ -74,8 +74,8 @@ legend('Hodograph VIOD','Original VIOD')
 
 subplot(1,3,3)
 hold on
-scatter(r2_vect_hodo(:,2),r2_vect_hodo(:,2),'r+');
-scatter(r2_vect_orig(:,2),r2_vect_orig(:,2),'kx');
+scatter(r2_vect_hodo(:,2),r2_vect_hodo(:,3),'r+');
+scatter(r2_vect_orig(:,2),r2_vect_orig(:,3),'kx');
 hold off
 axis equal
 xlabel('$\delta_y, km$')

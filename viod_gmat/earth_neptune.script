@@ -11,12 +11,12 @@ GMAT sc.DateFormat = TAIModJulian;
 GMAT sc.Epoch = '21545';
 GMAT sc.CoordinateSystem = SunMJ2000Ec;
 GMAT sc.DisplayStateType = Keplerian;
-GMAT sc.SMA = 2323300000.000243;
-GMAT sc.ECC = 0.9356000000000077;
-GMAT sc.INC = 4.560708889999991;
-GMAT sc.RAAN = 0;
+GMAT sc.SMA = 2323300000.000271;
+GMAT sc.ECC = 0.9356000000000083;
+GMAT sc.INC = 4.56070889000007;
+GMAT sc.RAAN = 360;
 GMAT sc.AOP = 180;
-GMAT sc.TA = 0.9999999999995357;
+GMAT sc.TA = 358.999999999999;
 GMAT sc.DryMass = 850;
 GMAT sc.Cd = 2.2;
 GMAT sc.Cr = 1.8;
@@ -44,6 +44,7 @@ GMAT sc.AttitudeDisplayStateType = 'Quaternion';
 GMAT sc.AttitudeRateDisplayStateType = 'AngularVelocity';
 GMAT sc.AttitudeCoordinateSystem = SunMJ2000Ec;
 GMAT sc.EulerAngleSequence = '321';
+
 
 
 
@@ -90,8 +91,8 @@ GMAT SunMJ2000Ec.Axes = MJ2000Ec;
 Create OrbitView SolarView;
 GMAT SolarView.SolverIterations = Current;
 GMAT SolarView.UpperLeft = [ 0 0 ];
-GMAT SolarView.Size = [ 0.9496010079798404 0.949528936742934 ];
-GMAT SolarView.RelativeZOrder = 246;
+GMAT SolarView.Size = [ 0.9493087557603687 0.949528936742934 ];
+GMAT SolarView.RelativeZOrder = 1166;
 GMAT SolarView.Maximized = false;
 GMAT SolarView.Add = {sc, Earth, Sun, Neptune};
 GMAT SolarView.CoordinateSystem = SunMJ2000Ec;
@@ -135,46 +136,45 @@ GMAT report_demo.Delimiter = ' ';
 GMAT report_demo.ColumnWidth = 23;
 GMAT report_demo.WriteReport = true;
 
-
 %----------------------------------------
 %---------- MATLAB Functions
 %----------------------------------------
 
-Create MatlabFunction viod;
-GMAT viod.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
+Create MatlabFunction init;
+GMAT init.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
 
-%----------------------------------------
-%---------- MATLAB Functions
-%----------------------------------------
+Create MatlabFunction matEval;
+GMAT matEval.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
 
-Create MatlabFunction addnoise;
-GMAT addnoise.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
+Create MatlabFunction monteScatter;
+GMAT monteScatter.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
+
+Create MatlabFunction monteScatter_compare;
+GMAT monteScatter_compare.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
 
 %----------------------------------------
 %---------- Arrays, Variables, Strings
 %----------------------------------------
 
 Create Array v[100,3] rEst[100,3] rRef[100,3] rDiff[100,3];
-Create Variable mu num_obsv f interval i noise;
-Create String blank;
+Create Variable mu num_obsv f0 dt i noise num_monte temp;
+Create String blank matCmd;
 GMAT num_obsv = 10;
-GMAT f = 20;
-GMAT interval = 45;
-GMAT noise = 1;
-
-
-
-
+GMAT f0 = 0; % deg
+GMAT dt = 45; % days
+GMAT noise = 0.01; % m/s
+GMAT num_monte = 1000;
 
 %----------------------------------------
 %---------- Mission Sequence
 %----------------------------------------
 
 BeginMissionSequence;
+GMAT init;
 
 %---------- Set s/c to Starting Location ----------
 GMAT mu = SolarSystem.Sun.Mu;
-Propagate prop_sc(sc) {sc.TA = f};
+Propagate prop_sc(sc) {sc.Sun.TA = f0};
 
 For i = 1:1:num_obsv;
    
@@ -184,40 +184,18 @@ For i = 1:1:num_obsv;
    GMAT rRef(i,1) = sc.SunMJ2000Ec.X;
    GMAT rRef(i,2) = sc.SunMJ2000Ec.Y;
    GMAT rRef(i,3) = sc.SunMJ2000Ec.Z;
-   Propagate prop_sc(sc) {sc.ElapsedDays = interval};
+   
+   GMAT matCmd = 'mod(i,2)';
+   GMAT [temp] = matEval(matCmd, i);
+   
+   If temp == 0
+      Propagate prop_sc(sc) {sc.ElapsedDays = dt, OrbitColor = [255 180 0]};
+   Else
+      Propagate prop_sc(sc) {sc.ElapsedDays = dt, OrbitColor = [255 0 0]};
+   EndIf;
 
 EndFor;
-
-For i = 1:1:num_obsv;
-   Report report_demo v(i,1) v(i,2) v(i,3);
-EndFor;
-Report report_demo blank;
-
-GMAT [v] = addnoise(v, noise);
-
-For i = 1:1:num_obsv;
-   Report report_demo v(i,1) v(i,2) v(i,3);
-EndFor;
-Report report_demo blank;
 
 %---------- Perform VIOD ----------
 
-GMAT [rEst] = viod(v, mu);
-GMAT rDiff = rRef - rEst;
-
-%---------- Display Results ----------
-
-For i = 1:1:num_obsv;
-   Report report_demo rEst(i,1) rEst(i,2) rEst(i,3);
-EndFor;
-Report report_demo blank;
-
-For i = 1:1:num_obsv;
-   Report report_demo rRef(i,1) rRef(i,2) rRef(i,3);
-EndFor;
-Report report_demo blank;
-
-For i = 1:1:num_obsv;
-   Report report_demo rDiff(i,1) rDiff(i,2) rDiff(i,3);
-EndFor;
-Report report_demo blank;
+GMAT monteScatter_compare(v, mu, noise, rRef, num_monte);

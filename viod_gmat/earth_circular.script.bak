@@ -11,11 +11,11 @@ GMAT sc.DateFormat = TAIModJulian;
 GMAT sc.Epoch = '21545';
 GMAT sc.CoordinateSystem = EarthMJ2000Eq;
 GMAT sc.DisplayStateType = Keplerian;
-GMAT sc.SMA = 7178.099999999995;
-GMAT sc.ECC = 1.360243065565916e-016;
-GMAT sc.INC = 29.99999999999999;
-GMAT sc.RAAN = 39.99999999999999;
-GMAT sc.AOP = 0;
+GMAT sc.SMA = 7499.999999999997;
+GMAT sc.ECC = 0.009999999999999766;
+GMAT sc.INC = 29.99999999999998;
+GMAT sc.RAAN = 40.00000000000001;
+GMAT sc.AOP = 360;
 GMAT sc.TA = 0;
 GMAT sc.DryMass = 850;
 GMAT sc.Cd = 2.2;
@@ -48,35 +48,24 @@ GMAT sc.EulerAngleSequence = '321';
 
 
 
+
+
+
+
+
+
+
 %----------------------------------------
 %---------- ForceModels
 %----------------------------------------
 
 Create ForceModel prop_earth_ForceModel;
 GMAT prop_earth_ForceModel.CentralBody = Earth;
-GMAT prop_earth_ForceModel.PrimaryBodies = {Earth};
-GMAT prop_earth_ForceModel.PointMasses = {Jupiter, Luna, Sun};
-GMAT prop_earth_ForceModel.SRP = On;
+GMAT prop_earth_ForceModel.PointMasses = {Earth};
+GMAT prop_earth_ForceModel.Drag = None;
+GMAT prop_earth_ForceModel.SRP = Off;
 GMAT prop_earth_ForceModel.RelativisticCorrection = Off;
 GMAT prop_earth_ForceModel.ErrorControl = RSSStep;
-GMAT prop_earth_ForceModel.GravityField.Earth.Degree = 4;
-GMAT prop_earth_ForceModel.GravityField.Earth.Order = 4;
-GMAT prop_earth_ForceModel.GravityField.Earth.StmLimit = 100;
-GMAT prop_earth_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
-GMAT prop_earth_ForceModel.GravityField.Earth.TideModel = 'None';
-GMAT prop_earth_ForceModel.SRP.Flux = 1367;
-GMAT prop_earth_ForceModel.SRP.SRPModel = Spherical;
-GMAT prop_earth_ForceModel.SRP.Nominal_Sun = 149597870.691;
-GMAT prop_earth_ForceModel.Drag.AtmosphereModel = JacchiaRoberts;
-GMAT prop_earth_ForceModel.Drag.HistoricWeatherSource = 'ConstantFluxAndGeoMag';
-GMAT prop_earth_ForceModel.Drag.PredictedWeatherSource = 'ConstantFluxAndGeoMag';
-GMAT prop_earth_ForceModel.Drag.CSSISpaceWeatherFile = 'SpaceWeather-All-v1.2.txt';
-GMAT prop_earth_ForceModel.Drag.SchattenFile = 'SchattenPredict.txt';
-GMAT prop_earth_ForceModel.Drag.F107 = 150;
-GMAT prop_earth_ForceModel.Drag.F107A = 150;
-GMAT prop_earth_ForceModel.Drag.MagneticIndex = 3;
-GMAT prop_earth_ForceModel.Drag.SchattenErrorModel = 'Nominal';
-GMAT prop_earth_ForceModel.Drag.SchattenTimingModel = 'NominalCycle';
 
 %----------------------------------------
 %---------- Propagators
@@ -98,13 +87,13 @@ GMAT prop_earth.StopIfAccuracyIsViolated = true;
 
 Create OrbitView DefaultOrbitView;
 GMAT DefaultOrbitView.SolverIterations = Current;
-GMAT DefaultOrbitView.UpperLeft = [ 0.0008532423208191126 0 ];
-GMAT DefaultOrbitView.Size = [ 0.5 0.45 ];
-GMAT DefaultOrbitView.RelativeZOrder = 384;
+GMAT DefaultOrbitView.UpperLeft = [ 0 0 ];
+GMAT DefaultOrbitView.Size = [ 0.500209995800084 0.4502018842530283 ];
+GMAT DefaultOrbitView.RelativeZOrder = 491;
 GMAT DefaultOrbitView.Maximized = false;
-GMAT DefaultOrbitView.Add = {sc, Earth};
+GMAT DefaultOrbitView.Add = {sc, Earth, Luna, Sun};
 GMAT DefaultOrbitView.CoordinateSystem = EarthMJ2000Eq;
-GMAT DefaultOrbitView.DrawObject = [ true true ];
+GMAT DefaultOrbitView.DrawObject = [ true true true true ];
 GMAT DefaultOrbitView.DataCollectFrequency = 1;
 GMAT DefaultOrbitView.UpdatePlotFrequency = 50;
 GMAT DefaultOrbitView.NumPointsToRedraw = 0;
@@ -112,7 +101,7 @@ GMAT DefaultOrbitView.ShowPlot = true;
 GMAT DefaultOrbitView.MaxPlotPoints = 20000;
 GMAT DefaultOrbitView.ShowLabels = true;
 GMAT DefaultOrbitView.ViewPointReference = Earth;
-GMAT DefaultOrbitView.ViewPointVector = [ 30000 0 0 ];
+GMAT DefaultOrbitView.ViewPointVector = [ 40000 0 30000 ];
 GMAT DefaultOrbitView.ViewDirection = Earth;
 GMAT DefaultOrbitView.ViewScaleFactor = 1;
 GMAT DefaultOrbitView.ViewUpCoordinateSystem = EarthMJ2000Eq;
@@ -122,34 +111,19 @@ GMAT DefaultOrbitView.XYPlane = On;
 GMAT DefaultOrbitView.WireFrame = Off;
 GMAT DefaultOrbitView.Axes = On;
 GMAT DefaultOrbitView.Grid = Off;
-GMAT DefaultOrbitView.SunLine = Off;
+GMAT DefaultOrbitView.SunLine = On;
 GMAT DefaultOrbitView.UseInitialView = On;
 GMAT DefaultOrbitView.StarCount = 7000;
 GMAT DefaultOrbitView.EnableStars = On;
 GMAT DefaultOrbitView.EnableConstellations = On;
 
-Create GroundTrackPlot DefaultGroundTrackPlot;
-GMAT DefaultGroundTrackPlot.SolverIterations = Current;
-GMAT DefaultGroundTrackPlot.UpperLeft = [ 0.0008532423208191126 0.4507692307692308 ];
-GMAT DefaultGroundTrackPlot.Size = [ 0.5 0.45 ];
-GMAT DefaultGroundTrackPlot.RelativeZOrder = 416;
-GMAT DefaultGroundTrackPlot.Maximized = false;
-GMAT DefaultGroundTrackPlot.Add = {sc};
-GMAT DefaultGroundTrackPlot.DataCollectFrequency = 1;
-GMAT DefaultGroundTrackPlot.UpdatePlotFrequency = 50;
-GMAT DefaultGroundTrackPlot.NumPointsToRedraw = 0;
-GMAT DefaultGroundTrackPlot.ShowPlot = true;
-GMAT DefaultGroundTrackPlot.MaxPlotPoints = 20000;
-GMAT DefaultGroundTrackPlot.CentralBody = Earth;
-GMAT DefaultGroundTrackPlot.TextureMap = 'ModifiedBlueMarble.jpg';
-
 Create ReportFile report_demo;
 GMAT report_demo.SolverIterations = Current;
-GMAT report_demo.UpperLeft = [ 0.04138225255972696 0.07461538461538461 ];
-GMAT report_demo.Size = [ 0.5989761092150171 0.7984615384615384 ];
-GMAT report_demo.RelativeZOrder = 391;
+GMAT report_demo.UpperLeft = [ 0.03905921881562369 0.07065948855989233 ];
+GMAT report_demo.Size = [ 0.5963880722385553 0.7940780619111709 ];
+GMAT report_demo.RelativeZOrder = 475;
 GMAT report_demo.Maximized = false;
-GMAT report_demo.Filename = 'DefaultReportFile.txt';
+GMAT report_demo.Filename = 'report_demo.txt';
 GMAT report_demo.Precision = 16;
 GMAT report_demo.WriteHeaders = true;
 GMAT report_demo.LeftJustify = On;
@@ -163,24 +137,31 @@ GMAT report_demo.WriteReport = true;
 %---------- MATLAB Functions
 %----------------------------------------
 
-Create MatlabFunction viod demo test;
+Create MatlabFunction viod;
 GMAT viod.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
-GMAT demo.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
-GMAT test.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
+
+%----------------------------------------
+%---------- MATLAB Functions
+%----------------------------------------
+
+Create MatlabFunction addnoise;
+GMAT addnoise.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
 
 %----------------------------------------
 %---------- Arrays, Variables, Strings
 %----------------------------------------
 
-Create Array v[3,3];
-Create Array rEst[3,3];
-Create Array rRef[3,3];
-Create Array rDiff[3,3];
-Create Array f[1,3];
-Create Variable mu df f0 ff;
-Create Variable i idx;
-GMAT df = 50;
-GMAT f0 = 0;
+Create Array v[100,3] rEst[100,3] rRef[100,3] rDiff[100,3];
+Create Variable mu num_obsv f df i temp noise;
+Create String blank;
+GMAT num_obsv = 3;
+GMAT f = 20;
+GMAT df = 40;
+GMAT noise = 1; % m/s
+
+
+
+
 
 %----------------------------------------
 %---------- Mission Sequence
@@ -188,25 +169,52 @@ GMAT f0 = 0;
 
 BeginMissionSequence;
 
-For i = 0:2
+For i = 1:1:num_obsv;
+   
+   Propagate prop_earth(sc) {sc.TA = f};
+   
+   GMAT v(i,1) = sc.EarthMJ2000Eq.VX;
+   GMAT v(i,2) = sc.EarthMJ2000Eq.VY;
+   GMAT v(i,3) = sc.EarthMJ2000Eq.VZ;
+   GMAT rRef(i,1) = sc.EarthMJ2000Eq.X;
+   GMAT rRef(i,2) = sc.EarthMJ2000Eq.Y;
+   GMAT rRef(i,3) = sc.EarthMJ2000Eq.Z;
+   
+   GMAT f = f + df;
 
-	GMAT ff = f0 + i*df;
-	GMAT idx = i+1;
+EndFor;
 
-	Propagate prop_earth(sc) {sc.TA = ff};
-	GMAT v(idx,1) = sc.VX;
-	GMAT v(idx,2) = sc.VY;
-	GMAT v(idx,3) = sc.VZ;
-	GMAT rRef(idx,1) = sc.X;
-	GMAT rRef(idx,2) = sc.Y;
-	GMAT rRef(idx,3) = sc.Z;
-	
-EndFor
+For i = 1:1:num_obsv;
+   Report report_demo v(i,1) v(i,2) v(i,3);
+EndFor;
+Report report_demo blank;
 
-mu = SolarSystem.Earth.Mu;
-rEst = viod(v,mu);
-demo;
-test;
-rDiff = rRef - rEst;
-Report report_demo rEst;
-Report report_demo rRef;
+GMAT [v] = addnoise(v, noise);
+
+For i = 1:1:num_obsv;
+   Report report_demo v(i,1) v(i,2) v(i,3);
+EndFor;
+Report report_demo blank;
+
+%---------- Perform VIOD ----------
+
+GMAT mu = SolarSystem.Earth.Mu;
+GMAT [rEst] = viod(v, mu);
+GMAT rDiff = rRef - rEst;
+
+%---------- Report Results ----------
+
+For i = 1:1:num_obsv;
+   Report report_demo rEst(i,1) rEst(i,2) rEst(i,3);
+EndFor;
+Report report_demo blank;
+
+For i = 1:1:num_obsv;
+   Report report_demo rRef(i,1) rRef(i,2) rRef(i,3);
+EndFor;
+Report report_demo blank;
+
+For i = 1:1:num_obsv;
+   Report report_demo rDiff(i,1) rDiff(i,2) rDiff(i,3);
+EndFor;
+Report report_demo blank;

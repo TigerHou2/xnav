@@ -9,14 +9,14 @@
 Create Spacecraft sc;
 GMAT sc.DateFormat = TAIModJulian;
 GMAT sc.Epoch = '21545';
-GMAT sc.CoordinateSystem = SunMJ2000Eq;
+GMAT sc.CoordinateSystem = SunMJ2000Ec;
 GMAT sc.DisplayStateType = Keplerian;
-GMAT sc.SMA = 2323300000.000104;
-GMAT sc.ECC = 0.9356000000000033;
-GMAT sc.INC = 28;
-GMAT sc.RAAN = 360;
+GMAT sc.SMA = 2323300000.000243;
+GMAT sc.ECC = 0.9356000000000077;
+GMAT sc.INC = 4.560708889999991;
+GMAT sc.RAAN = 0;
 GMAT sc.AOP = 180;
-GMAT sc.TA = 359.9999987925818;
+GMAT sc.TA = 0.9999999999995357;
 GMAT sc.DryMass = 850;
 GMAT sc.Cd = 2.2;
 GMAT sc.Cr = 1.8;
@@ -42,9 +42,8 @@ GMAT sc.ModelRotationZ = 0;
 GMAT sc.ModelScale = 1;
 GMAT sc.AttitudeDisplayStateType = 'Quaternion';
 GMAT sc.AttitudeRateDisplayStateType = 'AngularVelocity';
-GMAT sc.AttitudeCoordinateSystem = EarthMJ2000Eq;
+GMAT sc.AttitudeCoordinateSystem = SunMJ2000Ec;
 GMAT sc.EulerAngleSequence = '321';
-
 
 
 
@@ -56,14 +55,11 @@ GMAT sc.EulerAngleSequence = '321';
 
 Create ForceModel prop_sc_ForceModel;
 GMAT prop_sc_ForceModel.CentralBody = Sun;
-GMAT prop_sc_ForceModel.PointMasses = {Earth, Jupiter, Neptune, Sun};
+GMAT prop_sc_ForceModel.PointMasses = {Sun};
 GMAT prop_sc_ForceModel.Drag = None;
-GMAT prop_sc_ForceModel.SRP = On;
+GMAT prop_sc_ForceModel.SRP = Off;
 GMAT prop_sc_ForceModel.RelativisticCorrection = Off;
 GMAT prop_sc_ForceModel.ErrorControl = RSSStep;
-GMAT prop_sc_ForceModel.SRP.Flux = 1367;
-GMAT prop_sc_ForceModel.SRP.SRPModel = Spherical;
-GMAT prop_sc_ForceModel.SRP.Nominal_Sun = 149597870.691;
 
 %----------------------------------------
 %---------- Propagators
@@ -75,7 +71,7 @@ GMAT prop_sc.Type = PrinceDormand78;
 GMAT prop_sc.InitialStepSize = 600;
 GMAT prop_sc.Accuracy = 9.999999999999999e-012;
 GMAT prop_sc.MinStep = 0;
-GMAT prop_sc.MaxStep = 864000;
+GMAT prop_sc.MaxStep = 86400;
 GMAT prop_sc.MaxStepAttempts = 50;
 GMAT prop_sc.StopIfAccuracyIsViolated = true;
 
@@ -83,9 +79,9 @@ GMAT prop_sc.StopIfAccuracyIsViolated = true;
 %---------- Coordinate Systems
 %----------------------------------------
 
-Create CoordinateSystem SunMJ2000Eq;
-GMAT SunMJ2000Eq.Origin = Sun;
-GMAT SunMJ2000Eq.Axes = MJ2000Eq;
+Create CoordinateSystem SunMJ2000Ec;
+GMAT SunMJ2000Ec.Origin = Sun;
+GMAT SunMJ2000Ec.Axes = MJ2000Ec;
 
 %----------------------------------------
 %---------- Subscribers
@@ -93,12 +89,12 @@ GMAT SunMJ2000Eq.Axes = MJ2000Eq;
 
 Create OrbitView SolarView;
 GMAT SolarView.SolverIterations = Current;
-GMAT SolarView.UpperLeft = [ 0.04198152812762385 0.02624495289367429 ];
-GMAT SolarView.Size = [ 0.9504617968094039 0.8997308209959624 ];
-GMAT SolarView.RelativeZOrder = 257;
+GMAT SolarView.UpperLeft = [ 0 0 ];
+GMAT SolarView.Size = [ 0.9496010079798404 0.949528936742934 ];
+GMAT SolarView.RelativeZOrder = 246;
 GMAT SolarView.Maximized = false;
 GMAT SolarView.Add = {sc, Earth, Sun, Neptune};
-GMAT SolarView.CoordinateSystem = SunMJ2000Eq;
+GMAT SolarView.CoordinateSystem = SunMJ2000Ec;
 GMAT SolarView.DrawObject = [ true true true true ];
 GMAT SolarView.DataCollectFrequency = 1;
 GMAT SolarView.UpdatePlotFrequency = 50;
@@ -110,7 +106,7 @@ GMAT SolarView.ViewPointReference = Sun;
 GMAT SolarView.ViewPointVector = [ 4000000000 0 4000000000 ];
 GMAT SolarView.ViewDirection = Sun;
 GMAT SolarView.ViewScaleFactor = 1;
-GMAT SolarView.ViewUpCoordinateSystem = SunMJ2000Eq;
+GMAT SolarView.ViewUpCoordinateSystem = SunMJ2000Ec;
 GMAT SolarView.ViewUpAxis = Z;
 GMAT SolarView.EclipticPlane = Off;
 GMAT SolarView.XYPlane = On;
@@ -125,9 +121,9 @@ GMAT SolarView.EnableConstellations = On;
 
 Create ReportFile report_demo;
 GMAT report_demo.SolverIterations = Current;
-GMAT report_demo.UpperLeft = [ 0.1028547439126784 0.1648721399730821 ];
-GMAT report_demo.Size = [ 0.5994962216624685 0.7994616419919246 ];
-GMAT report_demo.RelativeZOrder = 253;
+GMAT report_demo.UpperLeft = [ 0 0 ];
+GMAT report_demo.Size = [ 0.6976060478790425 0.7960969044414535 ];
+GMAT report_demo.RelativeZOrder = 237;
 GMAT report_demo.Maximized = false;
 GMAT report_demo.Filename = 'ReportFile1.txt';
 GMAT report_demo.Precision = 16;
@@ -158,16 +154,17 @@ GMAT addnoise.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\vio
 %---------- Arrays, Variables, Strings
 %----------------------------------------
 
-% preallocate 100 measurements
-% because GMAT does not allow dynamic variable sizing or variable initialization using other variables
-Create Array v[100,3] rEst[100,3] rRef[100,3] rDiff[100,3] f[1,3];
-Create Variable mu num_obsv df f0 ff i temp noise;
+Create Array v[100,3] rEst[100,3] rRef[100,3] rDiff[100,3];
+Create Variable mu num_obsv f interval i noise;
 Create String blank;
-GMAT num_obsv = 5;
-GMAT df = 10;
-GMAT f0 = 0;
-GMAT noise = 0;
-GMAT blank = '';
+GMAT num_obsv = 10;
+GMAT f = 20;
+GMAT interval = 45;
+GMAT noise = 1;
+
+
+
+
 
 %----------------------------------------
 %---------- Mission Sequence
@@ -175,48 +172,52 @@ GMAT blank = '';
 
 BeginMissionSequence;
 
-For i = 1:num_obsv;
-   
-   GMAT temp = i-1;
-   GMAT ff = f0 + temp*df;
-   
-   Propagate prop_sc(sc) {sc.TA = ff};
-   GMAT v(i,1) = sc.VX;
-   GMAT v(i,2) = sc.VY;
-   GMAT v(i,3) = sc.VZ;
-   GMAT rRef(i,1) = sc.X;
-   GMAT rRef(i,2) = sc.Y;
-   GMAT rRef(i,3) = sc.Z;
-
-EndFor;
-
-For i = 1:num_obsv
-	Report report_demo v(i,1) v(i,2) v(i,3);
-EndFor;
-Report report_demo blank;
-
-GMAT [v] = addnoise(v,noise);
-
-For i = 1:num_obsv
-	Report report_demo v(i,1) v(i,2) v(i,3);
-EndFor;
-Report report_demo blank;
-
+%---------- Set s/c to Starting Location ----------
 GMAT mu = SolarSystem.Sun.Mu;
+Propagate prop_sc(sc) {sc.TA = f};
+
+For i = 1:1:num_obsv;
+   
+   GMAT v(i,1) = sc.SunMJ2000Ec.VX;
+   GMAT v(i,2) = sc.SunMJ2000Ec.VY;
+   GMAT v(i,3) = sc.SunMJ2000Ec.VZ;
+   GMAT rRef(i,1) = sc.SunMJ2000Ec.X;
+   GMAT rRef(i,2) = sc.SunMJ2000Ec.Y;
+   GMAT rRef(i,3) = sc.SunMJ2000Ec.Z;
+   Propagate prop_sc(sc) {sc.ElapsedDays = interval};
+
+EndFor;
+
+For i = 1:1:num_obsv;
+   Report report_demo v(i,1) v(i,2) v(i,3);
+EndFor;
+Report report_demo blank;
+
+GMAT [v] = addnoise(v, noise);
+
+For i = 1:1:num_obsv;
+   Report report_demo v(i,1) v(i,2) v(i,3);
+EndFor;
+Report report_demo blank;
+
+%---------- Perform VIOD ----------
+
 GMAT [rEst] = viod(v, mu);
 GMAT rDiff = rRef - rEst;
 
-For i = 1:num_obsv
-	Report report_demo rEst(i,1) rEst(i,2) rEst(i,3);
+%---------- Display Results ----------
+
+For i = 1:1:num_obsv;
+   Report report_demo rEst(i,1) rEst(i,2) rEst(i,3);
 EndFor;
 Report report_demo blank;
 
-For i = 1:num_obsv
-	Report report_demo rRef(i,1) rRef(i,2) rRef(i,3);
+For i = 1:1:num_obsv;
+   Report report_demo rRef(i,1) rRef(i,2) rRef(i,3);
 EndFor;
 Report report_demo blank;
 
-For i = 1:num_obsv
-	Report report_demo rDiff(i,1) rDiff(i,2) rDiff(i,3);
+For i = 1:1:num_obsv;
+   Report report_demo rDiff(i,1) rDiff(i,2) rDiff(i,3);
 EndFor;
 Report report_demo blank;

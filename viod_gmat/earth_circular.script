@@ -11,12 +11,12 @@ GMAT sc.DateFormat = TAIModJulian;
 GMAT sc.Epoch = '21545';
 GMAT sc.CoordinateSystem = EarthMJ2000Eq;
 GMAT sc.DisplayStateType = Keplerian;
-GMAT sc.SMA = 7500;
-GMAT sc.ECC = 1.337312251030111e-018;
+GMAT sc.SMA = 7499.999999999997;
+GMAT sc.ECC = 0.009999999999999766;
 GMAT sc.INC = 29.99999999999998;
 GMAT sc.RAAN = 40.00000000000001;
-GMAT sc.AOP = 0;
-GMAT sc.TA = 8.537736462515939e-007;
+GMAT sc.AOP = 360;
+GMAT sc.TA = 0;
 GMAT sc.DryMass = 850;
 GMAT sc.Cd = 2.2;
 GMAT sc.Cr = 1.8;
@@ -47,40 +47,17 @@ GMAT sc.EulerAngleSequence = '321';
 
 
 
-
-
-
-
-
 %----------------------------------------
 %---------- ForceModels
 %----------------------------------------
 
 Create ForceModel prop_earth_ForceModel;
 GMAT prop_earth_ForceModel.CentralBody = Earth;
-GMAT prop_earth_ForceModel.PrimaryBodies = {Earth};
-GMAT prop_earth_ForceModel.PointMasses = {Jupiter, Luna, Sun};
-GMAT prop_earth_ForceModel.SRP = On;
+GMAT prop_earth_ForceModel.PointMasses = {Earth};
+GMAT prop_earth_ForceModel.Drag = None;
+GMAT prop_earth_ForceModel.SRP = Off;
 GMAT prop_earth_ForceModel.RelativisticCorrection = Off;
 GMAT prop_earth_ForceModel.ErrorControl = RSSStep;
-GMAT prop_earth_ForceModel.GravityField.Earth.Degree = 4;
-GMAT prop_earth_ForceModel.GravityField.Earth.Order = 4;
-GMAT prop_earth_ForceModel.GravityField.Earth.StmLimit = 100;
-GMAT prop_earth_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
-GMAT prop_earth_ForceModel.GravityField.Earth.TideModel = 'None';
-GMAT prop_earth_ForceModel.SRP.Flux = 1367;
-GMAT prop_earth_ForceModel.SRP.SRPModel = Spherical;
-GMAT prop_earth_ForceModel.SRP.Nominal_Sun = 149597870.691;
-GMAT prop_earth_ForceModel.Drag.AtmosphereModel = JacchiaRoberts;
-GMAT prop_earth_ForceModel.Drag.HistoricWeatherSource = 'ConstantFluxAndGeoMag';
-GMAT prop_earth_ForceModel.Drag.PredictedWeatherSource = 'ConstantFluxAndGeoMag';
-GMAT prop_earth_ForceModel.Drag.CSSISpaceWeatherFile = 'SpaceWeather-All-v1.2.txt';
-GMAT prop_earth_ForceModel.Drag.SchattenFile = 'SchattenPredict.txt';
-GMAT prop_earth_ForceModel.Drag.F107 = 150;
-GMAT prop_earth_ForceModel.Drag.F107A = 150;
-GMAT prop_earth_ForceModel.Drag.MagneticIndex = 3;
-GMAT prop_earth_ForceModel.Drag.SchattenErrorModel = 'Nominal';
-GMAT prop_earth_ForceModel.Drag.SchattenTimingModel = 'NominalCycle';
 
 %----------------------------------------
 %---------- Propagators
@@ -103,8 +80,8 @@ GMAT prop_earth.StopIfAccuracyIsViolated = true;
 Create OrbitView DefaultOrbitView;
 GMAT DefaultOrbitView.SolverIterations = Current;
 GMAT DefaultOrbitView.UpperLeft = [ 0 0 ];
-GMAT DefaultOrbitView.Size = [ 0.5 0.4502018842530283 ];
-GMAT DefaultOrbitView.RelativeZOrder = 407;
+GMAT DefaultOrbitView.Size = [ 0.5004194630872483 0.4502018842530283 ];
+GMAT DefaultOrbitView.RelativeZOrder = 99;
 GMAT DefaultOrbitView.Maximized = false;
 GMAT DefaultOrbitView.Add = {sc, Earth, Luna, Sun};
 GMAT DefaultOrbitView.CoordinateSystem = EarthMJ2000Eq;
@@ -116,7 +93,7 @@ GMAT DefaultOrbitView.ShowPlot = true;
 GMAT DefaultOrbitView.MaxPlotPoints = 20000;
 GMAT DefaultOrbitView.ShowLabels = true;
 GMAT DefaultOrbitView.ViewPointReference = Earth;
-GMAT DefaultOrbitView.ViewPointVector = [ 90000 0 0 ];
+GMAT DefaultOrbitView.ViewPointVector = [ 32000 -18000 32000 ];
 GMAT DefaultOrbitView.ViewDirection = Earth;
 GMAT DefaultOrbitView.ViewScaleFactor = 1;
 GMAT DefaultOrbitView.ViewUpCoordinateSystem = EarthMJ2000Eq;
@@ -132,26 +109,11 @@ GMAT DefaultOrbitView.StarCount = 7000;
 GMAT DefaultOrbitView.EnableStars = On;
 GMAT DefaultOrbitView.EnableConstellations = On;
 
-Create GroundTrackPlot DefaultGroundTrackPlot;
-GMAT DefaultGroundTrackPlot.SolverIterations = Current;
-GMAT DefaultGroundTrackPlot.UpperLeft = [ 0 0.4488559892328398 ];
-GMAT DefaultGroundTrackPlot.Size = [ 0.5 0.4502018842530283 ];
-GMAT DefaultGroundTrackPlot.RelativeZOrder = 399;
-GMAT DefaultGroundTrackPlot.Maximized = false;
-GMAT DefaultGroundTrackPlot.Add = {sc};
-GMAT DefaultGroundTrackPlot.DataCollectFrequency = 1;
-GMAT DefaultGroundTrackPlot.UpdatePlotFrequency = 50;
-GMAT DefaultGroundTrackPlot.NumPointsToRedraw = 0;
-GMAT DefaultGroundTrackPlot.ShowPlot = true;
-GMAT DefaultGroundTrackPlot.MaxPlotPoints = 20000;
-GMAT DefaultGroundTrackPlot.CentralBody = Earth;
-GMAT DefaultGroundTrackPlot.TextureMap = 'ModifiedBlueMarble.jpg';
-
 Create ReportFile report_demo;
 GMAT report_demo.SolverIterations = Current;
-GMAT report_demo.UpperLeft = [ 0.03978224455611391 0.07200538358008075 ];
-GMAT report_demo.Size = [ 0.5971524288107203 0.7954239569313594 ];
-GMAT report_demo.RelativeZOrder = 395;
+GMAT report_demo.UpperLeft = [ 0.03901006711409396 0.06998654104979811 ];
+GMAT report_demo.Size = [ 0.5960570469798657 0.7934051144010768 ];
+GMAT report_demo.RelativeZOrder = 16;
 GMAT report_demo.Maximized = false;
 GMAT report_demo.Filename = 'report_demo.txt';
 GMAT report_demo.Precision = 16;
@@ -167,27 +129,25 @@ GMAT report_demo.WriteReport = true;
 %---------- MATLAB Functions
 %----------------------------------------
 
-Create MatlabFunction viod;
-GMAT viod.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
+Create MatlabFunction init;
+GMAT init.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
 
-%----------------------------------------
-%---------- MATLAB Functions
-%----------------------------------------
-
-Create MatlabFunction addnoise;
-GMAT addnoise.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
+Create MatlabFunction monteScatter_compare;
+GMAT monteScatter_compare.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
 
 %----------------------------------------
 %---------- Arrays, Variables, Strings
 %----------------------------------------
 
-Create Array v[3,3] rEst[3,3] rRef[3,3] rDiff[3,3] f[1,3];
-Create Variable mu df f0 ff i idx temp;
-GMAT df = 20;
-GMAT f0 = 30;
-
-
-
+Create Array v[100,3] v_noisy[100,3] rEst[100,3] rRef[100,3] rDiff[100,3] r2[1,3] bias[1,3];
+Create Variable mu num_obsv f df i j temp noise;
+Create Variable num_monte;
+Create String blank;
+GMAT num_obsv = 12;
+GMAT f = 20;
+GMAT df = 10;
+GMAT noise = 1; % m/s
+GMAT num_monte = 1000;
 
 
 %----------------------------------------
@@ -196,29 +156,24 @@ GMAT f0 = 30;
 
 BeginMissionSequence;
 
-For i = 0:1:2;
+GMAT init;
+GMAT mu = SolarSystem.Earth.Mu;
+
+For i = 1:1:num_obsv;
    
-   GMAT ff = f0 + i*df;
-   GMAT idx = i+1;
+   Propagate prop_earth(sc) {sc.TA = f};
    
-   Propagate prop_earth(sc) {sc.TA = ff};
-   GMAT v(idx,1) = sc.VX;
-   GMAT v(idx,2) = sc.VY;
-   GMAT v(idx,3) = sc.VZ;
-   GMAT rRef(idx,1) = sc.X;
-   GMAT rRef(idx,2) = sc.Y;
-   GMAT rRef(idx,3) = sc.Z;
+   GMAT v(i,1) = sc.EarthMJ2000Eq.VX;
+   GMAT v(i,2) = sc.EarthMJ2000Eq.VY;
+   GMAT v(i,3) = sc.EarthMJ2000Eq.VZ;
+   GMAT rRef(i,1) = sc.EarthMJ2000Eq.X;
+   GMAT rRef(i,2) = sc.EarthMJ2000Eq.Y;
+   GMAT rRef(i,3) = sc.EarthMJ2000Eq.Z;
+   
+   GMAT f = f + df;
 
 EndFor;
 
-Report report_demo v;
-GMAT temp = 3;
-GMAT [v] = addnoise(v, temp);
-Report report_demo v;
+%---------- Begin Monte Carlo Sim ----------
 
-GMAT mu = SolarSystem.Earth.Mu;
-GMAT [rEst] = viod(v, mu);
-GMAT rDiff = rRef - rEst;
-Report report_demo rEst;
-Report report_demo rRef;
-Report report_demo rDiff;
+GMAT monteScatter_compare(v,mu,noise,rRef,num_monte);

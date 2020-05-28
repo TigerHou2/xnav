@@ -6,9 +6,7 @@ function [r] = viod(N,mu)
 %
 % Description:
 %   The spacecraft's orbit is calculated from three velocity vectors
-%   collected at different points in the orbit. The orbit is specified by
-%   either providing retrograde/prograde information, or by providing the
-%   order of measurements.
+%   collected at different points in the orbit.
 %
 % Limitations:
 %   - Assumes measurements are taken within half a revolution.

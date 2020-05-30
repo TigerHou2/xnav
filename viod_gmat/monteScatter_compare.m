@@ -41,8 +41,8 @@ for i = 1:itr
     
     v_noisy = addnoise(v,noise,bias);
     
-    rEst_hodo = hodo_od(v_noisy, mu);
-    rEst_orig = viod(v_noisy,mu);
+    rEst_hodo = hodoGeo(v_noisy, mu);
+    rEst_orig = hodo_od(v_noisy,mu);
     
     r2_hodo = rRef(idx,:) - rEst_hodo(idx,:);
     r2_orig = rRef(idx,:) - rEst_orig(idx,:);

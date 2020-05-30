@@ -143,9 +143,6 @@ GMAT report_demo.WriteReport = true;
 Create MatlabFunction init;
 GMAT init.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
 
-Create MatlabFunction matEval;
-GMAT matEval.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
-
 Create MatlabFunction monteScatter;
 GMAT monteScatter.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
 
@@ -158,7 +155,7 @@ GMAT monteScatter_compare.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Resea
 
 Create Array v[100,3] rEst[100,3] rRef[100,3] rDiff[100,3];
 Create Variable mu num_obsv f0 dt i noise num_monte temp;
-Create String blank matCmd;
+Create String blank;
 GMAT num_obsv = 10;
 GMAT f0 = 0; % deg
 GMAT dt = 45; % days
@@ -185,8 +182,7 @@ For i = 1:1:num_obsv;
    GMAT rRef(i,2) = sc.SunMJ2000Ec.Y;
    GMAT rRef(i,3) = sc.SunMJ2000Ec.Z;
    
-   GMAT matCmd = 'mod(i,2)';
-   GMAT [temp] = matEval(matCmd, i);
+   GMAT temp = mod(i,2);
    
    If temp == 0
       Propagate prop_sc(sc) {sc.ElapsedDays = dt, OrbitColor = [255 180 0]};

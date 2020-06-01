@@ -16,10 +16,6 @@ function [r] = viod(N,mu)
 % Arguments:
 %   N:      [km/s]      N-by-3 matrix containing N velocity vectors
 %   mu:     [km^3/s^2]  gravitational parameter of central body
-%   A:      [unitless]  [2*N*(N-1)]-by-[2*N] sparse matrix of linear system
-%   B:      [unitless]  [2*N*(N-1)]-by-1 matrix of linear system
-%   C:      [unitless]  [N*(N-1)/2]-by-2 matrix of combinations of
-%                           two numbers selected from 1:N, non-repeating
 %
 % Sources:
 %   - [1] Initial Orbit Determination from Three Velocity Vectors
@@ -28,6 +24,11 @@ function [r] = viod(N,mu)
 N_orig = N;
 N = vclean(N);
 
+% preallocate matrices
+%   A: [unitless]  [2*N*(N-1)]-by-[2*N] sparse matrix of linear system
+%   B: [unitless]  [2*N*(N-1)]-by-1 matrix of linear system
+%   C: [unitless]  [N*(N-1)/2]-by-2 matrix of combinations of
+%                      two numbers selected from 1:N, non-repeating
 n = size(N,1);
 C = combnk(1:n,2);           % permutations of two velocity vectors i,j
 comb_n = size(C,1);
@@ -36,7 +37,7 @@ A = spalloc(comb_n*4,n*2,7*n*(n-1)); % LHS matrix of eq. 36, see line 6
 B = zeros(comb_n*4,1);               % RHS matrix of eq. 36, see line 6
 
 % use singular value decomposition to find orbit plane normal
-[~,~,V] = svd(N);
+[~,~,V] = svd(N,0);
 k = V(:,end);
 
 % check if orbit plane normal is in the right direction
@@ -74,8 +75,8 @@ for i = 1:nperms
     B((i-1)*3+1:i*3) = norm(N(C(i,1),:))*w(:,C(i,1)) - ...
                        norm(N(C(i,2),:))*w(:,C(i,2));
     % insert vectors in bottom 1/4 of RHS matrix
-    B((i-1)*3+nperms*3+1) =  norm(N(C(i,1),:))^2/2 - ...
-                                norm(N(C(i,2),:))^2/2;
+    B((i-1)*3+nperms*3+1) = norm(N(C(i,1),:))^2/2 - ...
+                            norm(N(C(i,2),:))^2/2;
 end
 % solve the linear system
 g = A\B;

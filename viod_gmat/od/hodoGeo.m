@@ -1,5 +1,5 @@
-function [r] = hodo_od(N,mu)
-%HODO_OD Solves the three-velocity initial orbit determination problem.
+function [r] = hodoGeo(N,mu)
+%HODOGEO Solves the three-velocity initial orbit determination problem.
 %
 % Author:
 %   Tiger Hou
@@ -19,13 +19,15 @@ function [r] = hodo_od(N,mu)
 %
 % References:
 %   [1] - Geometric Solutions for Problems in Velocity-Based Orbit Determination
+%   [2] - https://www.emis.de/journals/BBMS/Bulletin/sup962/gander.pdf
+%   [3] - https://www.mathworks.com/matlabcentral/fileexchange/15060-fitcircle-m?focused=5091237&tab=example
 
 % clean up unused velocity measurements
 N_orig = N;
 N = vclean(N);
 
 % use singular value decomposition to find orbit plane normal
-[~,~,V] = svd(N);
+[~,~,V] = svd(N,0);
 k = V(:,end);
 
 % check if orbit plane normal is in the right direction
@@ -47,18 +49,22 @@ T = [ux; uy; k']; % [1] eqn.5
 % transform velocity from inertial frame to orbit frame
 N2d = (T * N')'; % [1] eqn.3
 
-% construct linear system [1] eqn.9
-A = 2*N2d;
-A(:,3) = -1;
-B = N2d.^2;
-B = sum(B(:,1:2),2);
-x = A\B;
+% % construct linear system [1] eqn.9
+% A = 2*N2d;
+% A(:,3) = -1;
+% B = N2d.^2;
+% B = sum(B(:,1:2),2);
+% x = A\B;
+% 
+% % find radius of hodograph
+% R = sqrt(x(1)^2 + x(2)^2 - x(3)); % [1] eqn.10
+% 
+% % find center of hodograph
+% c = T' * [x(1); x(2); 0]; % [1] eqn.11
 
-% find radius of hodograph
-R = sqrt(x(1)^2 + x(2)^2 - x(3)); % [1] eqn.10
-
-% find center of hodograph
-c = T' * [x(1); x(2); 0]; % [1] eqn.11
+% replace [1] eqn.9-11 with geometric fitting from [2]
+[c,R] = fitcircle(N2d(:,1:2)');
+c = T' * [c;0];
 
 % find eccentricity vector
 e = cross(c,k) / R; % [1] eqn.18

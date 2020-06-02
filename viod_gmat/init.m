@@ -10,5 +10,9 @@
 close all hidden
 clear;clc
 
+% change pwd to location of init.m
+cd 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat'
+
 addpath(['.' filesep 'od']);
 addpath(['.' filesep 'misc']);
+addpath(['.' filesep 'scripts'])

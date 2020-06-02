@@ -27,8 +27,8 @@ function monteScatter_compare(v,mu,noise,rRef,itr,idx,bias)
 figure;
 latexify(45,18)
 
-r2_vect_hodo = nan(itr,3);
-r2_vect_orig = nan(itr,3);
+r2_vect_1 = nan(itr,3);
+r2_vect_2 = nan(itr,3);
 
 if ~exist('idx','var')
     idx = 2;
@@ -41,46 +41,46 @@ for i = 1:itr
     
     v_noisy = addnoise(v,noise,bias);
     
-    rEst_hodo = hodoGeo(v_noisy, mu);
-    rEst_orig = hodo_od(v_noisy,mu);
+    rEst_1 = viod(v_noisy, mu);
+    rEst_2 = hodo_od(v_noisy,mu);
     
-    r2_hodo = rRef(idx,:) - rEst_hodo(idx,:);
-    r2_orig = rRef(idx,:) - rEst_orig(idx,:);
+    r2_1 = rRef(idx,:) - rEst_1(idx,:);
+    r2_2 = rRef(idx,:) - rEst_2(idx,:);
     
-    r2_vect_hodo(i,:) = r2_hodo;
-    r2_vect_orig(i,:) = r2_orig;
+    r2_vect_1(i,:) = r2_1;
+    r2_vect_2(i,:) = r2_2;
     
 end
 
 subplot(1,3,1)
 hold on
-scatter(r2_vect_hodo(:,1),r2_vect_hodo(:,2),'r+');
-scatter(r2_vect_orig(:,1),r2_vect_orig(:,2),'kx');
+scatter(r2_vect_1(:,1),r2_vect_1(:,2),'r+');
+scatter(r2_vect_2(:,1),r2_vect_2(:,2),'kx');
 hold off
 axis equal
 xlabel('$\delta_x, km$')
 ylabel('$\delta_y, km$')
-legend('Hodograph VIOD','Original VIOD')
+legend('VIOD','HODO')
 
 subplot(1,3,2)
 hold on
-scatter(r2_vect_hodo(:,1),r2_vect_hodo(:,3),'r+');
-scatter(r2_vect_orig(:,1),r2_vect_orig(:,3),'kx');
+scatter(r2_vect_1(:,1),r2_vect_1(:,3),'r+');
+scatter(r2_vect_2(:,1),r2_vect_2(:,3),'kx');
 hold off
 axis equal
 xlabel('$\delta_x, km$')
 ylabel('$\delta_z, km$')
-legend('Hodograph VIOD','Original VIOD')
+legend('VIOD','HODO')
 
 subplot(1,3,3)
 hold on
-scatter(r2_vect_hodo(:,2),r2_vect_hodo(:,3),'r+');
-scatter(r2_vect_orig(:,2),r2_vect_orig(:,3),'kx');
+scatter(r2_vect_1(:,2),r2_vect_1(:,3),'r+');
+scatter(r2_vect_2(:,2),r2_vect_2(:,3),'kx');
 hold off
 axis equal
 xlabel('$\delta_y, km$')
 ylabel('$\delta_z, km$')
-legend('Hodograph VIOD','Original VIOD')
+legend('VIOD','HODO')
 
 end
 

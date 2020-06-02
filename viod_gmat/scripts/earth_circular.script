@@ -11,12 +11,12 @@ GMAT sc.DateFormat = TAIModJulian;
 GMAT sc.Epoch = '21545';
 GMAT sc.CoordinateSystem = EarthMJ2000Eq;
 GMAT sc.DisplayStateType = Keplerian;
-GMAT sc.SMA = 9499.999999999998;
-GMAT sc.ECC = 0.2999999999999996;
+GMAT sc.SMA = 9499.999999999991;
+GMAT sc.ECC = 0.2999999999999989;
 GMAT sc.INC = 29.99999999999998;
 GMAT sc.RAAN = 40.00000000000001;
-GMAT sc.AOP = 70.00000000000051;
-GMAT sc.TA = 359.9999991462263;
+GMAT sc.AOP = 70.00000000000041;
+GMAT sc.TA = 360;
 GMAT sc.DryMass = 850;
 GMAT sc.Cd = 2.2;
 GMAT sc.Cr = 1.8;
@@ -44,6 +44,8 @@ GMAT sc.AttitudeDisplayStateType = 'Quaternion';
 GMAT sc.AttitudeRateDisplayStateType = 'AngularVelocity';
 GMAT sc.AttitudeCoordinateSystem = EarthMJ2000Eq;
 GMAT sc.EulerAngleSequence = '321';
+
+
 
 
 
@@ -104,8 +106,8 @@ GMAT prop_earth.StopIfAccuracyIsViolated = true;
 Create OrbitView DefaultOrbitView;
 GMAT DefaultOrbitView.SolverIterations = Current;
 GMAT DefaultOrbitView.UpperLeft = [ 0 0 ];
-GMAT DefaultOrbitView.Size = [ 0.5004191114836547 0.4502018842530283 ];
-GMAT DefaultOrbitView.RelativeZOrder = 693;
+GMAT DefaultOrbitView.Size = [ 0.5006284038542103 0.4503703703703704 ];
+GMAT DefaultOrbitView.RelativeZOrder = 129;
 GMAT DefaultOrbitView.Maximized = false;
 GMAT DefaultOrbitView.Add = {sc, Earth, Luna, Sun};
 GMAT DefaultOrbitView.CoordinateSystem = EarthMJ2000Eq;
@@ -169,13 +171,11 @@ GMAT monteScatter_compare.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Resea
 Create Array v[100,3] v_noisy[100,3] rEst[100,3] r[100,3] rDiff[100,3] r2[1,3] bias[1,3];
 Create Variable mu num_obsv f df i j temp noise num_monte runTime;
 Create String blank;
-GMAT num_obsv = 12;
+GMAT num_obsv = 3;
 GMAT f = 36;
-GMAT df = 18;
-GMAT noise = 2; % m/s
-GMAT num_monte = 2000;
-
-
+GMAT df = 108;
+GMAT noise = 1; % m/s
+GMAT num_monte = 1000;
 
 %----------------------------------------
 %---------- Mission Sequence

@@ -15,4 +15,5 @@ cd 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat'
 
 addpath(['.' filesep 'od']);
 addpath(['.' filesep 'misc']);
-addpath(['.' filesep 'scripts'])
+addpath(['.' filesep 'scripts_gmat'])
+addpath(['.' filesep 'scripts_matlab'])

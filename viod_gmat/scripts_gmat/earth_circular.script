@@ -135,21 +135,21 @@ GMAT DefaultOrbitView.StarCount = 7000;
 GMAT DefaultOrbitView.EnableStars = On;
 GMAT DefaultOrbitView.EnableConstellations = On;
 
-Create ReportFile report_demo;
-GMAT report_demo.SolverIterations = Current;
-GMAT report_demo.UpperLeft = [ 0.03896103896103896 0.0693135935397039 ];
-GMAT report_demo.Size = [ 0.5957268537913699 0.7927321668909825 ];
-GMAT report_demo.RelativeZOrder = 570;
-GMAT report_demo.Maximized = false;
-GMAT report_demo.Filename = 'report_demo.txt';
-GMAT report_demo.Precision = 16;
-GMAT report_demo.WriteHeaders = true;
-GMAT report_demo.LeftJustify = On;
-GMAT report_demo.ZeroFill = Off;
-GMAT report_demo.FixedWidth = true;
-GMAT report_demo.Delimiter = ' ';
-GMAT report_demo.ColumnWidth = 23;
-GMAT report_demo.WriteReport = true;
+Create ReportFile report;
+GMAT report.SolverIterations = Current;
+GMAT report.UpperLeft = [ 0.03896103896103896 0.0693135935397039 ];
+GMAT report.Size = [ 0.5957268537913699 0.7927321668909825 ];
+GMAT report.RelativeZOrder = 570;
+GMAT report.Maximized = false;
+GMAT report.Filename = 'report.txt';
+GMAT report.Precision = 16;
+GMAT report.WriteHeaders = true;
+GMAT report.LeftJustify = On;
+GMAT report.ZeroFill = Off;
+GMAT report.FixedWidth = true;
+GMAT report.Delimiter = ' ';
+GMAT report.ColumnWidth = 23;
+GMAT report.WriteReport = true;
 
 %----------------------------------------
 %---------- MATLAB Functions
@@ -209,6 +209,6 @@ GMAT monteScatter_compare(v, mu, noise, r, num_monte);
 %---------- Misc Testing Code Here ----------
 
 Propagate prop_earth(sc) {sc.TA = 0};
-Report report_demo sc.Altitude;
-% Report report_demo runTime;
+Report report sc.Altitude;
+% Report report runTime;
 

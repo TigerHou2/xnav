@@ -22,10 +22,10 @@ if nargin == 7
 
         vn = addnoise(V,noise);
         rn = viod(vn,mu);
-        rr = rn(end,:);
-        vv = vn(end,:);
+        rr = rn(1,:);
+        vv = vn(1,:);
 
-        rms_temp(i)    = norm(pos_ref-rr);
+        rms_temp(i)    = norm(rr-pos_ref);
         sma_est        = norm(rr)/(2 - norm(rr)*dot(vv,vv)/mu);
         period_temp(i) = 2*pi*sqrt(sma_est^3/mu) - period_ref;
         ecc_temp(i)    = norm(((dot(vv,vv)-mu/norm(rr))*rr-dot(rr,vv)*vv)/mu)...

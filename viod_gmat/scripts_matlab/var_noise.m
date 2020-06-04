@@ -24,10 +24,10 @@ for i = 1:length(noise)
         
         vn = addnoise(V,noise(i));
         rn = viod(vn,mu);
-        rr = rn(end,:);
-        vv = vn(end,:);
+        rr = rn(1,:);
+        vv = vn(1,:);
         
-        rms(j,i)    = norm(pos_ref-rr);
+        rms(j,i)    = norm(rr-pos_ref);
         sma_est     = norm(rr)/(2 - norm(rr)*dot(vv,vv)/mu);
         period(j,i) = 2*pi*sqrt(sma_est^3/mu) - period_ref;
         ecc(j,i)    = norm(((dot(vv,vv)-mu/norm(rr))*rr-dot(rr,vv)*vv)/mu)...

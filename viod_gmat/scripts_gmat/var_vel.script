@@ -12,11 +12,11 @@ GMAT sc.Epoch = '21545';
 GMAT sc.CoordinateSystem = EarthMJ2000Eq;
 GMAT sc.DisplayStateType = Keplerian;
 GMAT sc.SMA = 10000;
-GMAT sc.ECC = 0.3;
+GMAT sc.ECC = 0.2999999999999999;
 GMAT sc.INC = 29.99999999999996;
 GMAT sc.RAAN = 40.00000000000003;
 GMAT sc.AOP = 70.00000000000027;
-GMAT sc.TA = 0;
+GMAT sc.TA = 1.207418269725733e-006;
 GMAT sc.DryMass = 850;
 GMAT sc.Cd = 2.2;
 GMAT sc.Cr = 1.8;
@@ -45,17 +45,27 @@ GMAT sc.AttitudeRateDisplayStateType = 'AngularVelocity';
 GMAT sc.AttitudeCoordinateSystem = EarthMJ2000Eq;
 GMAT sc.EulerAngleSequence = '321';
 
+
 %----------------------------------------
 %---------- ForceModels
 %----------------------------------------
 
 Create ForceModel prop_earth_ForceModel;
 GMAT prop_earth_ForceModel.CentralBody = Earth;
-GMAT prop_earth_ForceModel.PointMasses = {Earth};
+GMAT prop_earth_ForceModel.PrimaryBodies = {Earth};
+GMAT prop_earth_ForceModel.PointMasses = {Luna, Sun};
 GMAT prop_earth_ForceModel.Drag = None;
-GMAT prop_earth_ForceModel.SRP = Off;
+GMAT prop_earth_ForceModel.SRP = On;
 GMAT prop_earth_ForceModel.RelativisticCorrection = Off;
 GMAT prop_earth_ForceModel.ErrorControl = RSSStep;
+GMAT prop_earth_ForceModel.GravityField.Earth.Degree = 4;
+GMAT prop_earth_ForceModel.GravityField.Earth.Order = 4;
+GMAT prop_earth_ForceModel.GravityField.Earth.StmLimit = 100;
+GMAT prop_earth_ForceModel.GravityField.Earth.PotentialFile = 'EGM96.cof';
+GMAT prop_earth_ForceModel.GravityField.Earth.TideModel = 'None';
+GMAT prop_earth_ForceModel.SRP.Flux = 1367;
+GMAT prop_earth_ForceModel.SRP.SRPModel = Spherical;
+GMAT prop_earth_ForceModel.SRP.Nominal_Sun = 149597870.691;
 
 %----------------------------------------
 %---------- Propagators
@@ -138,21 +148,22 @@ GMAT var_vel.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod
 %----------------------------------------
 
 Create Array v[100,3] v_noisy[100,3] r[100,3] r_ref[1,3] sma_vect[1,7];
-Create Variable mu noise f0 f df dt temp num_monte runTime period ecc;
-Create Variable i j k sma_count num_obsv;
+Create Variable mu noise f0 f df dt num_monte runTime period;
+Create Variable ecc i j k temp sma_count num_obsv;
+GMAT sma_vect(1, 1) = 10000; % km
+GMAT sma_vect(1, 2) = 12000; % km
+GMAT sma_vect(1, 3) = 15000; % km
+GMAT sma_vect(1, 4) = 20000; % km
+GMAT sma_vect(1, 5) = 30000; % km
+GMAT sma_vect(1, 6) = 45000; % km
+GMAT sma_vect(1, 7) = 70000; % km
 GMAT noise = 1; % m/s
 GMAT f0 = 0; % deg
 GMAT df = 200; % deg
 GMAT num_monte = 1000;
 GMAT sma_count = 7;
 GMAT num_obsv = 6;
-GMAT sma_vect(1) = 10000; % km
-GMAT sma_vect(2) = 12000;
-GMAT sma_vect(3) = 15000;
-GMAT sma_vect(4) = 20000;
-GMAT sma_vect(5) = 30000;
-GMAT sma_vect(6) = 45000;
-GMAT sma_vect(7) = 70000;
+
 
 
 %----------------------------------------
@@ -165,7 +176,10 @@ GMAT init;
 GMAT mu = SolarSystem.Earth.Mu;
 GMAT df = df / (num_obsv-1);
 GMAT f = f0;
+
+PenUp orbitView;
 Propagate prop_earth(sc) {sc.TA = f0};
+PenDown orbitView;
 
 For k = 1:1:sma_count;
    
@@ -180,14 +194,27 @@ For k = 1:1:sma_count;
       GMAT r(i,2) = sc.EarthMJ2000Eq.Y;
       GMAT r(i,3) = sc.EarthMJ2000Eq.Z;
       
-		GMAT f = f + df;
+      GMAT f = f + df;
       If i ~= num_obsv
-         Propagate prop_earth(sc) {sc.TA = f};
+		
+			GMAT temp = mod(i,2);
+			If temp == 0
+				Propagate prop_earth(sc) {sc.TA = f, OrbitColor = LightBlue};
+			Else
+				Propagate prop_earth(sc) {sc.TA = f, OrbitColor = Red};
+			EndIf;
+			
       EndIf;
    
    EndFor;
    
    %---------- Get Reference Data ----------
+	
+	PenUp orbitView;
+	Propagate BackProp prop_earth(sc) {sc.Earth.TA = f0};
+	PenDown orbitView;
+	
+   GMAT f = f0;
    
    GMAT r_ref(1) = sc.EarthMJ2000Eq.X;
    GMAT r_ref(2) = sc.EarthMJ2000Eq.Y;
@@ -199,11 +226,6 @@ For k = 1:1:sma_count;
    %---------- Store Observation Data ----------
    
    GMAT var_vel(v, mu, noise, num_monte, r_ref, period, ecc);
-   
-   If k ~= sma_count
-      Propagate BackProp prop_earth(sc) {sc.TA = f0};
-   EndIf;
-	GMAT f = f0;
 
 EndFor;
 
@@ -212,4 +234,5 @@ EndFor;
 GMAT var_vel;
 
 %---------- Misc Testing Code Here ----------
+
 

@@ -11,12 +11,12 @@ GMAT sc.DateFormat = TAIModJulian;
 GMAT sc.Epoch = '21545';
 GMAT sc.CoordinateSystem = EarthMJ2000Eq;
 GMAT sc.DisplayStateType = Keplerian;
-GMAT sc.SMA = 9499.999999999991;
-GMAT sc.ECC = 0.2999999999999989;
-GMAT sc.INC = 29.99999999999998;
-GMAT sc.RAAN = 40.00000000000002;
-GMAT sc.AOP = 70.0000000000004;
-GMAT sc.TA = 360;
+GMAT sc.SMA = 10000;
+GMAT sc.ECC = 0.3;
+GMAT sc.INC = 29.99999999999996;
+GMAT sc.RAAN = 40.00000000000003;
+GMAT sc.AOP = 70.00000000000027;
+GMAT sc.TA = 0;
 GMAT sc.DryMass = 850;
 GMAT sc.Cd = 2.2;
 GMAT sc.Cr = 1.8;
@@ -44,7 +44,6 @@ GMAT sc.AttitudeDisplayStateType = 'Quaternion';
 GMAT sc.AttitudeRateDisplayStateType = 'AngularVelocity';
 GMAT sc.AttitudeCoordinateSystem = EarthMJ2000Eq;
 GMAT sc.EulerAngleSequence = '321';
-
 
 %----------------------------------------
 %---------- ForceModels
@@ -79,8 +78,8 @@ GMAT prop_earth.StopIfAccuracyIsViolated = true;
 Create OrbitView orbitView;
 GMAT orbitView.SolverIterations = Current;
 GMAT orbitView.UpperLeft = [ 0 0 ];
-GMAT orbitView.Size = [ 0.5008710801393729 0.4508928571428572 ];
-GMAT orbitView.RelativeZOrder = 56;
+GMAT orbitView.Size = [ 0.7 0.9 ];
+GMAT orbitView.RelativeZOrder = 587;
 GMAT orbitView.Maximized = false;
 GMAT orbitView.Add = {sc, Earth, Luna, Sun};
 GMAT orbitView.CoordinateSystem = EarthMJ2000Eq;
@@ -92,7 +91,7 @@ GMAT orbitView.ShowPlot = true;
 GMAT orbitView.MaxPlotPoints = 20000;
 GMAT orbitView.ShowLabels = true;
 GMAT orbitView.ViewPointReference = Earth;
-GMAT orbitView.ViewPointVector = [ 32000 -18000 32000 ];
+GMAT orbitView.ViewPointVector = [ 150000 -100000 150000 ];
 GMAT orbitView.ViewDirection = Earth;
 GMAT orbitView.ViewScaleFactor = 1;
 GMAT orbitView.ViewUpCoordinateSystem = EarthMJ2000Eq;
@@ -110,8 +109,8 @@ GMAT orbitView.EnableConstellations = On;
 
 Create ReportFile report;
 GMAT report.SolverIterations = Current;
-GMAT report.UpperLeft = [ 0.03896103896103896 0.0693135935397039 ];
-GMAT report.Size = [ 0.5957268537913699 0.7927321668909825 ];
+GMAT report.UpperLeft = [ 0 0 ];
+GMAT report.Size = [ 0.6 0.8 ];
 GMAT report.RelativeZOrder = 570;
 GMAT report.Maximized = false;
 GMAT report.Filename = 'report.txt';
@@ -131,20 +130,29 @@ GMAT report.WriteReport = true;
 Create MatlabFunction init;
 GMAT init.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
 
-Create MatlabFunction var_noise;
-GMAT var_noise.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\scripts_matlab';
+Create MatlabFunction var_vel;
+GMAT var_vel.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\scripts_matlab\';
 
 %----------------------------------------
 %---------- Arrays, Variables, Strings
 %----------------------------------------
 
-Create Array v[100,3] v_noisy[100,3] r[100,3] r_ref[1,3];
-Create Variable mu num_obsv f0 dt i j temp num_monte runTime ecc;
-Create Variable period;
-GMAT num_obsv = 6;
-GMAT f0 = 36; % deg
-GMAT dt = 5000; % s
+Create Array v[100,3] v_noisy[100,3] r[100,3] r_ref[1,3] sma_vect[1,7];
+Create Variable mu noise f0 f df dt temp num_monte runTime period ecc;
+Create Variable i j k sma_count num_obsv;
+GMAT noise = 1; % m/s
+GMAT f0 = 0; % deg
+GMAT df = 200; % deg
 GMAT num_monte = 1000;
+GMAT sma_count = 7;
+GMAT num_obsv = 6;
+GMAT sma_vect(1) = 10000; % km
+GMAT sma_vect(2) = 12000;
+GMAT sma_vect(3) = 15000;
+GMAT sma_vect(4) = 20000;
+GMAT sma_vect(5) = 30000;
+GMAT sma_vect(6) = 45000;
+GMAT sma_vect(7) = 70000;
 
 
 %----------------------------------------
@@ -155,37 +163,53 @@ BeginMissionSequence;
 
 GMAT init;
 GMAT mu = SolarSystem.Earth.Mu;
-GMAT dt = dt / (num_obsv-1);
+GMAT df = df / (num_obsv-1);
+GMAT f = f0;
 Propagate prop_earth(sc) {sc.TA = f0};
 
-For i = 1:1:num_obsv;
+For k = 1:1:sma_count;
    
-   GMAT v(i,1) = sc.EarthMJ2000Eq.VX;
-   GMAT v(i,2) = sc.EarthMJ2000Eq.VY;
-   GMAT v(i,3) = sc.EarthMJ2000Eq.VZ;
-   GMAT r(i,1) = sc.EarthMJ2000Eq.X;
-   GMAT r(i,2) = sc.EarthMJ2000Eq.Y;
-   GMAT r(i,3) = sc.EarthMJ2000Eq.Z;
+   GMAT sc.SMA = sma_vect(k);
    
-   If i ~= num_obsv
-      Propagate prop_earth(sc) {sc.ElapsedSecs = dt};
+   For i = 1:1:num_obsv;
+      
+      GMAT v(i,1) = sc.EarthMJ2000Eq.VX;
+      GMAT v(i,2) = sc.EarthMJ2000Eq.VY;
+      GMAT v(i,3) = sc.EarthMJ2000Eq.VZ;
+      GMAT r(i,1) = sc.EarthMJ2000Eq.X;
+      GMAT r(i,2) = sc.EarthMJ2000Eq.Y;
+      GMAT r(i,3) = sc.EarthMJ2000Eq.Z;
+      
+		GMAT f = f + df;
+      If i ~= num_obsv
+         Propagate prop_earth(sc) {sc.TA = f};
+      EndIf;
+   
+   EndFor;
+   
+   %---------- Get Reference Data ----------
+   
+   GMAT r_ref(1) = sc.EarthMJ2000Eq.X;
+   GMAT r_ref(2) = sc.EarthMJ2000Eq.Y;
+   GMAT r_ref(3) = sc.EarthMJ2000Eq.Z;
+   
+   GMAT period = sc.OrbitPeriod;
+   GMAT ecc = sc.ECC;
+   
+   %---------- Store Observation Data ----------
+   
+   GMAT var_vel(v, mu, noise, num_monte, r_ref, period, ecc);
+   
+   If k ~= sma_count
+      Propagate BackProp prop_earth(sc) {sc.TA = f0};
    EndIf;
+	GMAT f = f0;
 
 EndFor;
 
-%---------- Get Reference Data ----------
-
-GMAT r_ref(1) = sc.EarthMJ2000Eq.X;
-GMAT r_ref(2) = sc.EarthMJ2000Eq.Y;
-GMAT r_ref(3) = sc.EarthMJ2000Eq.Z;
-
-GMAT period = sc.OrbitPeriod;
-GMAT ecc = sc.ECC;
-
 %---------- Begin Monte Carlo Sim ----------
 
-GMAT var_noise(v, mu, num_monte, r_ref, period, ecc);
+GMAT var_vel;
 
 %---------- Misc Testing Code Here ----------
-
 

@@ -11,7 +11,7 @@ function append_data(name,data,dim)
 %   along which the data should be appended.
 
 if ~exist(name,'var')
-    assignin('base',name,[]);
+    assignin('caller',name,[]);
 end
 
 if ~exist('dim','var')
@@ -20,7 +20,7 @@ end
 
 temp = evalin('base',name);
 temp = cat(dim,temp,data);
-assignin('base',name,temp);
+assignin('caller',name,temp);
 
 end
 

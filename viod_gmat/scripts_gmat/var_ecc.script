@@ -11,12 +11,12 @@ GMAT sc.DateFormat = TAIModJulian;
 GMAT sc.Epoch = '21545';
 GMAT sc.CoordinateSystem = EarthMJ2000Eq;
 GMAT sc.DisplayStateType = Keplerian;
-GMAT sc.SMA = 100000;
-GMAT sc.ECC = 0.2999999999999997;
-GMAT sc.INC = 29.99999999999993;
+GMAT sc.SMA = 99999.99999999994;
+GMAT sc.ECC = 0.2999999999999992;
+GMAT sc.INC = 29.99999999999992;
 GMAT sc.RAAN = 40.00000000000003;
-GMAT sc.AOP = 70.00000000000027;
-GMAT sc.TA = 360;
+GMAT sc.AOP = 70.00000000000023;
+GMAT sc.TA = 0;
 GMAT sc.DryMass = 850;
 GMAT sc.Cd = 2.2;
 GMAT sc.Cr = 1.8;
@@ -48,46 +48,76 @@ GMAT sc.EulerAngleSequence = '321';
 
 
 
-
-
-
-
-
-
 %----------------------------------------
 %---------- ForceModels
 %----------------------------------------
 
-Create ForceModel prop_earth_ForceModel;
-GMAT prop_earth_ForceModel.CentralBody = Earth;
-GMAT prop_earth_ForceModel.PrimaryBodies = {Earth};
-GMAT prop_earth_ForceModel.PointMasses = {Luna, Sun};
-GMAT prop_earth_ForceModel.Drag = None;
-GMAT prop_earth_ForceModel.SRP = On;
-GMAT prop_earth_ForceModel.RelativisticCorrection = Off;
-GMAT prop_earth_ForceModel.ErrorControl = RSSStep;
-GMAT prop_earth_ForceModel.GravityField.Earth.Degree = 4;
-GMAT prop_earth_ForceModel.GravityField.Earth.Order = 4;
-GMAT prop_earth_ForceModel.GravityField.Earth.StmLimit = 100;
-GMAT prop_earth_ForceModel.GravityField.Earth.PotentialFile = 'EGM96.cof';
-GMAT prop_earth_ForceModel.GravityField.Earth.TideModel = 'None';
-GMAT prop_earth_ForceModel.SRP.Flux = 1367;
-GMAT prop_earth_ForceModel.SRP.SRPModel = Spherical;
-GMAT prop_earth_ForceModel.SRP.Nominal_Sun = 149597870.691;
+Create ForceModel perturbed_ForceModel;
+GMAT perturbed_ForceModel.CentralBody = Earth;
+GMAT perturbed_ForceModel.PrimaryBodies = {Earth};
+GMAT perturbed_ForceModel.PointMasses = {Luna, Sun};
+GMAT perturbed_ForceModel.Drag = None;
+GMAT perturbed_ForceModel.SRP = On;
+GMAT perturbed_ForceModel.RelativisticCorrection = Off;
+GMAT perturbed_ForceModel.ErrorControl = RSSStep;
+GMAT perturbed_ForceModel.GravityField.Earth.Degree = 4;
+GMAT perturbed_ForceModel.GravityField.Earth.Order = 4;
+GMAT perturbed_ForceModel.GravityField.Earth.StmLimit = 100;
+GMAT perturbed_ForceModel.GravityField.Earth.PotentialFile = 'EGM96.cof';
+GMAT perturbed_ForceModel.GravityField.Earth.TideModel = 'None';
+GMAT perturbed_ForceModel.SRP.Flux = 1367;
+GMAT perturbed_ForceModel.SRP.SRPModel = Spherical;
+GMAT perturbed_ForceModel.SRP.Nominal_Sun = 149597870.691;
+
+Create ForceModel twoBody_ForceModel;
+GMAT twoBody_ForceModel.CentralBody = Earth;
+GMAT twoBody_ForceModel.PointMasses = {Earth};
+GMAT twoBody_ForceModel.Drag = None;
+GMAT twoBody_ForceModel.SRP = Off;
+GMAT twoBody_ForceModel.RelativisticCorrection = Off;
+GMAT twoBody_ForceModel.ErrorControl = RSSStep;
+
+Create ForceModel propagator_ForceModel;
+GMAT propagator_ForceModel.CentralBody = Earth;
+GMAT propagator_ForceModel.PointMasses = {Earth};
+GMAT propagator_ForceModel.Drag = None;
+GMAT propagator_ForceModel.SRP = Off;
+GMAT propagator_ForceModel.RelativisticCorrection = Off;
+GMAT propagator_ForceModel.ErrorControl = RSSStep;
 
 %----------------------------------------
 %---------- Propagators
 %----------------------------------------
 
-Create Propagator prop_earth;
-GMAT prop_earth.FM = prop_earth_ForceModel;
-GMAT prop_earth.Type = RungeKutta89;
-GMAT prop_earth.InitialStepSize = 60;
-GMAT prop_earth.Accuracy = 9.999999999999999e-012;
-GMAT prop_earth.MinStep = 0.001;
-GMAT prop_earth.MaxStep = 2700;
-GMAT prop_earth.MaxStepAttempts = 50;
-GMAT prop_earth.StopIfAccuracyIsViolated = true;
+Create Propagator perturbed;
+GMAT perturbed.FM = perturbed_ForceModel;
+GMAT perturbed.Type = RungeKutta89;
+GMAT perturbed.InitialStepSize = 60;
+GMAT perturbed.Accuracy = 9.999999999999999e-012;
+GMAT perturbed.MinStep = 0.001;
+GMAT perturbed.MaxStep = 2700;
+GMAT perturbed.MaxStepAttempts = 50;
+GMAT perturbed.StopIfAccuracyIsViolated = true;
+
+Create Propagator twoBody;
+GMAT twoBody.FM = twoBody_ForceModel;
+GMAT twoBody.Type = RungeKutta89;
+GMAT twoBody.InitialStepSize = 60;
+GMAT twoBody.Accuracy = 9.999999999999999e-012;
+GMAT twoBody.MinStep = 0.001;
+GMAT twoBody.MaxStep = 2700;
+GMAT twoBody.MaxStepAttempts = 50;
+GMAT twoBody.StopIfAccuracyIsViolated = true;
+
+Create Propagator propagator;
+GMAT propagator.FM = propagator_ForceModel;
+GMAT propagator.Type = RungeKutta89;
+GMAT propagator.InitialStepSize = 60;
+GMAT propagator.Accuracy = 9.999999999999999e-012;
+GMAT propagator.MinStep = 0.001;
+GMAT propagator.MaxStep = 2700;
+GMAT propagator.MaxStepAttempts = 50;
+GMAT propagator.StopIfAccuracyIsViolated = true;
 
 %----------------------------------------
 %---------- Subscribers
@@ -96,8 +126,8 @@ GMAT prop_earth.StopIfAccuracyIsViolated = true;
 Create OrbitView orbitView;
 GMAT orbitView.SolverIterations = Current;
 GMAT orbitView.UpperLeft = [ 0 0 ];
-GMAT orbitView.Size = [ 0.7 0.9 ];
-GMAT orbitView.RelativeZOrder = 258;
+GMAT orbitView.Size = [ 0.7 0.8995098039215687 ];
+GMAT orbitView.RelativeZOrder = 56;
 GMAT orbitView.Maximized = false;
 GMAT orbitView.Add = {sc, Earth, Luna, Sun};
 GMAT orbitView.CoordinateSystem = EarthMJ2000Eq;
@@ -146,10 +176,16 @@ GMAT report.WriteReport = true;
 %----------------------------------------
 
 Create MatlabFunction init;
-GMAT init.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
-
+Create MatlabFunction savefig;
 Create MatlabFunction var_ecc;
-GMAT var_ecc.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\scripts_matlab\';
+
+% GMAT init.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
+% GMAT savefig.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\misc';
+% GMAT var_ecc.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\scripts_matlab\';
+
+GMAT init.FunctionPath = 'E:\Research\XNAV\viod_gmat';
+GMAT savefig.FunctionPath = 'E:\Research\XNAV\viod_gmat\misc';
+GMAT var_ecc.FunctionPath = 'E:\Research\XNAV\viod_gmat\matlab_scripts';
 
 %----------------------------------------
 %---------- Arrays, Variables, Strings
@@ -158,19 +194,22 @@ GMAT var_ecc.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod
 Create Array v[100,3] v_noisy[100,3] r[100,3] r_ref[1,3] ecc_vect[1,7];
 Create Variable mu noise f0 dT dt temp num_monte runTime period ecc;
 Create Variable i j k ecc_count num_obsv;
+Create Variable usePerturbations save;
+Create String svnm;
 GMAT ecc_vect(1, 2) = 0.1;
 GMAT ecc_vect(1, 3) = 0.2;
 GMAT ecc_vect(1, 4) = 0.4;
 GMAT ecc_vect(1, 5) = 0.6;
 GMAT ecc_vect(1, 6) = 0.8;
 GMAT ecc_vect(1, 7) = 0.9;
-GMAT noise = 1; % m/s
+GMAT noise = 0.1; % m/s
 GMAT f0 = 0; % deg
 GMAT dT = 200000; % s
 GMAT num_monte = 1000;
 GMAT ecc_count = 7;
 GMAT num_obsv = 6;
-
+GMAT usePerturbations = 1; % 0 = Two-Body Motion, 1 = Perturbed Motion
+GMAT save = 1; % 0 = don't save figure, 1 = save figure
 
 
 %----------------------------------------
@@ -184,8 +223,17 @@ GMAT mu = SolarSystem.Earth.Mu;
 GMAT dT = -1 * dT;
 GMAT dt = -1 * dT / (num_obsv-1);
 
+%---------- Perturbed vs. Two-Body Motion ----------
+If usePerturbations == 1;
+	GMAT propagator = perturbed;
+	GMAT svnm = '.\figures\var_ecc_perturbed';
+Else;
+	GMAT propagator = twoBody;
+	GMAT svnm = '.\figures\var_ecc';
+EndIf;
+
 PenUp orbitView;
-Propagate prop_earth(sc) {sc.Earth.TA = f0};
+Propagate propagator(sc) {sc.Earth.TA = f0};
 PenDown orbitView;
 
 For k = 1:1:ecc_count;
@@ -205,9 +253,9 @@ For k = 1:1:ecc_count;
          
          GMAT temp = mod(i,2);
          If temp == 0
-            Propagate prop_earth(sc) {sc.ElapsedSecs = dt, OrbitColor = LightBlue};
+            Propagate propagator(sc) {sc.ElapsedSecs = dt, OrbitColor = LightBlue};
          Else
-            Propagate prop_earth(sc) {sc.ElapsedSecs = dt, OrbitColor = Red};
+            Propagate propagator(sc) {sc.ElapsedSecs = dt, OrbitColor = Red};
          EndIf;
       
       EndIf;
@@ -217,7 +265,7 @@ For k = 1:1:ecc_count;
    %---------- Get Reference Data ----------
    
    PenUp orbitView;
-   Propagate BackProp prop_earth(sc) {sc.ElapsedSecs = dT};
+   Propagate BackProp propagator(sc) {sc.ElapsedSecs = dT};
    PenDown orbitView;
    
    GMAT r_ref(1) = sc.EarthMJ2000Eq.X;
@@ -237,8 +285,10 @@ EndFor;
 
 GMAT var_ecc;
 
+%---------- Save Results ----------
+
+If save == 1;
+	GMAT savefig(svnm);
+EndIf;
+
 %---------- Misc Testing Code Here ----------
-
-
-
-

@@ -45,8 +45,11 @@ linewidth = 1;
 scFormat = 'r.';
 errFormat = '-k+';
 
+lim_x = [min(noise)-0.05*max(noise-min(noise)),...
+         max(noise)+0.05*max(noise-min(noise))];
+
 figure;
-latexify(45,18)
+latexify(40,18)
 
 subplot(1,3,1)
 hold on
@@ -55,6 +58,8 @@ errorbar(noise,mean(rms),std(rms),errFormat,'LineWidth',linewidth)
 hold off
 xlabel('Noise, $m/s$')
 ylabel('RMS Position Error, $km$')
+xlim(lim_x)
+setgrid
 
 subplot(1,3,2)
 hold on
@@ -63,6 +68,8 @@ errorbar(noise,mean(period),std(period),errFormat,'LineWidth',linewidth)
 hold off
 xlabel('Noise, $m/s$')
 ylabel('Period Error, seconds')
+xlim(lim_x)
+setgrid
 
 subplot(1,3,3)
 hold on
@@ -71,5 +78,9 @@ errorbar(noise,mean(ecc),std(ecc),errFormat,'LineWidth',linewidth)
 hold off
 xlabel('Noise, $m/s$')
 ylabel('Eccentricity Error, nd')
+xlim(lim_x)
+setgrid
+    
+latexify(40,18,22)
 
 end

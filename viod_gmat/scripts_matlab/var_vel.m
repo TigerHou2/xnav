@@ -45,13 +45,16 @@ if nargin == 7
 else
     
     v_vect = v_mat(1,:);
+    
+    lim_x = [min(v_vect)-0.05*max(v_vect-min(v_vect)),...
+             max(v_vect)+0.05*max(v_vect-min(v_vect))];
 
     linewidth = 1;
     scFormat = 'r.';
     errFormat = '-k+';
 
     figure;
-    latexify(45,18)
+    latexify(40,18)
 
     subplot(1,3,1)
     hold on
@@ -60,6 +63,8 @@ else
     hold off
     xlabel('Mean Velocity, $km/s$')
     ylabel('RMS Position Error, $km$')
+    xlim(lim_x)
+    setgrid
 
     subplot(1,3,2)
     hold on
@@ -68,6 +73,8 @@ else
     hold off
     xlabel('Mean Velocity, $km/s$')
     ylabel('Period Error, seconds')
+    xlim(lim_x)
+    setgrid
 
     subplot(1,3,3)
     hold on
@@ -76,6 +83,10 @@ else
     hold off
     xlabel('Mean Velocity, $km/s$')
     ylabel('Eccentricity Error, nd')
+    xlim(lim_x)
+    setgrid
+    
+    latexify(40,18,22)
     
     % clean up persistent variables
     clear rms period ecc v_mat

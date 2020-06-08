@@ -8,7 +8,11 @@
 %   file paths. Designed to be called from GMAT.
 
 % change pwd to location of init.m
-cd 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat'
+if exist('C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat','dir')
+    cd 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat'
+elseif exist('E:\Research\XNAV\viod_gmat','dir')
+    cd 'E:\Research\XNAV\viod_gmat'
+end
 
 close all hidden
 clear;clc

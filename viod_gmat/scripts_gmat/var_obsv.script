@@ -53,36 +53,72 @@ GMAT sc.EulerAngleSequence = '321';
 %---------- ForceModels
 %----------------------------------------
 
-Create ForceModel prop_earth_ForceModel;
-GMAT prop_earth_ForceModel.CentralBody = Earth;
-GMAT prop_earth_ForceModel.PrimaryBodies = {Earth};
-GMAT prop_earth_ForceModel.PointMasses = {Luna, Sun};
-GMAT prop_earth_ForceModel.Drag = None;
-GMAT prop_earth_ForceModel.SRP = On;
-GMAT prop_earth_ForceModel.RelativisticCorrection = Off;
-GMAT prop_earth_ForceModel.ErrorControl = RSSStep;
-GMAT prop_earth_ForceModel.GravityField.Earth.Degree = 4;
-GMAT prop_earth_ForceModel.GravityField.Earth.Order = 4;
-GMAT prop_earth_ForceModel.GravityField.Earth.StmLimit = 100;
-GMAT prop_earth_ForceModel.GravityField.Earth.PotentialFile = 'EGM96.cof';
-GMAT prop_earth_ForceModel.GravityField.Earth.TideModel = 'None';
-GMAT prop_earth_ForceModel.SRP.Flux = 1367;
-GMAT prop_earth_ForceModel.SRP.SRPModel = Spherical;
-GMAT prop_earth_ForceModel.SRP.Nominal_Sun = 149597870.691;
+Create ForceModel perturbed_ForceModel;
+GMAT perturbed_ForceModel.CentralBody = Earth;
+GMAT perturbed_ForceModel.PrimaryBodies = {Earth};
+GMAT perturbed_ForceModel.PointMasses = {Luna, Sun};
+GMAT perturbed_ForceModel.Drag = None;
+GMAT perturbed_ForceModel.SRP = On;
+GMAT perturbed_ForceModel.RelativisticCorrection = Off;
+GMAT perturbed_ForceModel.ErrorControl = RSSStep;
+GMAT perturbed_ForceModel.GravityField.Earth.Degree = 4;
+GMAT perturbed_ForceModel.GravityField.Earth.Order = 4;
+GMAT perturbed_ForceModel.GravityField.Earth.StmLimit = 100;
+GMAT perturbed_ForceModel.GravityField.Earth.PotentialFile = 'EGM96.cof';
+GMAT perturbed_ForceModel.GravityField.Earth.TideModel = 'None';
+GMAT perturbed_ForceModel.SRP.Flux = 1367;
+GMAT perturbed_ForceModel.SRP.SRPModel = Spherical;
+GMAT perturbed_ForceModel.SRP.Nominal_Sun = 149597870.691;
+
+Create ForceModel twoBody_ForceModel;
+GMAT twoBody_ForceModel.CentralBody = Earth;
+GMAT twoBody_ForceModel.PointMasses = {Earth};
+GMAT twoBody_ForceModel.Drag = None;
+GMAT twoBody_ForceModel.SRP = Off;
+GMAT twoBody_ForceModel.RelativisticCorrection = Off;
+GMAT twoBody_ForceModel.ErrorControl = RSSStep;
+
+Create ForceModel propagator_ForceModel;
+GMAT propagator_ForceModel.CentralBody = Earth;
+GMAT propagator_ForceModel.PointMasses = {Earth};
+GMAT propagator_ForceModel.Drag = None;
+GMAT propagator_ForceModel.SRP = Off;
+GMAT propagator_ForceModel.RelativisticCorrection = Off;
+GMAT propagator_ForceModel.ErrorControl = RSSStep;
 
 %----------------------------------------
 %---------- Propagators
 %----------------------------------------
 
-Create Propagator prop_earth;
-GMAT prop_earth.FM = prop_earth_ForceModel;
-GMAT prop_earth.Type = RungeKutta89;
-GMAT prop_earth.InitialStepSize = 60;
-GMAT prop_earth.Accuracy = 9.999999999999999e-012;
-GMAT prop_earth.MinStep = 0.001;
-GMAT prop_earth.MaxStep = 2700;
-GMAT prop_earth.MaxStepAttempts = 50;
-GMAT prop_earth.StopIfAccuracyIsViolated = true;
+Create Propagator perturbed;
+GMAT perturbed.FM = perturbed_ForceModel;
+GMAT perturbed.Type = RungeKutta89;
+GMAT perturbed.InitialStepSize = 60;
+GMAT perturbed.Accuracy = 9.999999999999999e-012;
+GMAT perturbed.MinStep = 0.001;
+GMAT perturbed.MaxStep = 2700;
+GMAT perturbed.MaxStepAttempts = 50;
+GMAT perturbed.StopIfAccuracyIsViolated = true;
+
+Create Propagator twoBody;
+GMAT twoBody.FM = twoBody_ForceModel;
+GMAT twoBody.Type = RungeKutta89;
+GMAT twoBody.InitialStepSize = 60;
+GMAT twoBody.Accuracy = 9.999999999999999e-012;
+GMAT twoBody.MinStep = 0.001;
+GMAT twoBody.MaxStep = 2700;
+GMAT twoBody.MaxStepAttempts = 50;
+GMAT twoBody.StopIfAccuracyIsViolated = true;
+
+Create Propagator propagator;
+GMAT propagator.FM = propagator_ForceModel;
+GMAT propagator.Type = RungeKutta89;
+GMAT propagator.InitialStepSize = 60;
+GMAT propagator.Accuracy = 9.999999999999999e-012;
+GMAT propagator.MinStep = 0.001;
+GMAT propagator.MaxStep = 2700;
+GMAT propagator.MaxStepAttempts = 50;
+GMAT propagator.StopIfAccuracyIsViolated = true;
 
 %----------------------------------------
 %---------- Subscribers
@@ -141,10 +177,16 @@ GMAT report.WriteReport = true;
 %----------------------------------------
 
 Create MatlabFunction init;
-GMAT init.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
-
+Create MatlabFunction savefig;
 Create MatlabFunction var_obsv;
-GMAT var_obsv.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\scripts_matlab';
+
+% GMAT init.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
+% GMAT savefig.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\misc';
+% GMAT var_obsv.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\scripts_matlab';
+
+GMAT init.FunctionPath = 'E:\Research\XNAV\viod_gmat';
+GMAT savefig.FunctionPath = 'E:\Research\XNAV\viod_gmat\misc';
+GMAT var_obsv.FunctionPath = 'E:\Research\XNAV\viod_gmat\scripts_matlab';
 
 %----------------------------------------
 %---------- Arrays, Variables, Strings
@@ -153,6 +195,8 @@ GMAT var_obsv.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\vio
 Create Array v[100,3] v_noisy[100,3] r[100,3] r_ref[1,3] obsv_vect[1,7];
 Create Variable mu noise f0 dT dt temp num_monte runTime period ecc;
 Create Variable i j k obsv_count num_obsv;
+Create Variable usePerturbations save;
+Create String svnm;
 GMAT obsv_vect(1, 1) = 3;
 GMAT obsv_vect(1, 2) = 5;
 GMAT obsv_vect(1, 3) = 7;
@@ -165,6 +209,8 @@ GMAT f0 = 36; % deg
 GMAT dT = 5000; % s
 GMAT num_monte = 1000;
 GMAT obsv_count = 7;
+GMAT usePerturbations = 1; % 0 = Two-Body Motion, 1 = Perturbed Motion
+GMAT save = 1; % 0 = don't save figure, 1 = save figure
 
 
 
@@ -178,8 +224,17 @@ GMAT init;
 GMAT mu = SolarSystem.Earth.Mu;
 GMAT dT = -1 * dT;
 
+%---------- Perturbed vs. Two-Body Motion ----------\
+If usePerturbations == 1;
+	GMAT propagator = perturbed;
+	GMAT svnm = '.\figures\var_obsv_perturbed';
+Else;
+	GMAT propagator = twoBody;
+	GMAT svnm = '.\figures\var_obsv';
+EndIf;
+
 PenUp orbitView;
-Propagate prop_earth(sc) {sc.TA = f0};
+Propagate propagator(sc) {sc.TA = f0};
 PenDown orbitView;
 
 For k = 1:1:obsv_count;
@@ -200,9 +255,9 @@ For k = 1:1:obsv_count;
          
          GMAT temp = mod(i,2);
          If temp == 0
-            Propagate prop_earth(sc) {sc.ElapsedSecs = dt, OrbitColor = LightBlue};
+            Propagate propagator(sc) {sc.ElapsedSecs = dt, OrbitColor = LightBlue};
          Else
-            Propagate prop_earth(sc) {sc.ElapsedSecs = dt, OrbitColor = Red};
+            Propagate propagator(sc) {sc.ElapsedSecs = dt, OrbitColor = Red};
          EndIf;
       
       EndIf;
@@ -212,7 +267,7 @@ For k = 1:1:obsv_count;
    %---------- Get Reference Data ----------
    
    PenUp orbitView;
-   Propagate BackProp prop_earth(sc) {sc.ElapsedSecs = dT};
+   Propagate BackProp propagator(sc) {sc.ElapsedSecs = dT};
    PenDown orbitView;
    
    GMAT r_ref(1) = sc.EarthMJ2000Eq.X;
@@ -231,6 +286,12 @@ EndFor;
 %---------- Begin Monte Carlo Sim ----------
 
 GMAT var_obsv;
+
+%---------- Save Results ----------
+
+If save == 1;
+	GMAT savefig(svnm);
+EndIf;
 
 %---------- Misc Testing Code Here ----------
 

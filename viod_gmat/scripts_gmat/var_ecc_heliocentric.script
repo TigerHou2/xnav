@@ -1,0 +1,303 @@
+%General Mission Analysis Tool(GMAT) Script
+%Created: 2020-05-25 16:21:27
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft sc;
+GMAT sc.DateFormat = TAIModJulian;
+GMAT sc.Epoch = '21545';
+GMAT sc.CoordinateSystem = SunMJ2000Eq;
+GMAT sc.DisplayStateType = Keplerian;
+GMAT sc.SMA = 2323300000.000012;
+GMAT sc.ECC = 0.9356000000000003;
+GMAT sc.INC = 4.560708889999991;
+GMAT sc.RAAN = 360;
+GMAT sc.AOP = 180;
+GMAT sc.TA = 358.9999999999998;
+GMAT sc.DryMass = 850;
+GMAT sc.Cd = 2.2;
+GMAT sc.Cr = 1.8;
+GMAT sc.DragArea = 15;
+GMAT sc.SRPArea = 1;
+GMAT sc.NAIFId = -10002001;
+GMAT sc.NAIFIdReferenceFrame = -9002001;
+GMAT sc.OrbitColor = Red;
+GMAT sc.TargetColor = Teal;
+GMAT sc.OrbitErrorCovariance = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+GMAT sc.CdSigma = 1e+070;
+GMAT sc.CrSigma = 1e+070;
+GMAT sc.Id = 'SatId';
+GMAT sc.Attitude = CoordinateSystemFixed;
+GMAT sc.SPADSRPScaleFactor = 1;
+GMAT sc.ModelFile = 'aura.3ds';
+GMAT sc.ModelOffsetX = 0;
+GMAT sc.ModelOffsetY = 0;
+GMAT sc.ModelOffsetZ = 0;
+GMAT sc.ModelRotationX = 0;
+GMAT sc.ModelRotationY = 0;
+GMAT sc.ModelRotationZ = 0;
+GMAT sc.ModelScale = 1;
+GMAT sc.AttitudeDisplayStateType = 'Quaternion';
+GMAT sc.AttitudeRateDisplayStateType = 'AngularVelocity';
+GMAT sc.AttitudeCoordinateSystem = EarthMJ2000Eq;
+GMAT sc.EulerAngleSequence = '321';
+
+
+
+
+
+
+%----------------------------------------
+%---------- ForceModels
+%----------------------------------------
+
+Create ForceModel perturbed_ForceModel;
+GMAT perturbed_ForceModel.CentralBody = Sun;
+GMAT perturbed_ForceModel.PointMasses = {Earth, Jupiter, Mars, Mercury, Neptune, Pluto, Saturn, Sun, Uranus, Venus};
+GMAT perturbed_ForceModel.Drag = None;
+GMAT perturbed_ForceModel.SRP = On;
+GMAT perturbed_ForceModel.RelativisticCorrection = Off;
+GMAT perturbed_ForceModel.ErrorControl = RSSStep;
+GMAT perturbed_ForceModel.SRP.Flux = 1367;
+GMAT perturbed_ForceModel.SRP.SRPModel = Spherical;
+GMAT perturbed_ForceModel.SRP.Nominal_Sun = 149597870.691;
+
+Create ForceModel twoBody_ForceModel;
+GMAT twoBody_ForceModel.CentralBody = Sun;
+GMAT twoBody_ForceModel.PointMasses = {Sun};
+GMAT twoBody_ForceModel.Drag = None;
+GMAT twoBody_ForceModel.SRP = Off;
+GMAT twoBody_ForceModel.RelativisticCorrection = Off;
+GMAT twoBody_ForceModel.ErrorControl = RSSStep;
+
+Create ForceModel propagator_ForceModel;
+GMAT propagator_ForceModel.CentralBody = Sun;
+GMAT propagator_ForceModel.PointMasses = {Sun};
+GMAT propagator_ForceModel.Drag = None;
+GMAT propagator_ForceModel.SRP = Off;
+GMAT propagator_ForceModel.RelativisticCorrection = Off;
+GMAT propagator_ForceModel.ErrorControl = RSSStep;
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator perturbed;
+GMAT perturbed.FM = perturbed_ForceModel;
+GMAT perturbed.Type = PrinceDormand78;
+GMAT perturbed.InitialStepSize = 600;
+GMAT perturbed.Accuracy = 9.999999999999999e-012;
+GMAT perturbed.MinStep = 0;
+GMAT perturbed.MaxStep = 86400;
+GMAT perturbed.MaxStepAttempts = 50;
+GMAT perturbed.StopIfAccuracyIsViolated = true;
+
+Create Propagator twoBody;
+GMAT twoBody.FM = twoBody_ForceModel;
+GMAT twoBody.Type = PrinceDormand78;
+GMAT twoBody.InitialStepSize = 600;
+GMAT twoBody.Accuracy = 9.999999999999999e-012;
+GMAT twoBody.MinStep = 0;
+GMAT twoBody.MaxStep = 86400;
+GMAT twoBody.MaxStepAttempts = 50;
+GMAT twoBody.StopIfAccuracyIsViolated = true;
+
+Create Propagator propagator;
+GMAT propagator.FM = propagator_ForceModel;
+GMAT propagator.Type = PrinceDormand78;
+GMAT propagator.InitialStepSize = 600;
+GMAT propagator.Accuracy = 9.999999999999999e-012;
+GMAT propagator.MinStep = 0;
+GMAT propagator.MaxStep = 86400;
+GMAT propagator.MaxStepAttempts = 50;
+GMAT propagator.StopIfAccuracyIsViolated = true;
+
+%----------------------------------------
+%---------- Coordinate Systems
+%----------------------------------------
+
+Create CoordinateSystem SunMJ2000Eq;
+GMAT SunMJ2000Eq.Origin = Sun;
+GMAT SunMJ2000Eq.Axes = MJ2000Eq;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create OrbitView orbitView;
+GMAT orbitView.SolverIterations = Current;
+GMAT orbitView.UpperLeft = [ 0 0 ];
+GMAT orbitView.Size = [ 0.7 0.8995098039215687 ];
+GMAT orbitView.RelativeZOrder = 56;
+GMAT orbitView.Maximized = false;
+GMAT orbitView.Add = {sc, Earth, Sun, Neptune, Jupiter};
+GMAT orbitView.CoordinateSystem = SunMJ2000Eq;
+GMAT orbitView.DrawObject = [ true true true true true ];
+GMAT orbitView.DataCollectFrequency = 1;
+GMAT orbitView.UpdatePlotFrequency = 50;
+GMAT orbitView.NumPointsToRedraw = 0;
+GMAT orbitView.ShowPlot = true;
+GMAT orbitView.MaxPlotPoints = 20000;
+GMAT orbitView.ShowLabels = true;
+GMAT orbitView.ViewPointReference = Sun;
+GMAT orbitView.ViewPointVector = [ 2000000000 -1500000000 2000000000 ];
+GMAT orbitView.ViewDirection = Sun;
+GMAT orbitView.ViewScaleFactor = 1;
+GMAT orbitView.ViewUpCoordinateSystem = SunMJ2000Eq;
+GMAT orbitView.ViewUpAxis = Z;
+GMAT orbitView.EclipticPlane = Off;
+GMAT orbitView.XYPlane = On;
+GMAT orbitView.WireFrame = Off;
+GMAT orbitView.Axes = On;
+GMAT orbitView.Grid = Off;
+GMAT orbitView.SunLine = On;
+GMAT orbitView.UseInitialView = On;
+GMAT orbitView.StarCount = 7000;
+GMAT orbitView.EnableStars = On;
+GMAT orbitView.EnableConstellations = On;
+
+Create ReportFile report;
+GMAT report.SolverIterations = Current;
+GMAT report.UpperLeft = [ 0 0 ];
+GMAT report.Size = [ 0.6 0.8 ];
+GMAT report.RelativeZOrder = 570;
+GMAT report.Maximized = false;
+GMAT report.Filename = 'report.txt';
+GMAT report.Precision = 16;
+GMAT report.WriteHeaders = true;
+GMAT report.LeftJustify = On;
+GMAT report.ZeroFill = Off;
+GMAT report.FixedWidth = true;
+GMAT report.Delimiter = ' ';
+GMAT report.ColumnWidth = 23;
+GMAT report.WriteReport = true;
+
+%----------------------------------------
+%---------- MATLAB Functions
+%----------------------------------------
+
+Create MatlabFunction init;
+
+% GMAT init.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
+% GMAT savefig.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\misc';
+% GMAT var_ecc.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\scripts_matlab\';
+
+GMAT init.FunctionPath = 'E:\Research\XNAV\viod_gmat';
+
+Create MatlabFunction savefig;
+GMAT savefig.FunctionPath = 'E:\Research\XNAV\viod_gmat\misc';
+
+Create MatlabFunction var_ecc;
+GMAT var_ecc.FunctionPath = 'E:\Research\XNAV\viod_gmat\matlab_scripts';
+
+%----------------------------------------
+%---------- Arrays, Variables, Strings
+%----------------------------------------
+
+Create Array v[100,3] v_noisy[100,3] r[100,3] r_ref[1,3] ecc_vect[1,7];
+Create Variable mu noise f0 dT dt temp num_monte runTime period ecc;
+Create Variable i j k ecc_count num_obsv usePerturbations save;
+Create String svnm;
+GMAT ecc_vect(1, 2) = 0.1;
+GMAT ecc_vect(1, 3) = 0.2;
+GMAT ecc_vect(1, 4) = 0.4;
+GMAT ecc_vect(1, 5) = 0.6;
+GMAT ecc_vect(1, 6) = 0.8;
+GMAT ecc_vect(1, 7) = 0.9356;
+GMAT noise = 0.1; % m/s
+GMAT f0 = 180; % deg
+GMAT dT = 80000000; % s
+GMAT num_monte = 1000;
+GMAT ecc_count = 7;
+GMAT num_obsv = 6;
+GMAT usePerturbations = 1; % 0 = Two-Body Motion, 1 = Perturbed Motion
+GMAT save = 1; % 0 = don't save figure, 1 = save figure
+
+
+
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+
+BeginMissionSequence;
+
+GMAT init;
+GMAT mu = SolarSystem.Sun.Mu;
+GMAT dT = -1 * dT;
+GMAT dt = -1 * dT / (num_obsv-1);
+
+%---------- Perturbed vs. Two-Body Motion ----------
+If usePerturbations == 1
+   GMAT propagator = perturbed;
+   GMAT svnm = '.\figures\var_ecc_heliocentric_perturbed';
+Else
+   GMAT propagator = twoBody;
+   GMAT svnm = '.\figures\var_ecc_heliocentric';
+EndIf;
+
+PenUp orbitView;
+Propagate propagator(sc) {sc.Sun.TA = f0};
+PenDown orbitView;
+
+For k = 1:1:ecc_count;
+   
+   GMAT sc.ECC = ecc_vect(k);
+   
+   For i = 1:1:num_obsv;
+      
+      GMAT v(i,1) = sc.SunMJ2000Eq.VX;
+      GMAT v(i,2) = sc.SunMJ2000Eq.VY;
+      GMAT v(i,3) = sc.SunMJ2000Eq.VZ;
+      GMAT r(i,1) = sc.SunMJ2000Eq.X;
+      GMAT r(i,2) = sc.SunMJ2000Eq.Y;
+      GMAT r(i,3) = sc.SunMJ2000Eq.Z;
+      
+      If i ~= num_obsv
+         
+         GMAT temp = mod(i,2);
+         If temp == 0
+            Propagate propagator(sc) {sc.ElapsedSecs = dt, OrbitColor = LightBlue};
+         Else
+            Propagate propagator(sc) {sc.ElapsedSecs = dt, OrbitColor = Red};
+         EndIf;
+      
+      EndIf;
+   
+   EndFor;
+   
+   %---------- Get Reference Data ----------
+   
+   PenUp orbitView;
+   Propagate BackProp propagator(sc) {sc.ElapsedSecs = dT};
+   PenDown orbitView;
+   
+   GMAT r_ref(1) = sc.SunMJ2000Eq.X;
+   GMAT r_ref(2) = sc.SunMJ2000Eq.Y;
+   GMAT r_ref(3) = sc.SunMJ2000Eq.Z;
+   
+   GMAT period = sc.OrbitPeriod;
+   GMAT ecc = sc.Sun.ECC;
+   
+   %---------- Store Observation Data ----------
+   
+   GMAT var_ecc(v, mu, noise, num_monte, r_ref, period, ecc);
+
+EndFor;
+
+%---------- Begin Monte Carlo Sim ----------
+
+GMAT var_ecc;
+
+%---------- Save Results ----------
+
+If save == 1
+   GMAT savefig(svnm);
+EndIf;
+
+%---------- Misc Testing Code Here ----------
+
+

@@ -33,11 +33,10 @@ v_obsv = v'*up;
 % get the actual hodograph
 [Z,R] = fitcircle(v(1:2,:));
 
-
 f0 = [Z' R/100];
 fun(f0,up,v_obsv,mu,dt,k)
 
-f0 = [0.1 0.1 0.02];
+f0 = [0 0.1 0.03];
 
 f = @(x) fun(x,up,v_obsv,mu,dt,k);
 options = optimoptions('fsolve','Display','iter' ...
@@ -91,24 +90,75 @@ function t_diff = fun(C,up,v,mu,dt,k)
     % append zeros for finding true anomaly
     I1(end+1,:) = 0;
     I2(end+1,:) = 0;
+    II = cat(3,I1,I2);
     
     I = I1;
     
-    for j = 2:size(I,2)
-        if all(ismembertol(I(:,j),I(:,1:j-1),1e-3))
-            I(:,j) = I2(:,j);
+    % iterate through solution pairs to find ordered true anomalies
+    % for now we assume measurements do not cross periapsis (f=0)
+
+    % --- solve for true anomaly at each point
+    c_vect = [p;q;0]; % vector for center of hodograph
+    r1_vect = I1 - c_vect;
+    r2_vect = I2 - c_vect;
+    
+    f1 = nan(1,size(r1_vect,2));
+    for j = 1:size(r1_vect,2)
+        f1(j) = atan2(norm(cross(c_vect,r1_vect(:,j))),dot(c_vect,r1_vect(:,j)));
+    end
+    
+    f2 = nan(1,size(r2_vect,2));
+    for j = 1:size(r2_vect,2)
+        f2(j) = atan2(norm(cross(c_vect,r2_vect(:,j))),dot(c_vect,r2_vect(:,j)));
+    end
+    
+    ff = [f1;f2];
+    
+    % --- find ordered true anomaly
+    indices = dec2bin(0:1:2^length(v)-1)-'0' + 1;
+    f_sorted = [];
+    idx_sorted = [];
+    for i = 1:size(indices,1)
+        idx = sub2ind(size(ff),indices(i,:),1:length(v));
+        if issorted(ff(idx),'monotonic')
+            f_sorted(end+1,:) = ff(idx);
+            idx_sorted(end+1,:) = indices(i,:);
         end
     end
     
-    % solve for true anomaly at each point
-    c_vect = [p;q;0]; % vector for center of hodograph
-    r_vect = I - c_vect;
+    % --- get rid of rows with duplicate values
+    f_tol = 1e-3;
+    f_sorted(sum(abs(diff(sort(f_sorted,2),1,2))>f_tol,2)+1~=length(v),:) = [];
     
-    f = nan(1,size(r_vect,2));
-    for j = 1:size(r_vect,2)
-        f(j) = atan2(norm(cross(c_vect,r_vect(:,j))),dot(c_vect,r_vect(:,j)));
+    % --- for now we will simply choose the first sorted solution we find
+    if isempty(f_sorted)
+        f = f1;
+        I = I1;
+    else
+        f = f_sorted(1,:);
+        index = idx_sorted(1,:);
+        for i = 1:length(v)
+            I(:,i) = II(:,i,index(i));
+        end
     end
     
+%     I = I1;
+%     
+%     for j = 2:size(I,2)
+%         if all(ismembertol(I(:,j),I(:,1:j-1),1e-3))
+%             I(:,j) = I2(:,j);
+%         end
+%     end
+%     
+%     % solve for true anomaly at each point
+%     c_vect = [p;q;0]; % vector for center of hodograph
+%     r_vect = I - c_vect;
+%     
+%     f = nan(1,size(r_vect,2));
+%     for j = 1:size(r_vect,2)
+%         f(j) = atan2(norm(cross(c_vect,r_vect(:,j))),dot(c_vect,r_vect(:,j)));
+%     end
+%     
     a = mu/(I(:,1)'*I(:,1)) * (1 + e^2 + 2*e*cos(f(1))) / (1 - e^2);
     
     E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));

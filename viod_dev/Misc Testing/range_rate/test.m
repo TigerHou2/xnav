@@ -6,16 +6,16 @@ a = 1;
 e = 0.3;
 i = 0;
 omg = 0;
-w = 0;
+w = 30;
 
 params = [a e i omg w 0];
 
-up = [1;0;0]; % pulsar direction
+up = [1;2;0]; % pulsar direction
 up = up / norm(up);
 k = [0;0;1]; % orbit normal
 
 % calculate true values
-f = deg2rad([30 70 110 150]);
+f = deg2rad([330 0 50 200]);
 E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
 M = E - e*sin(E);
 t = sqrt(a^3/mu)*M;
@@ -36,7 +36,31 @@ v_obsv = v'*up;
 f0 = [Z' R/100];
 fun(f0,up,v_obsv,mu,dt,k)
 
-f0 = [0 0.1 0.03];
+res = 100;
+rGuess = R/100;
+dat = nan(res^2,2);
+xx = linspace(-0.5,0.5,res);
+yy = linspace(-0.5,0.5,res);
+[X,Y] = meshgrid(xx,yy);
+zz = nan(res,res);
+idx = 0;
+
+for i = 1:res
+    for j = 1:res
+        idx = idx + 1;
+        dat(idx,1) = xx(i);
+        dat(idx,2) = yy(j);
+        zz(i,j) = norm(fun([xx(i),yy(j),rGuess],up,v_obsv,mu,dt,k))^0.25;
+    end
+end
+
+contour(X,Y,zz)
+axis equal
+
+[row,col] = find(zz==min(zz(:)));
+f0 = [xx(row(1)),yy(col(1)),rGuess];
+
+%%
 
 f = @(x) fun(x,up,v_obsv,mu,dt,k);
 options = optimoptions('fsolve','Display','iter' ...
@@ -105,11 +129,17 @@ function t_diff = fun(C,up,v,mu,dt,k)
     f1 = nan(1,size(r1_vect,2));
     for j = 1:size(r1_vect,2)
         f1(j) = atan2(norm(cross(c_vect,r1_vect(:,j))),dot(c_vect,r1_vect(:,j)));
+        if dot(k,cross(c_vect,r1_vect(:,j)))<0
+            f1(j) = 2*pi-f1(j);
+        end
     end
     
     f2 = nan(1,size(r2_vect,2));
     for j = 1:size(r2_vect,2)
         f2(j) = atan2(norm(cross(c_vect,r2_vect(:,j))),dot(c_vect,r2_vect(:,j)));
+        if dot(k,cross(c_vect,r2_vect(:,j)))<0
+            f2(j) = 2*pi-f2(j);
+        end
     end
     
     ff = [f1;f2];
@@ -120,52 +150,76 @@ function t_diff = fun(C,up,v,mu,dt,k)
     idx_sorted = [];
     for i = 1:size(indices,1)
         idx = sub2ind(size(ff),indices(i,:),1:length(v));
-        if issorted(ff(idx),'monotonic')
+        if length(longestMono([ff(idx),ff(idx)])) == length(dt)+1
             f_sorted(end+1,:) = ff(idx);
             idx_sorted(end+1,:) = indices(i,:);
         end
+%         if issorted(ff(idx),'monotonic')
+%             f_sorted(end+1,:) = ff(idx);
+%             idx_sorted(end+1,:) = indices(i,:);
+%         end
     end
     
     % --- get rid of rows with duplicate values
     f_tol = 1e-3;
+    idx_sorted(sum(abs(diff(sort(f_sorted,2),1,2))>f_tol,2)+1~=length(v),:) = [];
     f_sorted(sum(abs(diff(sort(f_sorted,2),1,2))>f_tol,2)+1~=length(v),:) = [];
     
-    % --- for now we will simply choose the first sorted solution we find
+    % --- if no sorted true anomalies exist, pick a random one
     if isempty(f_sorted)
         f = f1;
         I = I1;
-    else
-        f = f_sorted(1,:);
-        index = idx_sorted(1,:);
+        
+        a = mu/(I(:,1)'*I(:,1)) * (1 + e^2 + 2*e*cos(f(1))) / (1 - e^2);
+    
+        E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
+        M = E - e*sin(E);
+        t = sqrt(a^3/mu)*M;
+        dt_guess = t(2:end) - t(1:end-1);
+        dt_guess = mod(dt_guess,sqrt(a^3/mu));
+
+        t_diff = dt_guess - dt;
+        
+        return
+    end
+    
+    % --- otherwise, iterate through all sorted sets and find minimum time
+    t_diff_vect = [];
+    for j = 1:size(f_sorted,1)
+        f = f_sorted(j,:);
+        index = idx_sorted(j,:);
         for i = 1:length(v)
             I(:,i) = II(:,i,index(i));
         end
+        
+        a = mu/(I(:,1)'*I(:,1)) * (1 + e^2 + 2*e*cos(f(1))) / (1 - e^2);
+    
+        E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
+        M = E - e*sin(E);
+        t = sqrt(a^3/mu)*M;
+        dt_guess = t(2:end) - t(1:end-1);
+
+        t_diff_vect(end+1,:) = dt_guess - dt;
     end
+
+    t_diff = t_diff_vect(vecnorm(t_diff_vect,2,2)==min(vecnorm(t_diff_vect,2,2)),:);
     
-%     I = I1;
-%     
-%     for j = 2:size(I,2)
-%         if all(ismembertol(I(:,j),I(:,1:j-1),1e-3))
-%             I(:,j) = I2(:,j);
-%         end
-%     end
-%     
-%     % solve for true anomaly at each point
-%     c_vect = [p;q;0]; % vector for center of hodograph
-%     r_vect = I - c_vect;
-%     
-%     f = nan(1,size(r_vect,2));
-%     for j = 1:size(r_vect,2)
-%         f(j) = atan2(norm(cross(c_vect,r_vect(:,j))),dot(c_vect,r_vect(:,j)));
-%     end
-%     
-    a = mu/(I(:,1)'*I(:,1)) * (1 + e^2 + 2*e*cos(f(1))) / (1 - e^2);
-    
-    E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
-    M = E - e*sin(E);
-    t = sqrt(a^3/mu)*M;
-    dt_guess = t(2:end) - t(1:end-1);
-    
-    t_diff = dt_guess - dt;
-    
+end
+
+function V = longestMono(S)
+V = [];
+for k = 1:numel(S)
+    recfun(S(k),S(k+1:end))
+end
+% Recursive function:
+    function recfun(Z,S)
+    if numel(Z)>numel(V)
+        V = Z;
+    end
+    for k = 1:numel(S)
+        if Z(end)<S(k)
+            recfun([Z,S(k)],S(k+1:end))
+        end
+    end
+    end
 end

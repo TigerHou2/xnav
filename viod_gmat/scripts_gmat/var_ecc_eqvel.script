@@ -45,14 +45,6 @@ GMAT sc.AttitudeRateDisplayStateType = 'AngularVelocity';
 GMAT sc.AttitudeCoordinateSystem = EarthMJ2000Eq;
 GMAT sc.EulerAngleSequence = '321';
 
-
-
-
-
-
-
-
-
 %----------------------------------------
 %---------- ForceModels
 %----------------------------------------
@@ -198,7 +190,7 @@ GMAT var_ecc.FunctionPath = 'E:\Research\XNAV\viod_gmat\matlab_scripts';
 %---------- Arrays, Variables, Strings
 %----------------------------------------
 
-Create Array v[100,3] v_noisy[100,3] r_ref[1,3] ecc_vect[1,7];
+Create Array v[100,3] v_noisy[100,3] r_ref[1,3] ecc_vect[1,11];
 Create Variable mu noise f df temp num_monte period ecc vFixed r;
 Create Variable a e i j k ecc_count num_obsv usePerturbations save epoch;
 Create Variable dt;
@@ -208,16 +200,20 @@ GMAT ecc_vect(1, 2) = 0.1;
 GMAT ecc_vect(1, 3) = 0.2;
 GMAT ecc_vect(1, 4) = 0.3;
 GMAT ecc_vect(1, 5) = 0.4;
-GMAT ecc_vect(1, 6) = 0.6;
-GMAT ecc_vect(1, 7) = 0.7;
+GMAT ecc_vect(1, 6) = 0.5;
+GMAT ecc_vect(1, 7) = 0.6;
+GMAT ecc_vect(1, 8) = 0.65;
+GMAT ecc_vect(1, 9) = 0.7;
+GMAT ecc_vect(1,10) = 0.8;
+GMAT ecc_vect(1,11) = 0.85
 GMAT noise = 1; % m/s
 GMAT df = 60; % deg
 GMAT num_monte = 1000;
 GMAT vFixed = 5; % km/s
-GMAT ecc_count = 7;
+GMAT ecc_count = 11;
 GMAT num_obsv = 6;
 GMAT usePerturbations = 1; % 0 = Two-Body Motion, 1 = Perturbed Motion
-GMAT save = 0; % 0 = don't save figure, 1 = save figure
+GMAT save = 1; % 0 = don't save figure, 1 = save figure
 
 
 

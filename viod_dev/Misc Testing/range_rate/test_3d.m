@@ -4,18 +4,17 @@ clear;clc
 mu = 1;
 a = 1;
 e = 0.3;
-i = 0;
+i = pi/4;
 omg = 0;
-w = 30;
+w = 0;
 
 params = [a e i omg w 0];
 
-up = [1;2;0]; % pulsar direction
+up = [1;0;2]; % pulsar direction
 up = up / norm(up);
-k = [0;0;1]; % orbit normal
 
 % calculate true values
-f = deg2rad([330 45 50 200]);
+f = deg2rad([330 30 90 150 210 270]);
 E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
 M = E - e*sin(E);
 t = sqrt(a^3/mu)*M;
@@ -29,60 +28,119 @@ end
 
 v_obsv = v'*up;
 
+[~,~,V] = svd(v');
+k = V(:,end);
+ux = cross(v(:,1),k);
+ux = ux / norm(ux);
+uy = cross(k,ux);
+T = [ux';uy';k'];
 
-% get the actual hodograph
-[Z,R] = fitcircle(v(1:2,:));
+v
 
-f0 = [Z' R];
-fun(f0,up,v_obsv,mu,dt,k)
+% ----- true hodograph ------
+vt = T * v;
+[Z,R] = fitcircle(vt(1:2,:));
+Z = T' * [Z;0];
+% find theta
+uc = Z / norm(Z);
+ue = cross([0;0;1],uc);
+ue = ue / norm(ue);
+k0 = cross(uc,ue);
+theta = atan2(norm(cross(k0,k)),dot(k0,k));
+test = [uc,ue,k0];
+    % % visualize for testing
+    % figure
+    % quiver3(0,0,0,uc(1),uc(2),uc(3));hold on
+    % quiver3(0,0,0,ue(1),ue(2),ue(3))
+    % quiver3(0,0,0,k0(1),k0(2),k0(3))
+    % quiver3([0,0,0],[0,0,0],[0,0,0],[1,0,0],[0,1,0],[0,0,1],'Color','Black')
+    % scatter3(v(1,:),v(2,:),v(3,:))
+    % hold off
+    % xlabel('x');ylabel('y');zlabel('z');
+    % legend('uc','ue','k0')
+    % axis equal
+% test if objective function returns 0
+fun([Z',theta,R],up,v_obsv,mu,dt)
 
-res = 100;
-rGuess = 1.05;
-dat = nan(res^2,2);
+res = 10;
+rGuess = R;
+dat = nan(res,res,res);
 xx = linspace(-0.5,0.5,res);
 yy = linspace(-0.5,0.5,res);
-[X,Y] = meshgrid(xx,yy);
-zz = nan(res,res);
+zz = linspace(-0.5,0.5,res);
+tt = linspace(-pi,pi,res);
 idx = 0;
+
+profile on
 
 for i = 1:res
     for j = 1:res
-        idx = idx + 1;
-        dat(idx,1) = xx(i);
-        dat(idx,2) = yy(j);
-        zz(i,j) = norm(fun([xx(i),yy(j),rGuess],up,v_obsv,mu,dt,k))^0.25;
+        for k = 1:res
+            for m = 1:res
+                idx = idx + 1;
+                dat(i,j,k) = norm(fun([xx(i),yy(j),zz(k),tt(m),rGuess],up,v_obsv,mu,dt))^0.25;
+            end
+        end
     end
 end
 
-contour(X,Y,zz,20,'Fill','on')
-axis equal
-colorbar
+profile viewer
 
-[row,col] = find(zz==min(zz(:)));
-f0 = [xx(row(1)),yy(col(1)),rGuess];
+[~,idx] = min(dat(:));
+[i,j,k,m] = ind2sub(size(dat),idx);
+f0 = [xx(i(1)),yy(j(1)),zz(k(1)),tt(m(1)),rGuess];
 
 %%
 
-f = @(x) fun(x,up,v_obsv,mu,dt,k);
+f = @(x) fun(x,up,v_obsv,mu,dt);
 options = optimoptions('fsolve','Display','iter' ...
                                ,'PlotFcn','optimplotx' ...
                                ,'MaxFunctionEvaluations',5000 ...
                                ,'MaxIterations',300);
 hodo = fsolve(f,f0,options)
 
-[t_err,vel] = fun(hodo,up,v_obsv,mu,dt,k)
+fun(hodo,up,v_obsv,mu,dt)
 
 %% function definitions
-function [t_diff,I] = fun(C,up,v,mu,dt,k)
+function t_diff = fun(C,up,v,mu,dt)
 
-    % we will assume 2D for now
-
-    p = C(1); % x-offset of hodograph
-    q = C(2); % y-offset of hodograph
-    R = C(3); % radius of hodograph
+    x = C(1); % x-offset of hodograph
+    y = C(2); % y-offset of hodograph
+    z = C(3); % z-offset of hodograph
+    theta = C(4); % hodograph rotation w.r.t line thru origin and center
+                  % where theta = 0 is defined by the point where the
+                  % orbit normal crosses the z-axis
+    R = C(5); % radius of hodograph
     
-    e = sqrt(p^2 + q^2) / R; % eccentricity
-    uu = cross(k,up); % vector orthogonal to pulsar direction
+    e = sqrt(x^2 + y^2 + z^2) / R; % eccentricity
+    
+    % find k, the orbit normal vector
+    uc = [x;y;z] / norm([x;y;z]);
+    ue = cross([0;0;1],uc);
+    ue = ue / norm(ue);
+    k0 = cross(uc,ue);
+    k  = rotVec(k0,uc,theta);
+    
+    % calculate the rotation matrix T that moves the hodograph to 2D
+    T = [uc';ue';k';];
+    
+    % calculate the pulsar direction in new hodograph frame
+    up = T * up;
+    
+    % calculate the new hodograph center
+    c_vect = T * [x;y;z];
+    cx = c_vect(1);
+    cy = c_vect(2);
+    
+    % calculate the angle between the pulsar vector and the orbital plane
+    gamma = atan2(norm(cross(up,[0;0;1])),dot(up,[0;0;1]));
+    gamma = gamma - pi/2;
+    gamma = mod(gamma,pi/2);
+    
+    uu = cross([0;0;1],up); % vector orthogonal to pulsar direction
+    
+    % calculate new range-rates, scaled by out-of-plane factor
+    v = v * cos(gamma);
     
     % solve intersection on the circle
     
@@ -96,7 +154,7 @@ function [t_diff,I] = fun(C,up,v,mu,dt,k)
         dx = P2(1,j) - P1(1,j);
         dy = P2(2,j) - P1(2,j);
         dr = sqrt(dx^2+dy^2);
-        D = (P1(1,j)-p)*(P2(2,j)-q) - (P2(1,j)-p)*(P1(2,j)-q);
+        D = (P1(1,j)-cx)*(P2(2,j)-cy) - (P2(1,j)-cx)*(P1(2,j)-cy);
         sgn = sign(dy);
         if sgn == 0
             sgn = 1;
@@ -106,10 +164,10 @@ function [t_diff,I] = fun(C,up,v,mu,dt,k)
             t_diff = dt;
             return
         end
-        I1(1,j) = ( D*dy + sgn*dx*sqrt(delta) ) / dr^2 + p;
-        I1(2,j) = (-D*dx + sgn*dy*sqrt(delta) ) / dr^2 + q;
-        I2(1,j) = ( D*dy - sgn*dx*sqrt(delta) ) / dr^2 + p;
-        I2(2,j) = (-D*dx - sgn*dy*sqrt(delta) ) / dr^2 + q;
+        I1(1,j) = ( D*dy + sgn*dx*sqrt(delta) ) / dr^2 + cx;
+        I1(2,j) = (-D*dx + sgn*dy*sqrt(delta) ) / dr^2 + cy;
+        I2(1,j) = ( D*dy - sgn*dx*sqrt(delta) ) / dr^2 + cx;
+        I2(2,j) = (-D*dx - sgn*dy*sqrt(delta) ) / dr^2 + cy;
     end
     
     % append zeros for finding true anomaly
@@ -123,7 +181,6 @@ function [t_diff,I] = fun(C,up,v,mu,dt,k)
     % for now we assume measurements do not cross periapsis (f=0)
 
     % --- solve for true anomaly at each point
-    c_vect = [p;q;0]; % vector for center of hodograph
     r1_vect = I1 - c_vect;
     r2_vect = I2 - c_vect;
     
@@ -155,10 +212,6 @@ function [t_diff,I] = fun(C,up,v,mu,dt,k)
             f_sorted(end+1,:) = ff(idx);
             idx_sorted(end+1,:) = indices(i,:);
         end
-%         if issorted(ff(idx),'monotonic')
-%             f_sorted(end+1,:) = ff(idx);
-%             idx_sorted(end+1,:) = indices(i,:);
-%         end
     end
     
     % --- get rid of rows with duplicate values
@@ -184,17 +237,14 @@ function [t_diff,I] = fun(C,up,v,mu,dt,k)
         return
     end
     
-    % --- otherwise, iterate through all sorted sets and find minimum time
-    t_diff_mat = [];
-    Is = nan(size(I,1),size(I,2),size(f_sorted,1));
+    % --- otherwise, iterate through all sorted sets and find minimum error
+    t_diff_vect = [];
     for j = 1:size(f_sorted,1)
         f = f_sorted(j,:);
         index = idx_sorted(j,:);
         for i = 1:length(v)
             I(:,i) = II(:,i,index(i));
         end
-        
-        Is(:,:,j) = I;
         
         a = mu/(I(:,1)'*I(:,1)) * (1 + e^2 + 2*e*cos(f(1))) / (1 - e^2);
     
@@ -203,13 +253,10 @@ function [t_diff,I] = fun(C,up,v,mu,dt,k)
         t = sqrt(a^3/mu)*M;
         dt_guess = t(2:end) - t(1:end-1);
 
-        t_diff_mat(end+1,:) = dt_guess - dt;
+        t_diff_vect(end+1,:) = dt_guess - dt;
     end
 
-    t_diff_vect = vecnorm(t_diff_mat,2,2);
-    idx = find(t_diff_vect==min(t_diff_vect));
-    t_diff = t_diff_mat(idx,:);
-    I = Is(:,:,idx);
+    t_diff = t_diff_vect(vecnorm(t_diff_vect,2,2)==min(vecnorm(t_diff_vect,2,2)),:);
     
 end
 

@@ -4,9 +4,9 @@ clear;clc
 mu = 1;
 a = 1;
 e = 0.3;
-i = 0;
-omg = 0;
-w = 30;
+i = 0; % in the 2D case, i must be 0
+omg = pi/4;
+w = pi/6;
 
 params = [a e i omg w 0];
 

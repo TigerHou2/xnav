@@ -4,16 +4,16 @@ clear;clc
 mu = 1;
 a = 1;
 e = 0.3;
-i = pi/4;
-omg = 0;
+i = pi/5;
+omg = pi/4;
 w = 0;
 
 params = [a e i omg w 0];
 
-up = [1;0;2]; % pulsar direction
+up = [1;0;1]; % pulsar direction
 up = up / norm(up);
 
-% calculate true values
+% calculate true position and velocity values
 f = deg2rad([330 30 90 150 210 270]);
 E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
 M = E - e*sin(E);
@@ -35,6 +35,11 @@ ux = ux / norm(ux);
 uy = cross(k,ux);
 T = [ux';uy';k'];
 
+% check that pulsar isn't normal to orbit plane
+if dot(k,up) == 1
+    error('Degenerate case: the pulsar is normal to the orbital plane.')
+end
+
 v
 
 % ----- true hodograph ------
@@ -47,22 +52,29 @@ ue = cross([0;0;1],uc);
 ue = ue / norm(ue);
 k0 = cross(uc,ue);
 theta = atan2(norm(cross(k0,k)),dot(k0,k));
+if dot(cross(uc,k0),k)<0
+    theta = -theta;
+end
 test = [uc,ue,k0];
-    % % visualize for testing
-    % figure
-    % quiver3(0,0,0,uc(1),uc(2),uc(3));hold on
-    % quiver3(0,0,0,ue(1),ue(2),ue(3))
-    % quiver3(0,0,0,k0(1),k0(2),k0(3))
-    % quiver3([0,0,0],[0,0,0],[0,0,0],[1,0,0],[0,1,0],[0,0,1],'Color','Black')
-    % scatter3(v(1,:),v(2,:),v(3,:))
-    % hold off
-    % xlabel('x');ylabel('y');zlabel('z');
-    % legend('uc','ue','k0')
-    % axis equal
+%     % visualize for testing
+%     figure
+%     quiver3(0,0,0,uc(1),uc(2),uc(3));hold on
+%     quiver3(0,0,0,ue(1),ue(2),ue(3))
+%     quiver3(0,0,0,k0(1),k0(2),k0(3))
+%     quiver3(0,0,0,k(1),k(2),k(3))
+%     quiver3(0,0,0,up(1),up(2),up(3))
+%     quiver3([0,0,0],[0,0,0],[0,0,0],[1,0,0],[0,1,0],[0,0,1],'Color','Black')
+%     scatter3(v(1,:),v(2,:),v(3,:))
+%     hold off
+%     xlabel('x');ylabel('y');zlabel('z');
+%     legend('uc','ue','k0','k','pulsar')
+%     axis equal
+%     view([1 1 1])
+
 % test if objective function returns 0
 fun([Z',theta,R],up,v_obsv,mu,dt)
 
-res = 10;
+res = 20;
 rGuess = R;
 dat = nan(res,res,res);
 xx = linspace(-0.5,0.5,res);
@@ -70,8 +82,6 @@ yy = linspace(-0.5,0.5,res);
 zz = linspace(-0.5,0.5,res);
 tt = linspace(-pi,pi,res);
 idx = 0;
-
-profile on
 
 for i = 1:res
     for j = 1:res
@@ -84,8 +94,6 @@ for i = 1:res
     end
 end
 
-profile viewer
-
 [~,idx] = min(dat(:));
 [i,j,k,m] = ind2sub(size(dat),idx);
 f0 = [xx(i(1)),yy(j(1)),zz(k(1)),tt(m(1)),rGuess];
@@ -96,7 +104,7 @@ f = @(x) fun(x,up,v_obsv,mu,dt);
 options = optimoptions('fsolve','Display','iter' ...
                                ,'PlotFcn','optimplotx' ...
                                ,'MaxFunctionEvaluations',5000 ...
-                               ,'MaxIterations',300);
+                               ,'MaxIterations',420);
 hodo = fsolve(f,f0,options)
 
 fun(hodo,up,v_obsv,mu,dt)
@@ -109,7 +117,7 @@ function t_diff = fun(C,up,v,mu,dt)
     z = C(3); % z-offset of hodograph
     theta = C(4); % hodograph rotation w.r.t line thru origin and center
                   % where theta = 0 is defined by the point where the
-                  % orbit normal crosses the z-axis
+                  % orbit normal crosses the z-axis in the inertial frame
     R = C(5); % radius of hodograph
     
     e = sqrt(x^2 + y^2 + z^2) / R; % eccentricity
@@ -119,7 +127,7 @@ function t_diff = fun(C,up,v,mu,dt)
     ue = cross([0;0;1],uc);
     ue = ue / norm(ue);
     k0 = cross(uc,ue);
-    k  = rotVec(k0,uc,theta);
+    k  = rotVec(k0,uc,-theta);
     
     % calculate the rotation matrix T that moves the hodograph to 2D
     T = [uc';ue';k';];
@@ -134,18 +142,24 @@ function t_diff = fun(C,up,v,mu,dt)
     
     % calculate the angle between the pulsar vector and the orbital plane
     gamma = atan2(norm(cross(up,[0;0;1])),dot(up,[0;0;1]));
-    gamma = gamma - pi/2;
+    gamma = pi/2 - gamma;
     gamma = mod(gamma,pi/2);
     
     uu = cross([0;0;1],up); % vector orthogonal to pulsar direction
     
-    % calculate new range-rates, scaled by out-of-plane factor
-    v = v * cos(gamma);
-    
     % solve intersection on the circle
     
-    % --- calculate point on each solution set
-    P1 = up * v';
+    % --- convert the out of plane pulsar observation to an in-plane value
+    v = v / cos(gamma);
+    
+    % --- calculate intercepts on each solution set
+    
+        % we only care about the in-plane components of up now
+        % so make a new variable upp with only the x and y components
+        % and make it a unit vector.
+        % alternatively, simply divide up by cos^2 in the above step
+    upp = [up(1:2);0] / norm([up(1:2);0]);
+    P1 = upp * v';
     P2 = P1 + uu;
     
     I1 = nan(2,length(v));
@@ -155,10 +169,7 @@ function t_diff = fun(C,up,v,mu,dt)
         dy = P2(2,j) - P1(2,j);
         dr = sqrt(dx^2+dy^2);
         D = (P1(1,j)-cx)*(P2(2,j)-cy) - (P2(1,j)-cx)*(P1(2,j)-cy);
-        sgn = sign(dy);
-        if sgn == 0
-            sgn = 1;
-        end
+        sgn = sign(dy); if sgn == 0, sgn = 1; end
         delta = R^2*dr^2-D^2;
         if delta < 0
             t_diff = dt;
@@ -261,8 +272,18 @@ function t_diff = fun(C,up,v,mu,dt)
 end
 
 function [tf,idx] = isMono(S)
-% ISMONO checks if elements of array S are monotonic if looping is allowed
-% and returns the index of the first element in S going to the right
+% ISMONO returns true if array S is loop-monotonic, and returns the 
+%   index of the starting element in S going to the right
+%
+% Definition:
+%   An array is loop-monotonic if it can be split into two segments that
+%       can be concatenated to form a monotonic sequence.
+%   Example:
+%       [4,5,6,1,2,3] is loop-monotonic, because it can be split into
+%       [4,5,6] and [1,2,3], and then concatenated to form [1,2,3,4,5,6].
+%   The starting element is the first element in the concatenated array.
+%       The index returned is the position of the starting element in the
+%       original array S.
 
     S1 = [S(:);S(1)];
     S2 = [S(end);S(:)];

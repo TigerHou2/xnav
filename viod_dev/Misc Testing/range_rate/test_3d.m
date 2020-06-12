@@ -30,6 +30,9 @@ v_obsv = v'*up;
 
 [~,~,V] = svd(v');
 k = V(:,end);
+if dot(k,[0;0;1]) < 0
+    k = -k;
+end
 ux = cross(v(:,1),k);
 ux = ux / norm(ux);
 uy = cross(k,ux);
@@ -44,34 +47,54 @@ v
 
 % ----- true hodograph ------
 vt = T * v;
-[Z,R] = fitcircle(vt(1:2,:));
-Z = T' * [Z;0];
+[C,R] = fitcircle(vt(1:2,:));
+Z = T' * [C;0];
 % find theta
 uc = Z / norm(Z);
 ue = cross([0;0;1],uc);
 ue = ue / norm(ue);
 k0 = cross(uc,ue);
 theta = atan2(norm(cross(k0,k)),dot(k0,k));
-if dot(cross(uc,k0),k)<0
+if dot(ue,k)>0
     theta = -theta;
 end
-test = [uc,ue,k0];
-%     % visualize for testing
-%     figure
-%     quiver3(0,0,0,uc(1),uc(2),uc(3));hold on
-%     quiver3(0,0,0,ue(1),ue(2),ue(3))
-%     quiver3(0,0,0,k0(1),k0(2),k0(3))
-%     quiver3(0,0,0,k(1),k(2),k(3))
-%     quiver3(0,0,0,up(1),up(2),up(3))
-%     quiver3([0,0,0],[0,0,0],[0,0,0],[1,0,0],[0,1,0],[0,0,1],'Color','Black')
-%     scatter3(v(1,:),v(2,:),v(3,:))
-%     hold off
-%     xlabel('x');ylabel('y');zlabel('z');
-%     legend('uc','ue','k0','k','pulsar')
-%     axis equal
-%     view([1 1 1])
 
-% test if objective function returns 0
+    % visualize for testing
+    figure
+    % --- calculate points on hodograph
+    angles = linspace(0,2*pi,100);
+    cx = R * cos(angles) + C(1);
+    cy = R * sin(angles) + C(2);
+    circ = T' * [cx;cy;zeros(size(cx))];
+    % --- plot hodograph
+    plot3(circ(1,:),circ(2,:),circ(3,:),'DisplayName','Hodograph');
+    hold on
+    % --- plot circle center vector uc
+    quiver3(0,0,0,uc(1),uc(2),uc(3),'DisplayName','uc');
+    % --- plot eccentricity vector ue
+    quiver3(0,0,0,ue(1),ue(2),ue(3),'DisplayName','ue')
+    % --- plot hodograph normal at theta = 0
+    quiver3(0,0,0,k0(1),k0(2),k0(3),'DisplayName','k0')
+    % --- plot true hodograph normal
+    quiver3(0,0,0,k(1),k(2),k(3),'DisplayName','k')
+    % --- plot pulsar vector
+    quiver3(0,0,0,up(1),up(2),up(3),'DisplayName','Pulsar')
+    % --- plot projected pulsar vector
+    upp = T * up;
+    upp(3) = 0;
+    upp = T' * upp;
+    quiver3(0,0,0,upp(1),upp(2),upp(3),'DisplayName','Pulsar Projection')
+    % --- plot inertial axes
+    quiver3([0,0,0],[0,0,0],[0,0,0],[1,0,0],[0,1,0],[0,0,1],'Color','Black')
+    % --- plot measurement points
+    scatter3(v(1,:),v(2,:),v(3,:))
+    hold off
+    xlabel('x');ylabel('y');zlabel('z');legend
+    axis equal
+    view([1 1 1])
+
+% test if objective function returns 0 given perfect input
+f_true = [Z',theta,R];
 fun([Z',theta,R],up,v_obsv,mu,dt)
 
 res = 20;
@@ -100,17 +123,25 @@ f0 = [xx(i(1)),yy(j(1)),zz(k(1)),tt(m(1)),rGuess];
 
 %%
 
+% f0 = f_true;
+
 f = @(x) fun(x,up,v_obsv,mu,dt);
 options = optimoptions('fsolve','Display','iter' ...
                                ,'PlotFcn','optimplotx' ...
                                ,'MaxFunctionEvaluations',5000 ...
-                               ,'MaxIterations',420);
+                               ,'MaxIterations',500);
 hodo = fsolve(f,f0,options)
 
-fun(hodo,up,v_obsv,mu,dt)
+[t_err,vel] = fun(hodo,up,v_obsv,mu,dt)
 
 %% function definitions
-function t_diff = fun(C,up,v,mu,dt)
+function [t_diff,I] = fun(C,up,v,mu,dt,testing)
+
+    if ~exist('testing','var')
+        testing = 0;
+    else
+        testing = 1;
+    end
 
     x = C(1); % x-offset of hodograph
     y = C(2); % y-offset of hodograph
@@ -127,7 +158,8 @@ function t_diff = fun(C,up,v,mu,dt)
     ue = cross([0;0;1],uc);
     ue = ue / norm(ue);
     k0 = cross(uc,ue);
-    k  = rotVec(k0,uc,-theta);
+    k  = rotVec(k0,uc,theta);
+    ue = cross(k,uc);
     
     % calculate the rotation matrix T that moves the hodograph to 2D
     T = [uc';ue';k';];
@@ -185,6 +217,53 @@ function t_diff = fun(C,up,v,mu,dt)
     I1(end+1,:) = 0;
     I2(end+1,:) = 0;
     II = cat(3,I1,I2);
+    
+    %------------ TESTING --------------
+    if testing
+        % convert everything to 2D
+        uc = T * uc;
+        ue = T * ue;
+        k = T * k;
+        k0 = T * k0;
+        
+        figure
+        % --- calculate points on hodograph
+        angles = linspace(0,2*pi,100);
+        cX = R * cos(angles) + c_vect(1);
+        cY = R * sin(angles) + c_vect(2);
+        circ = [cX;cY;zeros(size(cX))];
+        % --- plot hodograph
+        plot3(circ(1,:),circ(2,:),circ(3,:),'DisplayName','Hodograph');
+        hold on
+        % --- plot circle center vector uc
+        quiver3(0,0,0,uc(1),uc(2),uc(3),'DisplayName','uc');
+        % --- plot eccentricity vector ue
+        quiver3(0,0,0,ue(1),ue(2),ue(3),'DisplayName','ue')
+        % --- plot hodograph normal at theta = 0
+        quiver3(0,0,0,k0(1),k0(2),k0(3),'DisplayName','k0')
+        % --- plot true hodograph normal
+        quiver3(0,0,0,k(1),k(2),k(3),'DisplayName','k')
+        % --- plot pulsar vector
+        quiver3(0,0,0,up(1),up(2),up(3),'DisplayName','Pulsar')
+        % --- plot projected pulsar vector
+        quiver3(0,0,0,upp(1),upp(2),upp(3),'DisplayName','Pulsar Projection')
+        % --- plot inertial axes
+        quiver3([0,0,0],[0,0,0],[0,0,0],[1,0,0],[0,1,0],[0,0,1],'Color','Black','DisplayName','Axes')
+        % --- plot P1 and P2
+        scatter3(P1(1,:),P1(2,:),P1(3,:),'DisplayName','P1')
+        scatter3(P2(1,:),P2(2,:),P2(3,:),'DisplayName','P2')
+        % --- plot hodograph intercepts
+        scatter3(I1(1,:),I1(2,:),I1(3,:),'DisplayName','Intercept Set 1')
+        scatter3(I2(1,:),I2(2,:),I2(3,:),'DisplayName','Intercept Set 2')
+        hold off
+        xlabel('x');ylabel('y');zlabel('z');legend
+        axis equal
+        view([1 1 1])
+        
+        T'*I1
+        T'*I2
+    end
+    %------------ END TEST -------------
     
     I = I1;
     
@@ -249,13 +328,16 @@ function t_diff = fun(C,up,v,mu,dt)
     end
     
     % --- otherwise, iterate through all sorted sets and find minimum error
-    t_diff_vect = [];
+    t_diff_mat = [];
+    Is = nan(size(I,1),size(I,2),size(f_sorted,1));
     for j = 1:size(f_sorted,1)
         f = f_sorted(j,:);
         index = idx_sorted(j,:);
         for i = 1:length(v)
             I(:,i) = II(:,i,index(i));
         end
+        
+        Is(:,:,j) = I;
         
         a = mu/(I(:,1)'*I(:,1)) * (1 + e^2 + 2*e*cos(f(1))) / (1 - e^2);
     
@@ -264,10 +346,15 @@ function t_diff = fun(C,up,v,mu,dt)
         t = sqrt(a^3/mu)*M;
         dt_guess = t(2:end) - t(1:end-1);
 
-        t_diff_vect(end+1,:) = dt_guess - dt;
+        t_diff_mat(end+1,:) = dt_guess - dt;
     end
 
-    t_diff = t_diff_vect(vecnorm(t_diff_vect,2,2)==min(vecnorm(t_diff_vect,2,2)),:);
+    t_diff_vect = vecnorm(t_diff_mat,2,2);
+    idx = find(t_diff_vect==min(t_diff_vect));
+    t_diff = t_diff_mat(idx,:);
+    I = Is(:,:,idx);
+    
+    I = T' * I;
     
 end
 

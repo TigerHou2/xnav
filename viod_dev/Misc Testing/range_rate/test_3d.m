@@ -4,7 +4,7 @@ clear;clc
 mu = 1;
 a = 1;
 e = 0.3;
-i = pi/4;
+i = pi/9;
 omg = pi/4;
 w = 0;
 
@@ -13,11 +13,11 @@ params = [a e i omg w 0];
 % define pulsars
 P = [0 0 1;... % pulsar 1
      1 0 1;... % pulsar 2
-     3 1 2]';  % pulsar 3
+     1 1 0]';  % pulsar 3
 P = P ./ vecnorm(P,2,1);
 
 % calculate true position and velocity values
-f = deg2rad([330 30 90 150 210 270]);
+f = deg2rad([330 10 20 40 60 70 80]);
 E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
 M = E - e*sin(E);
 t = sqrt(a^3/mu)*M;
@@ -97,12 +97,13 @@ end
 
 % test if objective function returns 0 given perfect input
 hodo_true = [Z',theta,R];
-rrFun([Z',theta,R],v_obsv,mu,dt)
+% [err,val] = rrFun([Z',theta,R],v_obsv,mu,dt)
+[err,val] = rrFun_ta([Z',theta,R],v_obsv,mu,dt)
 
 %% global search
 
-res = 25;
-rGuess = R;
+res = 15;
+rGuess = 5*mean(vecnorm(v_obsv));
 dat = nan(res,res,res);
 xx = linspace(-0.5,0.5,res);
 yy = linspace(-0.5,0.5,res);
@@ -115,7 +116,7 @@ for i = 1:res
         for k = 1:res
             for m = 1:res
                 idx = idx + 1;
-                dat(i,j,k) = norm(rrFun([xx(i),yy(j),zz(k),tt(m),rGuess],v_obsv,mu,dt))^0.25;
+                dat(i,j,k) = norm(rrFun_ta([xx(i),yy(j),zz(k),tt(m),rGuess],v_obsv,mu,dt));
             end
         end
     end
@@ -129,7 +130,7 @@ f0 = [xx(i(1)),yy(j(1)),zz(k(1)),tt(m(1)),rGuess];
 
 % f0 = hodo_true .* [1.02 1.02 1.02 1.02 1.02];
 
-f = @(x) rrFun(x,v_obsv,mu,dt);
+f = @(x) rrFun_ta(x,v_obsv,mu,dt);
 options = optimoptions('fsolve','Display','iter' ...
                                ,'PlotFcn','optimplotx' ...
                                ,'MaxFunctionEvaluations',5000 ...
@@ -137,16 +138,17 @@ options = optimoptions('fsolve','Display','iter' ...
                                ,'Algorithm','levenberg-marquardt');
 hodo = fsolve(f,f0,options)
 
-[t_err,vel] = rrFun(hodo,v_obsv,mu,dt,1)
+[t_err,vel] = rrFun_ta(hodo,v_obsv,mu,dt,1)
 
 
 %% test solution space
 
-f = @(x) rrFun(x,v_obsv,mu,dt);
+f = @(x) rrFun_ta(x,v_obsv,mu,dt);
 options = optimoptions('fsolve','Display','none' ...
                                ,'MaxFunctionEvaluations',3000 ...
                                ,'MaxIterations',500 ...
-                               ,'Algorithm','levenberg-marquardt');
+                               ,'Algorithm','levenberg-marquardt' ...
+                               ,'StepTolerance',1e-9);
 
 guess_valid = [];
 guess_inval = [];

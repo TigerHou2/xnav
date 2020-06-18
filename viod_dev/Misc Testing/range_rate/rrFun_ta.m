@@ -95,67 +95,111 @@ f1 = atan2(norm(cross(c_vect,r1)),dot(c_vect,r1));
 f2 = atan2(norm(cross(c_vect,r2)),dot(c_vect,r2));
 if dot(k,cross(c_vect,r1))<0, f1 = 2*pi-f1; end
 if dot(k,cross(c_vect,r2))<0, f2 = 2*pi-f2; end
-E1 = 2 * atan(sqrt((1-e)/(1+e))*tan(f1/2));
-E2 = 2 * atan(sqrt((1-e)/(1+e))*tan(f2/2));
-M1 = E1 - e*sin(E1);
-M2 = E2 - e*sin(E2);
+if e < 1
+    E1 = 2 * atan(sqrt((1-e)/(1+e))*tan(f1/2));
+    E2 = 2 * atan(sqrt((1-e)/(1+e))*tan(f2/2));
+    M1 = E1 - e*sin(E1);
+    M2 = E2 - e*sin(E2);
+else
+    E1 = 2 * atanh(sqrt((e-1)/(e+1))*tan(f1/2));
+    E2 = 2 * atanh(sqrt((e-1)/(e+1))*tan(f2/2));
+    M1 = e*sinh(E1) - E1;
+    M2 = e*sinh(E2) - E2;
+end
 a =  mu/(V1'*V1) * (1 + e^2 + 2*e*cos(f1)) / (1 - e^2);
 % a =  mu/(V2'*V2) * (1 + e^2 + 2*e*cos(f2)) / (1 - e^2);
-period = sqrt(a^3/mu); % this is orbital period divided by 2*pi
+
+% --- find "orbital period". 
+%     in quotes because it's the orbital period divided by 2*pi
+%     and for a hyperbolic case it's the equivalent
+if e < 1
+    period = sqrt(a^3/mu);
+else
+    period = sqrt(-a^3/mu);
+end
 
 % --- solve for four combinations of velocities
 %     and their projections onto the pulsars
 V  = nan(3,size(obsv,2),4);
 Vp = nan(3,size(obsv,2),4);
 
-V(:,1,1) = V1; M = M1;
-for i = 1:size(obsv,2)
-    if i ~= 1, M = M + dt(i-1)/period; end
-    M = mod(M,2*pi);
-    E = kepler(M,e);
-    f = 2*atan(sqrt((1+e)/(1-e))*tan(E/2));
-    df = f - f1;
-    V(:,i,1) = rotz(rad2deg(df)) * (V1-c_vect) + c_vect;
-    Vp(:,i,1) = dot(V(:,i,1),pulsar(:,i))/norm(pulsar(:,i))^2*pulsar(:,i);
+if imag(M1) == 0 % this line checks if we have a feasible TA in hyperbolic cases
+    V(:,1,1) = V1; M = M1;
+    for i = 1:size(obsv,2)
+        if i ~= 1, M = M + dt(i-1)/period; end
+        M = mod(M,2*pi);
+        E = kepler(M,e);
+        if e < 1
+            f = 2*atan(sqrt((1+e)/(1-e))*tan(E/2));
+        else
+            f = 2*atan(sqrt((e+1)/(e-1))*tanh(E/2));
+        end
+        df = f - f1;
+        V(:,i,1) = rotz(rad2deg(df)) * (V1-c_vect) + c_vect;
+        Vp(:,i,1) = dot(V(:,i,1),pulsar(:,i))/norm(pulsar(:,i))^2*pulsar(:,i);
+    end
+
+    V(:,1,2) = V1; M = M1;
+    for i = 1:size(obsv,2)
+        if i ~= 1, M = M - dt(i-1)/period; end
+        M = mod(M,2*pi);
+        E = kepler(M,e);
+        if e < 1
+            f = 2*atan(sqrt((1+e)/(1-e))*tan(E/2));
+        else
+            f = 2*atan(sqrt((e+1)/(e-1))*tanh(E/2));
+        end
+        df = f - f1;
+        V(:,i,2) = rotz(rad2deg(df)) * (V1-c_vect) + c_vect;
+        Vp(:,i,2) = dot(V(:,i,2),pulsar(:,i))/norm(pulsar(:,i))^2*pulsar(:,i);
+    end
 end
 
-V(:,1,2) = V1; M = M1;
-for i = 1:size(obsv,2)
-    if i ~= 1, M = M - dt(i-1)/period; end
-    M = mod(M,2*pi);
-    E = kepler(M,e);
-    f = 2*atan(sqrt((1+e)/(1-e))*tan(E/2));
-    df = f - f1;
-    V(:,i,2) = rotz(rad2deg(df)) * (V1-c_vect) + c_vect;
-    Vp(:,i,2) = dot(V(:,i,2),pulsar(:,i))/norm(pulsar(:,i))^2*pulsar(:,i);
-end
+if imag(M2) == 0
+    V(:,1,3) = V2; M = M2;
+    for i = 1:size(obsv,2)
+        if i ~= 1, M = M + dt(i-1)/period; end
+        M = mod(M,2*pi);
+        E = kepler(M,e);
+        if e < 1
+            f = 2*atan(sqrt((1+e)/(1-e))*tan(E/2));
+        else
+            f = 2*atan(sqrt((e+1)/(e-1))*tanh(E/2));
+        end
+        df = f - f2;
+        V(:,i,3) = rotz(rad2deg(df)) * (V2-c_vect) + c_vect;
+        Vp(:,i,3) = dot(V(:,i,3),pulsar(:,i))/norm(pulsar(:,i))^2*pulsar(:,i);
+    end
 
-V(:,1,3) = V2; M = M2;
-for i = 1:size(obsv,2)
-    if i ~= 1, M = M + dt(i-1)/period; end
-    M = mod(M,2*pi);
-    E = kepler(M,e);
-    f = 2*atan(sqrt((1+e)/(1-e))*tan(E/2));
-    df = f - f2;
-    V(:,i,3) = rotz(rad2deg(df)) * (V2-c_vect) + c_vect;
-    Vp(:,i,3) = dot(V(:,i,3),pulsar(:,i))/norm(pulsar(:,i))^2*pulsar(:,i);
-end
-
-V(:,1,4) = V2; M = M2;
-for i = 1:size(obsv,2)
-    if i ~= 1, M = M - dt(i-1)/period; end
-    M = mod(M,2*pi);
-    E = kepler(M,e);
-    f = 2*atan(sqrt((1+e)/(1-e))*tan(E/2));
-    df = f - f2;
-    V(:,i,4) = rotz(rad2deg(df)) * (V2-c_vect) + c_vect;
-    Vp(:,i,4) = dot(V(:,i,4),pulsar(:,i))/norm(pulsar(:,i))^2*pulsar(:,i);
+    V(:,1,4) = V2; M = M2;
+    for i = 1:size(obsv,2)
+        if i ~= 1, M = M - dt(i-1)/period; end
+        M = mod(M,2*pi);
+        E = kepler(M,e);
+        if e < 1
+            f = 2*atan(sqrt((1+e)/(1-e))*tan(E/2));
+        else
+            f = 2*atan(sqrt((e+1)/(e-1))*tanh(E/2));
+        end
+        df = f - f2;
+        V(:,i,4) = rotz(rad2deg(df)) * (V2-c_vect) + c_vect;
+        Vp(:,i,4) = dot(V(:,i,4),pulsar(:,i))/norm(pulsar(:,i))^2*pulsar(:,i);
+    end
 end
 
 % --- compare projections with observations
 Vd = reshape(vecnorm(Vp-pulsar.*obsv,2,1),size(obsv,2),4)';
 Vd_norm = vecnorm(Vd,2,2);
 idx = find(Vd_norm == min(Vd_norm));
+
+% --- if somehow all measurements come from the infeasible region
+%     on a hyperbolic hodograph, return a large penalty
+if isempty(idx)
+    v_diff = obsv * 30;
+    V = nan;
+    return
+end
+
 idx = idx(1);
 v_diff = Vd(idx,:);
 V = V(:,:,idx);
@@ -212,12 +256,24 @@ if M == 0
     return
 end
 
-E = M + e/2;
-d = 1;
-while d > 1e-6
-    Ep = E;
-    E = E - (E-e*sin(E)-M)/(1-e*cos(E));
-    d = abs(Ep-E)/Ep;
+if e < 1
+    E = M + e/2;
+    d = 1;
+    while d > 1e-6
+        Ep = E;
+        E = E - (E-e*sin(E)-M)/(1-e*cos(E));
+        E = mod(E,2*pi);
+        d = abs(Ep-E)/Ep;
+    end
+else
+    E = M;
+    d = 1;
+    while d > 1e-6
+        Ep = E;
+        E = E - (e*sinh(E)-E-M)/(e*cosh(E)-1);
+        E = mod(E,2*pi);
+        d = abs(Ep-E)/Ep;
+    end
 end
 
 end

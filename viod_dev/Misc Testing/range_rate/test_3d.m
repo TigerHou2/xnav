@@ -4,8 +4,8 @@ clear;clc
 mu = 1;
 a = 1;
 e = 0.3;
-i = pi/5;
-omg = pi/4;
+i = pi/9;
+omg = 3*pi/2;
 w = 0;
 
 params = [a e i omg w 0];
@@ -13,11 +13,11 @@ params = [a e i omg w 0];
 % define pulsars
 P = [0 0 1;... % pulsar 1
      1 0 1;... % pulsar 2
-     1 1 0]';  % pulsar 3
+     3 1 2]';  % pulsar 3
 P = P ./ vecnorm(P,2,1);
 
 % calculate true position and velocity values
-f = deg2rad([330 10 20 40 60 70 80]);
+f = deg2rad([330 10 20 40 60 70]);
 E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
 M = E - e*sin(E);
 t = sqrt(a^3/mu)*M;
@@ -41,9 +41,18 @@ end
 
 [~,~,V] = svd(v');
 k = V(:,end);
-% if dot(k,[0;0;1]) < 0
-%     k = -k;
-% end
+
+% check if orbit plane normal is in the right direction
+% we assume more than half of the measurements are taken less than half an
+% orbit apart from its adjacent measurements.
+kEst = zeros(3,1);
+for i = 1:size(v,2)-1
+    kEst = kEst + cross(v(:,i),v(:,i+1));
+end
+if dot(k,kEst) < 0
+    k = -k;
+end
+
 ux = cross(v(:,1),k);
 ux = ux / norm(ux);
 uy = cross(k,ux);
@@ -99,36 +108,48 @@ end
 % test if objective function returns 0 given perfect input
 hodo_true = [Z',theta,R];
 % [err,val] = rrFun([Z',theta,R],v_obsv,mu,dt)
-[err,val] = rrFun_ta([Z',theta,R],obsv,pulsar,mu,dt)
+[err,vel] = rrFun_ta([Z',theta,R],obsv,pulsar,mu,dt,1);
+if max(abs(err)) > 1e-6
+    error('Hodograph does not converge!')
+end
+if max(abs(v-vel)) > 1e-4
+    error('Velocities do not converge!')
+end
 
 %% global search
 
-res = 16;
-rGuess = 2*mean(abs(obsv));
-dat = nan(res,res,res);
-xx = linspace(-0.5,0.5,res);
-yy = linspace(-0.5,0.5,res);
-zz = linspace(-0.5,0.5,res);
+res = 10;
+dat = nan(res,res,res,res,res);
+lb = mean(abs(obsv));
+ub = 3*mean(abs(obsv));
+xx = linspace(-lb,lb,res);
+yy = linspace(-lb,lb,res);
+zz = linspace(-lb,lb,res);
 tt = linspace(-pi,pi,res);
+rr = linspace(lb,ub,res);
 idx = 0;
 
 for i = 1:res
 for j = 1:res
 for k = 1:res
 for m = 1:res
+for n = 1:res
     idx = idx + 1;
-    fin = [xx(i),yy(j),zz(k),tt(m),rGuess];
-    dat(i,j,k) = norm(rrFun_ta(fin,obsv,pulsar,mu,dt));
+    fin = [xx(i),yy(j),zz(k),tt(m),rr(n)];
+    dat(i,j,k,m,n) = norm(rrFun_ta(fin,obsv,pulsar,mu,dt));
+end
 end
 end
 end
 end
 
 [~,idx] = min(dat(:));
-[i,j,k,m] = ind2sub(size(dat),idx);
-f0 = [xx(i(1)),yy(j(1)),zz(k(1)),tt(m(1)),rGuess];
+[i,j,k,m,n] = ind2sub(size(dat),idx);
+f0 = [xx(i(1)),yy(j(1)),zz(k(1)),tt(m(1)),rr(n(1))];
 
 %% optimization
+
+disp('Searching for solution...')
 
 % f0 = hodo_true .* [1.02 1.02 1.02 1.02 1.02];
 
@@ -141,7 +162,14 @@ options = optimoptions('fsolve','Display','iter' ...
                                ,'StepTolerance',1e-9);
 hodo = fsolve(f,f0,options)
 
-[v_err,vel] = rrFun_ta(hodo,obsv,pulsar,mu,dt,1)
+[v_err,vel] = rrFun_ta(hodo,obsv,pulsar,mu,dt,1);
+
+if max(abs(err)) > 1e-6
+    error('Hodograph does not converge!')
+end
+if max(abs(v-vel)) > 1e-4
+    error('Velocities do not converge!')
+end
 
 
 %% test solution space
@@ -157,7 +185,7 @@ guess_valid = [];
 guess_inval = [];
 for i = 1:300
     
-    pert = (rand(1,5)-0.5)/3;
+    pert = (rand(1,5)-0.5);
     % ----- test section -----
 % 	pert(end) = abs(pert(end));
     % ----- end test -----

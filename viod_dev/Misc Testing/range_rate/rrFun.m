@@ -50,28 +50,6 @@ c_vect = T * [x;y;z];
 cx = c_vect(1);
 cy = c_vect(2);
 
-    % % calculate the angle between the pulsar vector and the orbital plane
-    % gamma = atan2(norm(cross(up,[0;0;1])),dot(up,[0;0;1]));
-    % gamma = pi/2 - gamma;
-    % gamma = mod(gamma,pi/2);
-    % 
-    % uu = cross([0;0;1],up); % vector orthogonal to pulsar direction
-    % 
-    % % solve intersection on the circle
-    % 
-    % % --- convert the out of plane pulsar observation to an in-plane value
-    % v = v / cos(gamma);
-    % 
-    % % --- calculate intercepts on each solution set
-    % 
-    %     % we only care about the in-plane components of up now
-    %     % so make a new variable upp with only the x and y components
-    %     % and make it a unit vector.
-    %     % alternatively, simply divide up by cos^2 in the above step
-    % upp = [up(1:2);0] / norm([up(1:2);0]);
-    % P1 = upp * v';
-    % P2 = P1 + uu;
-
 V1 = nan(2,size(obsv,2));
 V2 = nan(2,size(obsv,2));
 for j = 1:size(obsv,2)
@@ -90,8 +68,8 @@ for j = 1:size(obsv,2)
     % no intercept, return objective function as a metric of how close the
     % line is to the circle
     if delta < 0
-%         t_diff = dt;
-        t_diff = ones(size(dt)) * sqrt(-delta) * 10;
+        t_diff = ones(size(dt)) * sqrt(-delta) * 20 + dt * 2;
+        V = nan;
         return
     end
     V1(1,j) = ( D*dy + sgn*dx*sqrt(delta) ) / dr^2 + cx;
@@ -105,56 +83,6 @@ end
 V1(end+1,:) = 0;
 V2(end+1,:) = 0;
 VV = cat(3,V1,V2);
-
-%------------ TESTING --------------
-if exist('testing','var')
-    % convert everything to 2D
-    uc = T * uc;
-    ue = T * ue;
-    k = T * k;
-    k0 = T * k0;
-
-    figure
-    % --- calculate points on hodograph
-    angles = linspace(0,2*pi,100);
-    cX = R * cos(angles) + c_vect(1);
-    cY = R * sin(angles) + c_vect(2);
-    circ = [cX;cY;zeros(size(cX))];
-    % --- plot hodograph
-    plot3(circ(1,:),circ(2,:),circ(3,:),'DisplayName','Hodograph');
-    hold on
-    % --- plot inertial axes
-    quiver3([0,0,0],[0,0,0],[0,0,0],[1,0,0],[0,1,0],[0,0,1],'Color','Black','DisplayName','Axes')
-    % --- plot circle center vector uc
-    quiver3(0,0,0,uc(1),uc(2),uc(3),'DisplayName','uc');
-    % --- plot eccentricity vector ue
-    quiver3(0,0,0,ue(1),ue(2),ue(3),'DisplayName','ue')
-    % --- plot hodograph normal at theta = 0
-    quiver3(0,0,0,k0(1),k0(2),k0(3),'DisplayName','k0')
-    % --- plot true hodograph normal
-    quiver3(0,0,0,k(1),k(2),k(3),'DisplayName','k')
-    % --- plot pulsar vector
-    quiver3(0,0,0,obsv(1,1),obsv(2,1),obsv(3,1),'-.','LineWidth',1,'DisplayName','P1')
-    quiver3(0,0,0,obsv(1,2),obsv(2,2),obsv(3,2),'--','LineWidth',1,'DisplayName','P2')
-    quiver3(0,0,0,obsv(1,3),obsv(2,3),obsv(3,3),':' ,'LineWidth',1,'DisplayName','P3')
-    % --- plot hodograph intercepts
-    scatter3(V1(1,:),V1(2,:),V1(3,:),'DisplayName','Intercept Set 1')
-    scatter3(V2(1,:),V2(2,:),V2(3,:),'DisplayName','Intercept Set 2')
-    hold off
-    xlabel('x');ylabel('y');zlabel('z');legend
-    axis equal
-    view([1 1 1])
-
-    T'*V1
-    T'*V2
-    
-    % revert everything to 3D
-    uc = T' * uc;
-    ue = T' * ue;
-    k = T' * k;
-    k0 = T' * k0;
-end
-%------------ END TEST -------------
 
 V = V1;
 
@@ -215,38 +143,80 @@ if isempty(f_sorted)
 
     t_diff = dt_guess - dt;
 
-    return
-end
-
 % --- otherwise, iterate through all sorted sets and find minimum error
-t_diff_mat = [];
-Is = nan(size(V,1),size(V,2),size(f_sorted,1));
-for j = 1:size(f_sorted,1)
-    f = f_sorted(j,:);
-    index = idx_sorted(j,:);
-    for i = 1:size(obsv,2)
-        V(:,i) = VV(:,i,index(i));
+else
+    t_diff_mat = [];
+    Is = nan(size(V,1),size(V,2),size(f_sorted,1));
+    for j = 1:size(f_sorted,1)
+        f = f_sorted(j,:);
+        index = idx_sorted(j,:);
+        for i = 1:size(obsv,2)
+            V(:,i) = VV(:,i,index(i));
+        end
+
+        Is(:,:,j) = V;
+
+        a = mu/(V(:,1)'*V(:,1)) * (1 + e^2 + 2*e*cos(f(1))) / (1 - e^2);
+
+        E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
+        M = E - e*sin(E);
+        t = sqrt(a^3/mu)*M;
+        dt_guess = t(2:end) - t(1:end-1);
+
+        t_diff_mat(end+1,:) = dt_guess - dt;
     end
 
-    Is(:,:,j) = V;
+    t_diff_vect = vecnorm(t_diff_mat,2,2);
+    idx = find(t_diff_vect==min(t_diff_vect));
+    idx = idx(1);
+    t_diff = t_diff_mat(idx,:);
+    V = Is(:,:,idx);
 
-    a = mu/(V(:,1)'*V(:,1)) * (1 + e^2 + 2*e*cos(f(1))) / (1 - e^2);
-
-    E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
-    M = E - e*sin(E);
-    t = sqrt(a^3/mu)*M;
-    dt_guess = t(2:end) - t(1:end-1);
-
-    t_diff_mat(end+1,:) = dt_guess - dt;
 end
 
-t_diff_vect = vecnorm(t_diff_mat,2,2);
-idx = find(t_diff_vect==min(t_diff_vect));
-idx = idx(1);
-t_diff = t_diff_mat(idx,:);
-V = Is(:,:,idx);
+%------------ TESTING --------------
+if exist('testing','var')
+    % convert everything to 2D
+    uc = T * uc;
+    ue = T * ue;
+    k = T * k;
+    k0 = T * k0;
+    obsv = obsv ./ vecnorm(obsv,2,1);
 
-V = T' * V;
+    figure
+    % --- calculate points on hodograph
+    angles = linspace(0,2*pi,100);
+    cX = R * cos(angles) + c_vect(1);
+    cY = R * sin(angles) + c_vect(2);
+    circ = [cX;cY;zeros(size(cX))];
+    % --- plot hodograph
+    plot3(circ(1,:),circ(2,:),circ(3,:),'DisplayName','Hodograph');
+    hold on
+    % --- plot inertial axes
+    quiver3([0,0,0],[0,0,0],[0,0,0],[1,0,0],[0,1,0],[0,0,1],'Color','Black','DisplayName','Axes')
+    % --- plot circle center vector uc
+    quiver3(0,0,0,uc(1),uc(2),uc(3),'DisplayName','uc');
+    % --- plot eccentricity vector ue
+    quiver3(0,0,0,ue(1),ue(2),ue(3),'DisplayName','ue')
+    % --- plot hodograph normal at theta = 0
+    quiver3(0,0,0,k0(1),k0(2),k0(3),'DisplayName','k0')
+    % --- plot true hodograph normal
+    quiver3(0,0,0,k(1),k(2),k(3),'DisplayName','k')
+    % --- plot pulsar vector
+    quiver3(0,0,0,obsv(1,1),obsv(2,1),obsv(3,1),'-.','LineWidth',1,'DisplayName','P1')
+    quiver3(0,0,0,obsv(1,2),obsv(2,2),obsv(3,2),'--','LineWidth',1,'DisplayName','P2')
+    quiver3(0,0,0,obsv(1,3),obsv(2,3),obsv(3,3),':' ,'LineWidth',1,'DisplayName','P3')
+    % --- plot guess velocities
+    scatter3(V(1,:),V(2,:),V(3,:),'DisplayName','Guess Obsv Positions')
+    hold off
+    xlabel('x');ylabel('y');zlabel('z');legend
+    axis equal
+    view([1 1 1])
+end
+%------------ END TEST -------------
+
+% final processing of outputs
+V = T' * V; % conversion back to 3D
 
 end
 

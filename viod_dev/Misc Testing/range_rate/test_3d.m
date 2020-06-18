@@ -4,7 +4,7 @@ clear;clc
 mu = 1;
 a = 1;
 e = 0.3;
-i = pi/9;
+i = pi/5;
 omg = pi/4;
 w = 0;
 
@@ -29,12 +29,14 @@ for j = 1:length(f)
     [r(:,j),v(:,j)] = Get_Orb_Vects(params,mu);
 end
 
-v_obsv = nan(3,length(f));
+obsv = nan(1,length(f));
+pulsar = nan(3,length(f));
 % alternate between three pulsars
 idx = 0;
 for j = 1:length(f)
     idx = mod(idx,3) + 1;
-    v_obsv(:,j) = v(:,j)' * P(:,idx) * P(:,idx);
+    obsv(j) = v(:,j)' * P(:,idx);
+    pulsar(:,j) = P(:,idx);
 end
 
 [~,~,V] = svd(v');
@@ -47,7 +49,6 @@ ux = ux / norm(ux);
 uy = cross(k,ux);
 T = [ux';uy';k'];
 
-v_obsv
 v
 
 % ----- true hodograph ------
@@ -98,12 +99,12 @@ end
 % test if objective function returns 0 given perfect input
 hodo_true = [Z',theta,R];
 % [err,val] = rrFun([Z',theta,R],v_obsv,mu,dt)
-[err,val] = rrFun_ta([Z',theta,R],v_obsv,mu,dt)
+[err,val] = rrFun_ta([Z',theta,R],obsv,pulsar,mu,dt)
 
 %% global search
 
-res = 15;
-rGuess = 5*mean(vecnorm(v_obsv));
+res = 16;
+rGuess = 2*mean(abs(obsv));
 dat = nan(res,res,res);
 xx = linspace(-0.5,0.5,res);
 yy = linspace(-0.5,0.5,res);
@@ -112,14 +113,15 @@ tt = linspace(-pi,pi,res);
 idx = 0;
 
 for i = 1:res
-    for j = 1:res
-        for k = 1:res
-            for m = 1:res
-                idx = idx + 1;
-                dat(i,j,k) = norm(rrFun_ta([xx(i),yy(j),zz(k),tt(m),rGuess],v_obsv,mu,dt));
-            end
-        end
-    end
+for j = 1:res
+for k = 1:res
+for m = 1:res
+    idx = idx + 1;
+    fin = [xx(i),yy(j),zz(k),tt(m),rGuess];
+    dat(i,j,k) = norm(rrFun_ta(fin,obsv,pulsar,mu,dt));
+end
+end
+end
 end
 
 [~,idx] = min(dat(:));
@@ -130,20 +132,21 @@ f0 = [xx(i(1)),yy(j(1)),zz(k(1)),tt(m(1)),rGuess];
 
 % f0 = hodo_true .* [1.02 1.02 1.02 1.02 1.02];
 
-f = @(x) rrFun_ta(x,v_obsv,mu,dt);
+f = @(x) rrFun_ta(x,obsv,pulsar,mu,dt);
 options = optimoptions('fsolve','Display','iter' ...
                                ,'PlotFcn','optimplotx' ...
                                ,'MaxFunctionEvaluations',5000 ...
-                               ,'MaxIterations',500 ...
-                               ,'Algorithm','levenberg-marquardt');
+                               ,'MaxIterations',700 ...
+                               ,'Algorithm','levenberg-marquardt' ...
+                               ,'StepTolerance',1e-9);
 hodo = fsolve(f,f0,options)
 
-[t_err,vel] = rrFun_ta(hodo,v_obsv,mu,dt,1)
+[v_err,vel] = rrFun_ta(hodo,obsv,pulsar,mu,dt,1)
 
 
 %% test solution space
 
-f = @(x) rrFun_ta(x,v_obsv,mu,dt);
+f = @(x) rrFun_ta(x,obsv,pulsar,mu,dt);
 options = optimoptions('fsolve','Display','none' ...
                                ,'MaxFunctionEvaluations',3000 ...
                                ,'MaxIterations',500 ...
@@ -154,13 +157,13 @@ guess_valid = [];
 guess_inval = [];
 for i = 1:300
     
-    pert = (rand(1,5)-0.5)/10;
+    pert = (rand(1,5)-0.5)/3;
     % ----- test section -----
 % 	pert(end) = abs(pert(end));
     % ----- end test -----
     f0 = hodo_true + hodo_true .* pert;
-    [~,~,exitFlag] = fsolve(f,f0,options);
-    if exitFlag > 0
+    hodo = fsolve(f,f0,options);
+    if max(abs(hodo-hodo_true)) < 1e-3
         guess_valid(end+1,:) = pert;
     else
         guess_inval(end+1,:) = pert;
@@ -169,11 +172,13 @@ for i = 1:300
 end
 
 figure;
-scatter3(guess_inval(:,1),guess_inval(:,4),guess_inval(:,5),20);
+scatter(guess_inval(:,4),guess_inval(:,5),20);
 hold on
-scatter3(guess_valid(:,1),guess_valid(:,4),guess_valid(:,5),20);
+scatter(guess_valid(:,4),guess_valid(:,5),20);
 hold off
 axis equal
+xlabel('x')
+ylabel('y')
 
 disp(' ')
 disp('Mean Disturbance')

@@ -12,12 +12,12 @@ params = [a e i omg w 0];
 
 % define pulsars
 P = [0 0 1;... % pulsar 1
-     1 0 1;... % pulsar 2
+     1 1 1;... % pulsar 2
      3 1 2]';  % pulsar 3
 P = P ./ vecnorm(P,2,1);
 
 % calculate true position and velocity values
-f = deg2rad([330 10 20 40 60 70]);
+f = deg2rad([330 10 20 40 60 70 80]);
 E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
 M = E - e*sin(E);
 t = sqrt(a^3/mu)*M;
@@ -108,7 +108,7 @@ end
 % test if objective function returns 0 given perfect input
 hodo_true = [Z',theta,R];
 % [err,val] = rrFun([Z',theta,R],v_obsv,mu,dt)
-[err,vel] = rrFun_ta([Z',theta,R],obsv,pulsar,mu,dt,1);
+[err,vel] = rrFun_ta([Z',theta,R],obsv,pulsar,mu,dt);
 if max(abs(err)) > 1e-6
     error('Hodograph does not converge!')
 end
@@ -118,7 +118,7 @@ end
 
 %% global search
 
-res = 10;
+res = 12;
 dat = nan(res,res,res,res,res);
 lb = mean(abs(obsv));
 ub = 3*mean(abs(obsv));

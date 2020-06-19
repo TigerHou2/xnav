@@ -256,23 +256,26 @@ if M == 0
     return
 end
 
+d = 1;
+n = 5;
+
 if e < 1
-    E = M + e/2;
-    d = 1;
+    E = mod(M+e/2,2*pi);
     while d > 1e-6
-        Ep = E;
-        E = E - (E-e*sin(E)-M)/(1-e*cos(E));
-        E = mod(E,2*pi);
-        d = abs(Ep-E)/Ep;
+        E = E - n*(E-e*sin(E)-M) / ...
+            (1-e*cos(E) + sign(1-e*cos(E)) ...
+                        * sqrt(abs((n-1)^2*(1-e*cos(E))^2 ...
+                                   -n*(n-1)*(E-e*sin(E)-M)*(e*sin(E)))));
+        d = abs(E-e*sin(E)-M);
     end
 else
-    E = M;
-    d = 1;
+    E = mod(M+e/2,2*pi);
     while d > 1e-6
-        Ep = E;
-        E = E - (e*sinh(E)-E-M)/(e*cosh(E)-1);
-        E = mod(E,2*pi);
-        d = abs(Ep-E)/Ep;
+        E = E - n*(e*sinh(E)-E-M) / ...
+            (e*cosh(E)-1 + sign(e*cosh(E)-1) ...
+                         * sqrt(abs((n-1)^2*(e*cosh(E)-1)^2 ...
+                                    -n*(n-1)*(e*sinh(E)-E-M)*(e*sinh(E)))));
+        d = abs(e*sinh(E)-E-M);
     end
 end
 

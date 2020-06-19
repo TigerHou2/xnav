@@ -1,7 +1,7 @@
 close all
 clear;clc
 
-addpath('../')
+cd('../')
 
 Parameters
 

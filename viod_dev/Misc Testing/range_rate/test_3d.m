@@ -3,10 +3,10 @@ clear;clc
 
 mu = 1;
 a = 1;
-e = 0.3;
+e = 0.4;
 i = pi/9;
-omg = 3*pi/2;
-w = 0;
+omg = pi/4;
+w = pi/5;
 
 params = [a e i omg w 0];
 
@@ -109,31 +109,28 @@ end
 hodo_true = [Z',theta,R];
 % [err,val] = rrFun([Z',theta,R],v_obsv,mu,dt)
 [err,vel] = rrFun_ta([Z',theta,R],obsv,pulsar,mu,dt);
-if max(abs(err)) > 1e-6
-    error('Hodograph does not converge!')
-end
-if max(abs(v-vel)) > 1e-4
-    error('Velocities do not converge!')
-end
+
+disp(['Max range-rate error: ' num2str(max(err))])
+disp(['Max velocity error:   ' num2str(max(max(abs(v-vel))))])
 
 %% global search
 
-res = 12;
-dat = nan(res,res,res,res,res);
+res = [12,12,12,12,12];
+dat = nan(res);
 lb = mean(abs(obsv));
 ub = 3*mean(abs(obsv));
-xx = linspace(-lb,lb,res);
-yy = linspace(-lb,lb,res);
-zz = linspace(-lb,lb,res);
-tt = linspace(-pi,pi,res);
-rr = linspace(lb,ub,res);
+xx = linspace(-lb,lb,res(1));
+yy = linspace(-lb,lb,res(2));
+zz = linspace(-lb,lb,res(3));
+tt = linspace(-pi,pi,res(4));
+rr = linspace( lb,ub,res(5));
 idx = 0;
 
-for i = 1:res
-for j = 1:res
-for k = 1:res
-for m = 1:res
-for n = 1:res
+for i = 1:res(1)
+for j = 1:res(2)
+for k = 1:res(3)
+for m = 1:res(4)
+for n = 1:res(5)
     idx = idx + 1;
     fin = [xx(i),yy(j),zz(k),tt(m),rr(n)];
     dat(i,j,k,m,n) = norm(rrFun_ta(fin,obsv,pulsar,mu,dt));
@@ -159,16 +156,15 @@ options = optimoptions('fsolve','Display','iter' ...
                                ,'MaxFunctionEvaluations',5000 ...
                                ,'MaxIterations',700 ...
                                ,'Algorithm','levenberg-marquardt' ...
-                               ,'StepTolerance',1e-9);
+                               ,'StepTolerance',1e-8 ...
+                               ,'FunctionTolerance',1e-8);
 hodo = fsolve(f,f0,options)
 
 [v_err,vel] = rrFun_ta(hodo,obsv,pulsar,mu,dt,1);
 
-if max(abs(err)) > 1e-6
-    error('Hodograph does not converge!')
-end
-if max(abs(v-vel)) > 1e-4
-    error('Velocities do not converge!')
+v_diff = (v-vel)./vecnorm(v);
+if max(abs(v_diff(:))) > 1e-3
+    warning('Velocities do not converge!')
 end
 
 

@@ -8,13 +8,13 @@
 
 Create Spacecraft sc;
 GMAT sc.DateFormat = TAIModJulian;
-GMAT sc.Epoch = '21545';
+GMAT sc.Epoch = '25195';
 GMAT sc.CoordinateSystem = SunMJ2000Eq;
 GMAT sc.DisplayStateType = Keplerian;
 GMAT sc.SMA = 2323300000.000012;
 GMAT sc.ECC = 0.9356000000000003;
 GMAT sc.INC = 4.560708889999991;
-GMAT sc.RAAN = 360;
+GMAT sc.RAAN = 0;
 GMAT sc.AOP = 180;
 GMAT sc.TA = 358.9999999999998;
 GMAT sc.DryMass = 850;
@@ -44,10 +44,6 @@ GMAT sc.AttitudeDisplayStateType = 'Quaternion';
 GMAT sc.AttitudeRateDisplayStateType = 'AngularVelocity';
 GMAT sc.AttitudeCoordinateSystem = EarthMJ2000Eq;
 GMAT sc.EulerAngleSequence = '321';
-
-
-
-
 
 
 %----------------------------------------
@@ -143,7 +139,7 @@ GMAT orbitView.ShowPlot = true;
 GMAT orbitView.MaxPlotPoints = 20000;
 GMAT orbitView.ShowLabels = true;
 GMAT orbitView.ViewPointReference = Sun;
-GMAT orbitView.ViewPointVector = [ 2000000000 -1500000000 2000000000 ];
+GMAT orbitView.ViewPointVector = [ 3000000000 -200000000 3000000000 ];
 GMAT orbitView.ViewDirection = Sun;
 GMAT orbitView.ViewScaleFactor = 1;
 GMAT orbitView.ViewUpCoordinateSystem = SunMJ2000Eq;
@@ -182,8 +178,10 @@ GMAT report.WriteReport = true;
 Create MatlabFunction init;
 
 % GMAT init.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
+% Create MatlabFunction savefig;
 % GMAT savefig.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\misc';
-% GMAT var_ecc.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\scripts_matlab\';
+% Create MatlabFunction var_ecc;
+% GMAT var_ecc.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\scripts_matlab';
 
 GMAT init.FunctionPath = 'E:\Research\XNAV\viod_gmat';
 
@@ -197,7 +195,7 @@ GMAT var_ecc.FunctionPath = 'E:\Research\XNAV\viod_gmat\matlab_scripts';
 %---------- Arrays, Variables, Strings
 %----------------------------------------
 
-Create Array v[100,3] v_noisy[100,3] r[100,3] r_ref[1,3] ecc_vect[1,7];
+Create Array v[100,3] r_ref[1,3] ecc_vect[1,7];
 Create Variable mu noise f0 dT dt temp num_monte runTime period ecc;
 Create Variable i j k ecc_count num_obsv usePerturbations save;
 Create String svnm;
@@ -215,7 +213,6 @@ GMAT ecc_count = 7;
 GMAT num_obsv = 6;
 GMAT usePerturbations = 1; % 0 = Two-Body Motion, 1 = Perturbed Motion
 GMAT save = 1; % 0 = don't save figure, 1 = save figure
-
 
 
 
@@ -240,7 +237,7 @@ Else
 EndIf;
 
 PenUp orbitView;
-Propagate propagator(sc) {sc.Sun.TA = f0};
+GMAT sc.Sun.TA = f0;
 PenDown orbitView;
 
 For k = 1:1:ecc_count;
@@ -252,9 +249,6 @@ For k = 1:1:ecc_count;
       GMAT v(i,1) = sc.SunMJ2000Eq.VX;
       GMAT v(i,2) = sc.SunMJ2000Eq.VY;
       GMAT v(i,3) = sc.SunMJ2000Eq.VZ;
-      GMAT r(i,1) = sc.SunMJ2000Eq.X;
-      GMAT r(i,2) = sc.SunMJ2000Eq.Y;
-      GMAT r(i,3) = sc.SunMJ2000Eq.Z;
       
       If i ~= num_obsv
          
@@ -299,5 +293,6 @@ If save == 1
 EndIf;
 
 %---------- Misc Testing Code Here ----------
+
 
 

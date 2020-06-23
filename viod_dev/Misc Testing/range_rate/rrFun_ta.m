@@ -68,7 +68,6 @@ dx = P2(1) - P1(1);
 dy = P2(2) - P1(2);
 dr = sqrt(dx^2+dy^2);
 D = (P1(1)-cx)*(P2(2)-cy) - (P2(1)-cx)*(P1(2)-cy);
-sgn = sign(dy); if sgn == 0, sgn = 1; end
 delta = R^2*dr^2-D^2;
 
 % --- no intercept, return objective function as a metric of how close the
@@ -82,10 +81,10 @@ end
 V1 = zeros(3,1);
 V2 = zeros(3,1);
 
-V1(1) = ( D*dy + sgn*dx*sqrt(delta) ) / dr^2 + cx;
-V1(2) = (-D*dx + sgn*dy*sqrt(delta) ) / dr^2 + cy;
-V2(1) = ( D*dy - sgn*dx*sqrt(delta) ) / dr^2 + cx;
-V2(2) = (-D*dx - sgn*dy*sqrt(delta) ) / dr^2 + cy;
+V1(1) = ( D*dy + dx*sqrt(delta) ) / dr^2 + cx;
+V1(2) = (-D*dx + dy*sqrt(delta) ) / dr^2 + cy;
+V2(1) = ( D*dy - dx*sqrt(delta) ) / dr^2 + cx;
+V2(2) = (-D*dx - dy*sqrt(delta) ) / dr^2 + cy;
 
 % use time interval to calculate subsequent velocities
 % and project on to pulsars
@@ -113,7 +112,7 @@ a =  mu/(V1'*V1) * (1 + e^2 + 2*e*cos(f1)) / (1 - e^2);
 
 % --- find "orbital period". 
 %     in quotes because it's the orbital period divided by 2*pi
-%     and for a hyperbolic case it's the equivalent
+%     and for a hyperbolic case it's only the rough equivalent
 if e < 1
     period = sqrt(a^3/mu);
 else

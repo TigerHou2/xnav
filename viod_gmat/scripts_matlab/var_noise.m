@@ -5,7 +5,7 @@ function var_noise(V,mu,num,pos_ref,period_ref,ecc_ref)
 %   Tiger Hou
 %
 
-% define noise
+% define noise in m/s
 noise = [0.01 0.1 0.5 1 2 3 5 7 10];
 
 % clean up unused velocity measurement slots

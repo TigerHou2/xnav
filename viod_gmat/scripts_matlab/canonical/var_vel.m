@@ -1,4 +1,4 @@
-function var_vel(V,mu,noise,num_monte,pos_ref,period_ref,ecc_ref)
+function var_vel(DU,TU,V,mu,noise,num_monte,pos_ref,period_ref,ecc_ref)
 %VAR_VEL Plots error statistics for VIOD w.r.t mean velocity.
 %
 % Author:
@@ -9,7 +9,9 @@ function var_vel(V,mu,noise,num_monte,pos_ref,period_ref,ecc_ref)
 persistent rms period ecc v_mat
 
 %% data collection mode
-if nargin == 7
+if nargin == 9
+    
+    noise = noise / DU * TU;
     
     rms_temp = nan(num_monte,1);
     period_temp = nan(num_monte,1);
@@ -42,7 +44,7 @@ if nargin == 7
     return;
     
 %% data plotting mode
-else
+elseif nargin == 2
     
     v_vect = v_mat(1,:);
     
@@ -61,8 +63,8 @@ else
     scatter(v_mat(:),rms(:),scFormat)
     errorbar(v_vect,mean(rms),std(rms),errFormat,'LineWidth',linewidth)
     hold off
-    xlabel('Mean Velocity, $km/s$')
-    ylabel('RMS Position Error, $km$')
+    xlabel('Mean Velocity, DU/TU')
+    ylabel('RMS Position Error, DU')
     xlim(lim_x)
     setgrid
 
@@ -71,8 +73,8 @@ else
     scatter(v_mat(:),period(:),scFormat)
     errorbar(v_vect,mean(period),std(period),errFormat,'LineWidth',linewidth)
     hold off
-    xlabel('Mean Velocity, $km/s$')
-    ylabel('Period Error, seconds')
+    xlabel('Mean Velocity, DU/TU')
+    ylabel('Period Error, TU')
     xlim(lim_x)
     setgrid
 
@@ -81,12 +83,16 @@ else
     scatter(v_mat(:),ecc(:),scFormat)
     errorbar(v_vect,mean(ecc),std(ecc),errFormat,'LineWidth',linewidth)
     hold off
-    xlabel('Mean Velocity, $km/s$')
+    xlabel('Mean Velocity, DU/TU')
     ylabel('Eccentricity Error, nd')
     xlim(lim_x)
     setgrid
     
     latexify(40,18,22)
+    
+    sgtitle(['DU = ' num2str(DU) ' $km$,  ',...
+             'TU = ' num2str(TU) ' $s$,  ',...
+             'DU/TU = ' num2str(DU/TU) ' km/s'])
     
     % clean up persistent variables
     clear rms period ecc v_mat

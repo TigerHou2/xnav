@@ -1,14 +1,17 @@
 close all
 clear;clc
 
+% define orbit
 mu = 1;
 a = 1;
 e = 0.4;
 i = pi/9;
 omg = pi/4;
 w = pi/5;
-
 params = [a e i omg w 0];
+
+% define time offset
+t_offset = 0.1378; % just has to be a number unrelated to anything else
 
 % define pulsars
 P = [0 0 1;... % pulsar 1
@@ -17,99 +20,39 @@ P = [0 0 1;... % pulsar 1
 P = P ./ vecnorm(P,2,1);
 
 % calculate true position and velocity values
-f = deg2rad([0 10 20 40 60 70 80]);
+% --- at least 3 measurements for each pulsar
+% --- if some pulsars have fewer measurements, fill to end with NaN
+f = deg2rad([ 0  40  80  120;... % pulsar 1
+             10  50  90  130;... % pulsar 2
+             20  60  100 140]); % pulsar 3
 E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
 M = E - e*sin(E);
-t = sqrt(a^3/mu)*M;
-dt = t(2:end) - t(1:end-1);
-r = nan(3,length(f));
-v = nan(3,length(f));
-for j = 1:length(f)
-    params(6) = f(j);
-    [r(:,j),v(:,j)] = Get_Orb_Vects(params,mu);
+t_true = sqrt(a^3/mu)*M;
+
+t = t_true + t_offset;
+
+% perform observations
+r = nan(size(f,1),size(f,2),3);
+v = nan(size(f,1),size(f,2),3);
+obsv = nan(size(f));
+pulsar = P;
+for i = 1:size(f,1)
+    for j = 1:size(f,2)
+        params(6) = f(i,j);
+        [r(i,j,:),v(i,j,:)] = Get_Orb_Vects(params,mu);
+        vtemp = v(i,j,:);
+        obsv(i,j) = P(:,i)'*vtemp(:);
+    end
 end
 
-obsv = nan(1,length(f));
-pulsar = nan(3,length(f));
-% alternate between three pulsars
-idx = 0;
-for j = 1:length(f)
-    idx = mod(idx,3) + 1;
-    obsv(j) = v(:,j)' * P(:,idx);
-    pulsar(:,j) = P(:,idx);
-end
+% calculate perfect inputs
+period = 2*pi * sqrt(a^3/mu);
+OPT = [e,period,t_offset];
 
-[~,~,V] = svd(v');
-k = V(:,end);
+% check if perfect input yields perfect output
+[optDiff,V] = rrFun_sine(OPT,obsv,pulsar,mu,t)
 
-% check if orbit plane normal is in the right direction
-% we assume more than half of the measurements are taken less than half an
-% orbit apart from its adjacent measurements.
-kEst = zeros(3,1);
-for i = 1:size(v,2)-1
-    kEst = kEst + cross(v(:,i),v(:,i+1));
-end
-if dot(k,kEst) < 0
-    k = -k;
-end
-
-ux = cross(v(:,1),k);
-ux = ux / norm(ux);
-uy = cross(k,ux);
-T = [ux';uy';k'];
-
-v
-
-% ----- true hodograph ------
-vt = T * v;
-[C,R] = fitcircle(vt(1:2,:));
-Z = T' * [C;0];
-% find theta
-uc = Z / norm(Z);
-ue = cross([0;0;1],uc);
-ue = ue / norm(ue);
-k0 = cross(uc,ue);
-theta = atan2(norm(cross(k0,k)),dot(k0,k));
-if dot(ue,k)>0
-    theta = -theta;
-end
-
-    % visualize for testing
-    figure
-    % --- calculate points on hodograph
-    angles = linspace(0,2*pi,100);
-    cx = R * cos(angles) + C(1);
-    cy = R * sin(angles) + C(2);
-    circ = T' * [cx;cy;zeros(size(cx))];
-    % --- plot hodograph
-    plot3(circ(1,:),circ(2,:),circ(3,:),'DisplayName','Hodograph');
-    hold on
-    % --- plot inertial axes
-    quiver3([0,0,0],[0,0,0],[0,0,0],[1,0,0],[0,1,0],[0,0,1],'Color','Black')
-    % --- plot circle center vector uc
-    quiver3(0,0,0,uc(1),uc(2),uc(3),'DisplayName','uc');
-    % --- plot eccentricity vector ue
-    quiver3(0,0,0,ue(1),ue(2),ue(3),'DisplayName','ue')
-    % --- plot hodograph normal at theta = 0
-    quiver3(0,0,0,k0(1),k0(2),k0(3),'DisplayName','k0')
-    % --- plot true hodograph normal
-    quiver3(0,0,0,k(1),k(2),k(3),'DisplayName','k')
-    % --- plot pulsar vector
-    quiver3(0,0,0,P(1,1),P(2,1),P(3,1),'-.','LineWidth',1,'DisplayName','P1')
-    quiver3(0,0,0,P(1,2),P(2,2),P(3,2),'--','LineWidth',1,'DisplayName','P2')
-    quiver3(0,0,0,P(1,3),P(2,3),P(3,3),':' ,'LineWidth',1,'DisplayName','P3')
-    % --- plot measurement points
-    scatter3(v(1,:),v(2,:),v(3,:))
-    hold off
-    xlabel('x');ylabel('y');zlabel('z');legend
-    axis equal
-    view([1 1 1])
-
-% test if objective function returns 0 given perfect input
-hodo_true = [Z',theta,R];
-% [err,val] = rrFun([Z',theta,R],v_obsv,mu,dt)
-[err,vel] = rrFun_ta([Z',theta,R],obsv,pulsar,mu,dt);
-
+%%
 disp(['Max range-rate error: ' num2str(max(err))])
 disp(['Max velocity error:   ' num2str(max(max(abs(v-vel))))])
 

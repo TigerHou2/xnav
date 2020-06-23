@@ -81,10 +81,11 @@ xlabel('Noise, DU/TU')
 ylabel('Eccentricity Error, nd')
 xlim(lim_x)
 setgrid
+    
+latexify(40,18,22)
+
 sgtitle(['DU = ' num2str(DU) ' $km$,  ',...
          'TU = ' num2str(TU) ' $s$,  ',...
          'DU/TU = ' num2str(DU/TU) ' km/s'])
-    
-latexify(40,18,22)
 
 end

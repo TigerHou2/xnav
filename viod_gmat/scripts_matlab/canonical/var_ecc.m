@@ -1,4 +1,4 @@
-function var_ecc(V,mu,noise,num_monte,pos_ref,period_ref,ecc_ref)
+function var_ecc(DU,TU,V,mu,noise,num_monte,pos_ref,period_ref,ecc_ref)
 %VAR_ECC Plots error statistics for VIOD w.r.t eccentricity.
 %
 % Author:
@@ -9,7 +9,9 @@ function var_ecc(V,mu,noise,num_monte,pos_ref,period_ref,ecc_ref)
 persistent rms period ecc ecc_mat
 
 %% data collection mode
-if nargin == 7
+if nargin == 9
+    
+    noise = noise / DU * TU;
     
     rms_temp = nan(num_monte,1);
     period_temp = nan(num_monte,1);
@@ -41,7 +43,7 @@ if nargin == 7
     return;
     
 %% data plotting mode
-else
+elseif nargin == 2
     
     ecc_vect = ecc_mat(1,:);
     
@@ -61,7 +63,7 @@ else
     errorbar(ecc_vect,mean(rms),std(rms),errFormat,'LineWidth',linewidth)
     hold off
     xlabel('Eccentricity, nd')
-    ylabel('RMS Position Error, $km$')
+    ylabel('RMS Position Error, DU')
     xlim(lim_x)
     setgrid
 
@@ -71,7 +73,7 @@ else
     errorbar(ecc_vect,mean(period),std(period),errFormat,'LineWidth',linewidth)
     hold off
     xlabel('Eccentricity, nd')
-    ylabel('Period Error, seconds')
+    ylabel('Period Error, TU')
     xlim(lim_x)
     setgrid
 
@@ -86,6 +88,10 @@ else
     setgrid
     
     latexify(40,18,22)
+    
+    sgtitle(['DU = ' num2str(DU) ' $km$,  ',...
+             'TU = ' num2str(TU) ' $s$,  ',...
+             'DU/TU = ' num2str(DU/TU) ' km/s'])
     
     % clean up persistent variables
     clear rms period ecc ecc_mat

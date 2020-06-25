@@ -8,14 +8,14 @@
 
 Create Spacecraft sc;
 GMAT sc.DateFormat = TAIModJulian;
-GMAT sc.Epoch = '25195';
+GMAT sc.Epoch = '21545';
 GMAT sc.CoordinateSystem = SunMJ2000Eq;
 GMAT sc.DisplayStateType = Keplerian;
 GMAT sc.SMA = 2323300000.000012;
 GMAT sc.ECC = 0.9356000000000003;
 GMAT sc.INC = 4.560708889999991;
 GMAT sc.RAAN = 0;
-GMAT sc.AOP = 180;
+GMAT sc.AOP = 0;
 GMAT sc.TA = 358.9999999999998;
 GMAT sc.DryMass = 850;
 GMAT sc.Cd = 2.2;

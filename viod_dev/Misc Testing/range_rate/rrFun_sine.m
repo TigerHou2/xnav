@@ -1,4 +1,4 @@
-function [optDiff,V] = rrFun_sine(OPT,obsv,pulsar,mu,time)
+function [optDiff,V] = rrFun_sine(OPT,obsv,pulsar,mu,time,debug)
 %RRFUN_SINE Is the objective function for range-rate hodograph fitting.
 %
 % Author:
@@ -36,40 +36,60 @@ g_timepe = OPT(3); % time since periapsis
 M = size(pulsar,2);
 
 % convert time of flight to true anomaly
-g_tpArray = time + g_timepe;
+g_tpArray = time - g_timepe;
 g_M = mod( g_tpArray/g_period*2*pi, 2*pi );
 g_E = kepler(g_M,g_e);
 if g_e < 1, g_f = 2 * atan( tan(g_E/2) * sqrt((1+g_e)/(1-g_e)) );
 else,       g_f = 2 * atan(tanh(g_E/2) * sqrt((g_e+1)/(g_e-1)) ); end
 
 % preallocate matrix of range-rates derived from sine waves
-rrFromSine = nan(M,3);
+numHodoPoints = 6;
+angles = linspace(-pi/2,pi/2,numHodoPoints);
+rrFromSine = nan(M,numHodoPoints);
 
 % fit range-rate and true anomaly data to sine waves for each pulsar
 for i = 1:M
     % find number of observations for this pulsar
     N = sum(~isnan(obsv(i,:)));
     % construct matrices for solving linear system for sine wave
-    A = [cos(g_f(i,:))' sin(g_f(i,:))' ones(N,1)];
+    % --- here we break down [[ y = amp * sin(f-pha) + off ]]
+    %     as [[ y = amp * sin(f)cos(pha) - amp * cos(f)sin(pha) + off ]]
+    %     where sin(f) and cos(f) are known
+    A = [sin(g_f(i,:))' -cos(g_f(i,:))' ones(N,1)];
     b = obsv(i,:)';
     % solve the least squares linear system
     x = A\b;
-    amp = sqrt(x(1)^2+x(2)^2); % amplitude
-    off = x(3);                % offset
-    pha = atan(x(1)/x(2));     % phase
-    % get three points on the sine wave to use later to define circle
-    % --- we simply choose f = -90, 0, 90
-    rrFromSine(i,:) = [ amp * sin(-pi/2+pha) + off,...
-                        amp * sin( 0   +pha) + off,...
-                        amp * sin( pi/2+pha) + off];
+    pha = atan(x(2)/x(1)); % phase
+    amp = x(2) / sin(pha); % amplitude
+    off = x(3);            % offset
+    % get points on the sine wave to use later to define hodograph
+    rrFromSine(i,:) = amp * sin(angles-pha) + off;
+    % debugging
+    if exist('debug','var')
+        figure(1)
+        hold on
+        lb = min(min(g_f(:)),0);
+        rb = max(max(g_f(:)),2*pi);
+        fplot(@(x) amp * sin(x-pha) + off, [lb,rb])
+        hold off
+    end
 end
 
 % calculate the intersection of planes defined by range rates from sines
-hodoPoints = nan(3); % 3xQ matrix, where Q is the number of intersections
-for k = 1:3
+% --- create 3xQ matrix where
+%     Q is the number of intersections used to create hodograph circle
+hodoPoints = nan(3,numHodoPoints);
+for k = 1:numHodoPoints
     % construct linear system to solve for intersection of planes
+    % --- where the plane is defined by the pulsar vector [a0,b0,c0]
+    %     and the point [x0,y0,z0]
+    %     so the plane has a0(x-x0) + b0(y-y0) + c0(z-z0) = 0
+    % --- transforming to a linear system, we have
+    %     [a1  b1  c1]  [x]     [ a1*x1 + b1*y1 + c1*z1 ]
+    %     [a2  b2  c3]  [y]  =  [ a2*x2 + b2*y2 + c2*z2 ]
+    %     [a3  b3  c3]  [z]     [ a3*x3 + b3*y3 + c3*z3 ]
     A = pulsar';
-    b = sum( rrFromSine(:,k).*pulsar'./vecnorm(pulsar',2,2), 2 );
+    b = sum( rrFromSine(:,k).*pulsar'.*pulsar'./vecnorm(pulsar',2,2), 2 );
     hodoPoints(:,k) = A\b;
 end
 
@@ -89,21 +109,42 @@ T = [u1';u2';normal'];
 
 % transform hodograph points to 2D, then fit circle
 hodo2D = T * hodoPoints; % third row should be zero
-[C,R] = fitcircle(hodo2D(1:2,:));
+[C,R,residual] = fitcircle(hodo2D(1:2,:));
 
 % convert hodograph center back to 3D
 C = T' * [C;0];
 
-% calculate eccentricity, period, and time since periapsis
+% calculate eccentricity and period
 e = norm(C) / R;
 vp = R - norm(C);
-a = mu / vp^2 * (1+e^2+2*e)/(1-e^2);
+a = mu / vp^2 * (1+e^2-2*e)/(1-e^2);
 period = 2*pi * sqrt(abs(a^3/mu));
-timepe = min(g_f(:)) / 2*pi * period;
+
+if exist('debug','var')
+    % output full velocity measurements
+    V = nan(size(obsv,1),size(obsv,2),3);
+    radius = C*R / norm(C);
+    for i = 1:M
+        for j = 1:N
+            df = g_f(i,j);
+            V(i,j,:) = rotVec(radius,normal,df) + C;
+        end
+    end
+else
+    V = nan;
+end
 
 % finalizing outputs
-V = nan;
-optDiff = [e,period,timepe] - [g_e,g_period,g_timepe];
+optDiff = [e,period,residual] - [g_e,g_period,0];
+weight = [50 1 10];
+scale = 100;
+optDiff = optDiff .* weight / norm(weight) * scale;
+
+% if the time since periapse is out of bounds (i.e. < 0 or > period)
+% then we add a penalty for being a periodic solution that is out of range
+if mod(g_timepe,g_period) ~= g_timepe
+    optDiff = optDiff * (abs(mod(g_timepe,g_period)-g_timepe)/g_period+1);
+end
 
 end
 
@@ -116,7 +157,7 @@ for i = 1:length(Mvect(:))
 M = Mvect(i);
 
 if M == 0
-    E = 0;
+    Evect(i) = 0;
     continue
 end
 
@@ -125,7 +166,7 @@ n = 5;
 
 if e < 1
     E = mod(M+e/2,2*pi);
-    while d > 1e-6
+    while d > 1e-9
         E = E - n*(E-e*sin(E)-M) / ...
             (1-e*cos(E) + sign(1-e*cos(E)) ...
                         * sqrt(abs((n-1)^2*(1-e*cos(E))^2 ...
@@ -134,7 +175,7 @@ if e < 1
     end
 else
     E = mod(M+e/2,2*pi);
-    while d > 1e-6
+    while d > 1e-9
         E = E - n*(e*sinh(E)-E-M) / ...
             (e*cosh(E)-1 + sign(e*cosh(E)-1) ...
                          * sqrt(abs((n-1)^2*(e*cosh(E)-1)^2 ...

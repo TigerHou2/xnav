@@ -4,17 +4,19 @@ clear;clc
 % define orbit
 mu = 1;
 a = 1;
-e = 0.4;
-i = pi/9;
-omg = pi/4;
-w = pi/5;
+e = 0.2;
+i = pi/4;
+omg = 3*pi/2;
+w = pi/3;
 params = [a e i omg w 0];
 
 % define time offset
-t_offset = 0.1378; % just has to be a number unrelated to anything else
+t_offset = 3.9; % just has to be a number unrelated to anything else
+period = 2*pi * sqrt(a^3/mu);
+t_offset = mod(t_offset,period);
 
 % define pulsars
-P = [0 0 1;... % pulsar 1
+P = [0 1 1;... % pulsar 1
      1 1 1;... % pulsar 2
      3 1 2]';  % pulsar 3
 P = P ./ vecnorm(P,2,1);
@@ -22,9 +24,11 @@ P = P ./ vecnorm(P,2,1);
 % calculate true position and velocity values
 % --- at least 3 measurements for each pulsar
 % --- if some pulsars have fewer measurements, fill to end with NaN
-f = deg2rad([ 0  40  80  120;... % pulsar 1
-             10  50  90  130;... % pulsar 2
-             20  60  100 140]); % pulsar 3
+f = [ 0  40  80;... % pulsar 1
+     10  50  90;... % pulsar 2
+     20  60  100]; % pulsar 3
+f = f-40;
+f = deg2rad(f);
 E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
 M = E - e*sin(E);
 t_true = sqrt(a^3/mu)*M;
@@ -40,60 +44,102 @@ for i = 1:size(f,1)
     for j = 1:size(f,2)
         params(6) = f(i,j);
         [r(i,j,:),v(i,j,:)] = Get_Orb_Vects(params,mu);
+%         noise = randn(1,1,3);
+%         noise = noise ./ vecnorm(noise,2,3) * 0.0005;
+%         vtemp = v(i,j,:) + noise;
         vtemp = v(i,j,:);
         obsv(i,j) = P(:,i)'*vtemp(:);
     end
 end
 
+% visualize range rate
+figure(1)
+scatter(f(:),obsv(:))
+
 % calculate perfect inputs
-period = 2*pi * sqrt(a^3/mu);
 OPT = [e,period,t_offset];
 
 % check if perfect input yields perfect output
 [optDiff,V] = rrFun_sine(OPT,obsv,pulsar,mu,t)
 
-%%
-disp(['Max range-rate error: ' num2str(max(err))])
-disp(['Max velocity error:   ' num2str(max(max(abs(v-vel))))])
-
 %% global search
 
-res = [12,12,12,12,12];
+warning('off','all')
+
+res = [15,15,25];
 dat = nan(res);
-lb = mean(abs(obsv));
-ub = 3*mean(abs(obsv));
-xx = linspace(-lb,lb,res(1));
-yy = linspace(-lb,lb,res(2));
-zz = linspace(-lb,lb,res(3));
-tt = linspace(-pi,pi,res(4));
-rr = linspace( lb,ub,res(5));
-idx = 0;
+ee = linspace(0,0.9,res(1));
+pmin = max(t(:))-min(t(:));
+pmax = 10*(max(t(:))-min(t(:)));
+pp = linspace(pmin,pmax,res(2));
+tt = linspace(0,pmax,res(3));
+
+E = nan(res(1),res(2),res(3));
+P = nan(res(1),res(2),res(3));
+T = nan(res(1),res(2),res(3));
 
 for i = 1:res(1)
 for j = 1:res(2)
 for k = 1:res(3)
-for m = 1:res(4)
-for n = 1:res(5)
-    idx = idx + 1;
-    fin = [xx(i),yy(j),zz(k),tt(m),rr(n)];
-    dat(i,j,k,m,n) = norm(rrFun_ta(fin,obsv,pulsar,mu,dt));
-end
-end
+    if tt(k) > pp(j)
+        % we don't care about redunrant guesses where the time since
+        % periapsis is greater than the period
+        dat(i,j,k) = Inf;
+    else
+        fin = [ee(i),pp(j),tt(k)];
+        dat(i,j,k) = norm(rrFun_sine(fin,obsv,pulsar,mu,t));
+    end
+    E(i,j,k) = ee(i);
+    P(i,j,k) = pp(j);
+    T(i,j,k) = tt(k);
 end
 end
 end
 
+%----- testing -----
+% use convolution to find element with best neighbors
+% --- version 1: poor man's gaussian blur
+%     neighbors = 2;
+%     edge = 2*neighbors + 1;
+%     filter = ones(edge,edge,edge);
+%     dat = convn(dat,filter,'same') + dat*edge^3;
+% --- version 2: gaussian blur
+    dat = imgaussfilt3(dat);
+
 [~,idx] = min(dat(:));
-[i,j,k,m,n] = ind2sub(size(dat),idx);
-f0 = [xx(i(1)),yy(j(1)),zz(k(1)),tt(m(1)),rr(n(1))];
+[i,j,k] = ind2sub(size(dat),idx);
+f0 = [ee(i(1)),pp(j(1)),tt(k(1))];
+
+% scatter to see solution space
+figure(2)
+Emesh = E(:);
+Pmesh = P(:);
+Tmesh = T(:);
+D = dat(:).^0.25 * 15;
+cutoff = 40;
+Emesh = Emesh(D<cutoff);
+Pmesh = Pmesh(D<cutoff);
+Tmesh = Tmesh(D<cutoff);
+D = D(D<cutoff);
+scatter3(OPT(1),OPT(2),OPT(3),24,'magenta','filled','DisplayName','True Soln')
+hold on
+scatter3( f0(1), f0(2), f0(3),24,'red','DisplayName','Init Guess')
+f1 = scatter3(Emesh,Pmesh,Tmesh,18,D,'filled','DisplayName','Objective Function');
+f1.MarkerFaceAlpha = 0.6;
+hold off
+colormap(bone(200))
+xlabel('eccentricity')
+ylabel('period')
+zlabel('time since periapse')
+pbaspect([1 1 1])
+colorbar
+legend('Location','Best')
 
 %% optimization
 
 disp('Searching for solution...')
 
-% f0 = hodo_true .* [1.02 1.02 1.02 1.02 1.02];
-
-f = @(x) rrFun_ta(x,obsv,pulsar,mu,dt);
+fun = @(x) rrFun_sine(x,obsv,pulsar,mu,t);
 options = optimoptions('fsolve','Display','iter' ...
                                ,'PlotFcn','optimplotx' ...
                                ,'MaxFunctionEvaluations',5000 ...
@@ -101,60 +147,27 @@ options = optimoptions('fsolve','Display','iter' ...
                                ,'Algorithm','levenberg-marquardt' ...
                                ,'StepTolerance',1e-8 ...
                                ,'FunctionTolerance',1e-8);
-hodo = fsolve(f,f0,options)
+g_opt = fsolve(fun,f0,options);
+soln_opt = g_opt;
+soln_opt(3) = mod(g_opt(3),g_opt(2))
+close(gcf)
 
-[v_err,vel] = rrFun_ta(hodo,obsv,pulsar,mu,dt,1);
+[optDiff,V] = rrFun_sine(soln_opt,obsv,pulsar,mu,t,'debug');
 
-v_diff = (v-vel)./vecnorm(v);
-if max(abs(v_diff(:))) > 1e-3
-    warning('Velocities do not converge!')
-end
+%% plot velocities
 
-
-%% test solution space
-
-f = @(x) rrFun_ta(x,obsv,pulsar,mu,dt);
-options = optimoptions('fsolve','Display','none' ...
-                               ,'MaxFunctionEvaluations',3000 ...
-                               ,'MaxIterations',500 ...
-                               ,'Algorithm','levenberg-marquardt' ...
-                               ,'StepTolerance',1e-9);
-
-guess_valid = [];
-guess_inval = [];
-for i = 1:300
-    
-    pert = (rand(1,5)-0.5);
-    % ----- test section -----
-% 	pert(end) = abs(pert(end));
-    % ----- end test -----
-    f0 = hodo_true + hodo_true .* pert;
-    hodo = fsolve(f,f0,options);
-    if max(abs(hodo-hodo_true)) < 1e-3
-        guess_valid(end+1,:) = pert;
-    else
-        guess_inval(end+1,:) = pert;
-    end
-    
-end
-
-figure;
-scatter(guess_inval(:,4),guess_inval(:,5),20);
+figure(3)
+t1 = V(:,:,1);
+t2 = V(:,:,2);
+t3 = V(:,:,3);
+scatter3(t1(:),t2(:),t3(:),'DisplayName','Guess Vel')
 hold on
-scatter(guess_valid(:,4),guess_valid(:,5),20);
+scatter3(t1(1),t2(1),t3(1),'Filled','DisplayName','Guess Vel Initial')
+t1 = v(:,:,1);
+t2 = v(:,:,2);
+t3 = v(:,:,3);
+scatter3(t1(:),t2(:),t3(:),'DisplayName','True Vel')
+scatter3(t1(1),t2(1),t3(1),'Filled','DisplayName','True Vel Initial')
 hold off
 axis equal
-xlabel('x')
-ylabel('y')
-
-disp(' ')
-disp('Mean Disturbance')
-disp(['Inval Case:' mat2str(mean(guess_inval),3)])
-disp(['Valid Case:' mat2str(mean(guess_valid),3)])
-disp(' ')
-disp('Standard Deviation')
-disp(['Inval Case:' mat2str(std(guess_inval),3)])
-disp(['Valid Case:' mat2str(std(guess_valid),3)])
-disp(' ')
-disp('Correlation Coefficients:')
-disp(corrcoef(guess_valid))
+legend('Location','Best')

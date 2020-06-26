@@ -1,4 +1,4 @@
-function [optDiff,V] = rrFun_sine(OPT,obsv,pulsar,mu,time,debug)
+function [optDiff,V,optOut] = rrFun_sine(OPT,obsv,pulsar,mu,time,debug)
 %RRFUN_SINE Is the objective function for range-rate hodograph fitting.
 %
 % Author:
@@ -139,6 +139,7 @@ optDiff = [e,period,residual] - [g_e,g_period,0];
 weight = [50 1 10];
 scale = 100;
 optDiff = optDiff .* weight / norm(weight) * scale;
+optOut  = [e,period,g_timepe];
 
 % if the time since periapse is out of bounds (i.e. < 0 or > period)
 % then we add a penalty for being a periodic solution that is out of range

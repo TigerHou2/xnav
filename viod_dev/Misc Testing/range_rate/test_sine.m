@@ -4,8 +4,8 @@ clear;clc
 % define orbit
 mu = 1;
 a = 1;
-e = 0.2;
-i = pi/4;
+e = 0.6;
+i = pi/5;
 omg = 3*pi/2;
 w = pi/3;
 params = [a e i omg w 0];
@@ -64,13 +64,17 @@ OPT = [e,period,t_offset];
 
 %% global search
 
+tic
+
+disp('Searching for initial guess...')
+
 warning('off','all')
 
-res = [15,15,25];
+res = [15,25,25];
 dat = nan(res);
 ee = linspace(0,0.9,res(1));
 pmin = max(t(:))-min(t(:));
-pmax = 10*(max(t(:))-min(t(:)));
+pmax = 5 * 2*pi*mu/mean(obsv(:))^3;
 pp = linspace(pmin,pmax,res(2));
 tt = linspace(0,pmax,res(3));
 
@@ -96,13 +100,12 @@ end
 end
 end
 
-%----- testing -----
 % use convolution to find element with best neighbors
 % --- version 1: poor man's gaussian blur
 %     neighbors = 2;
 %     edge = 2*neighbors + 1;
 %     filter = ones(edge,edge,edge);
-%     dat = convn(dat,filter,'same') + dat*edge^3;
+%     dat = (convn(dat,filter,'same') + dat*edge^3) / edge^3;
 % --- version 2: gaussian blur
     dat = imgaussfilt3(dat);
 
@@ -116,7 +119,7 @@ Emesh = E(:);
 Pmesh = P(:);
 Tmesh = T(:);
 D = dat(:).^0.25 * 15;
-cutoff = 40;
+cutoff = 100;
 Emesh = Emesh(D<cutoff);
 Pmesh = Pmesh(D<cutoff);
 Tmesh = Tmesh(D<cutoff);
@@ -139,20 +142,36 @@ legend('Location','Best')
 
 disp('Searching for solution...')
 
+f1 = f0;
+
+fun = @(x) norm(rrFun_sine(x,obsv,pulsar,mu,t));
+options = optimoptions('fmincon','Display','final' ...
+                                ,'MaxFunctionEvaluations',2000 ...
+                                ,'MaxIterations',300 ...
+                                ,'StepTolerance',1e-9 ...
+                                ,'FunctionTolerance',1e-9);
+f1 = fmincon(fun,f0,-eye(3),[0;0;0],[],[],[],[],[],options);
+
 fun = @(x) rrFun_sine(x,obsv,pulsar,mu,t);
 options = optimoptions('fsolve','Display','iter' ...
-                               ,'PlotFcn','optimplotx' ...
-                               ,'MaxFunctionEvaluations',5000 ...
-                               ,'MaxIterations',700 ...
-                               ,'Algorithm','levenberg-marquardt' ...
-                               ,'StepTolerance',1e-8 ...
-                               ,'FunctionTolerance',1e-8);
-g_opt = fsolve(fun,f0,options);
+                               ,'MaxFunctionEvaluations',2000 ...
+                               ,'MaxIterations',300 ...
+                               ,'StepTolerance',1e-9 ...
+                               ,'FunctionTolerance',1e-9);
+g_opt = fsolve(fun,f1,options);
+
 soln_opt = g_opt;
 soln_opt(3) = mod(g_opt(3),g_opt(2))
-close(gcf)
 
-[optDiff,V] = rrFun_sine(soln_opt,obsv,pulsar,mu,t,'debug');
+[optDiff,V,optOut] = rrFun_sine(soln_opt,obsv,pulsar,mu,t,'debug');
+
+toc
+
+warning('on','all')
+
+if max(abs(optDiff)) > 1e-4
+    warning('Solution does not converge!')
+end
 
 %% plot velocities
 

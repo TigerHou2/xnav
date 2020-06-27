@@ -5,9 +5,20 @@ a = 1;
 e = 0.9;
 mu = 1;
 
-pulsars = [3 1 2;...
-           1 0 1;...
-           1 2 0]';
+pulsars = [2 2 1;... % pulsar 1
+           1 1 1;... % pulsar 2
+           3 1 2]';  % pulsar 3
+       
+pulsars = pulsars ./ vecnorm(pulsars,2,1);
+
+% visualize pulsars
+figure(100)
+quiver3(0,0,0,pulsars(1,1),pulsars(2,1),pulsars(3,1),'DisplayName','Pulsar 1')
+hold on
+quiver3(0,0,0,pulsars(1,2),pulsars(2,2),pulsars(3,2),'DisplayName','Pulsar 2')
+quiver3(0,0,0,pulsars(1,3),pulsars(2,3),pulsars(3,3),'DisplayName','Pulsar 3')
+hold off
+legend('Location','Best')
 
 ue  = [1 0 0]';
 une = [0 1 0]';
@@ -50,24 +61,24 @@ xlabel('True Anomaly')
 ylabel('Range-Rate')
 legend('Location','Best')
 
-figure;
-latexify
-hold on
-for k = 1:nump
-    plot(E_vect,rr_vect(k,:),'DisplayName',['Pulsar ' num2str(k)'])
-end
-hold off
-xlabel('Eccentric Anomaly')
-ylabel('Range-Rate')
-legend('Location','Best')
-
-figure;
-latexify
-hold on
-for k = 1:nump
-    plot(M_vect,rr_vect(k,:),'DisplayName',['Pulsar ' num2str(k)'])
-end
-hold off
-xlabel('Mean Anomaly')
-ylabel('Range-Rate')
-legend('Location','Best')
+% figure;
+% latexify
+% hold on
+% for k = 1:nump
+%     plot(E_vect,rr_vect(k,:),'DisplayName',['Pulsar ' num2str(k)'])
+% end
+% hold off
+% xlabel('Eccentric Anomaly')
+% ylabel('Range-Rate')
+% legend('Location','Best')
+% 
+% figure;
+% latexify
+% hold on
+% for k = 1:nump
+%     plot(M_vect,rr_vect(k,:),'DisplayName',['Pulsar ' num2str(k)'])
+% end
+% hold off
+% xlabel('Mean Anomaly')
+% ylabel('Range-Rate')
+% legend('Location','Best')

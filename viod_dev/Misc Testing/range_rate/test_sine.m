@@ -16,7 +16,7 @@ period = 2*pi * sqrt(a^3/mu);
 t_offset = mod(t_offset,period);
 
 % define pulsars
-P = [1 1 1;... % pulsar 1
+P = [2 2 1;... % pulsar 1
      0 1 1;... % pulsar 2
      3 1 2]';  % pulsar 3
 P = P ./ vecnorm(P,2,1);
@@ -60,6 +60,15 @@ for i = 1:size(obsv,2)
 end
 hold off
 
+% visualize pulsars
+figure(100)
+quiver3(0,0,0,P(1,1),P(2,1),P(3,1),'DisplayName','Pulsar 1')
+hold on
+quiver3(0,0,0,P(1,2),P(2,2),P(3,2),'DisplayName','Pulsar 2')
+quiver3(0,0,0,P(1,3),P(2,3),P(3,3),'DisplayName','Pulsar 3')
+hold off
+legend('Location','Best')
+
 % calculate perfect inputs
 OPT = [e,period,t_offset];
 
@@ -75,11 +84,11 @@ disp('Searching for initial guess...')
 
 warning('off','all')
 
-res = [15,25,25];
+res = [20,20,100];
 dat = nan(res);
 ee = linspace(0,0.9,res(1));
 pmin = max(t(:))-min(t(:));
-pmax = 5 * 2*pi*mu/mean(obsv(:))^3;
+pmax = 20 * 2*pi*mu/mean(obsv(:))^3;
 pp = linspace(pmin,pmax,res(2));
 tt = linspace(0,pmax,res(3));
 
@@ -109,8 +118,8 @@ end
 % --- version 1: poor man's gaussian blur
 %     neighbors = 2;
 %     edge = 2*neighbors + 1;
-%     filter = ones(edge,edge,edge);
-%     dat = (convn(dat,filter,'same') + dat*edge^3) / edge^3;
+%     filter = ones(edge,edge);
+%     dat = (convn(dat,filter,'same') + dat*edge^2) / edge^2;
 % --- version 2: gaussian blur
     dat = imgaussfilt3(dat);
 
@@ -123,8 +132,8 @@ figure(2)
 Emesh = E(:);
 Pmesh = P(:);
 Tmesh = T(:);
-D = dat(:).^0.25 * 15;
-cutoff = 100;
+D = dat(:);
+cutoff = 600;
 Emesh = Emesh(D<cutoff);
 Pmesh = Pmesh(D<cutoff);
 Tmesh = Tmesh(D<cutoff);

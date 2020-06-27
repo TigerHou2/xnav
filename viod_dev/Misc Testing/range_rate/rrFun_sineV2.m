@@ -1,5 +1,5 @@
-function [optDiff,V,optOut] = rrFun_sine(OPT,obsv,pulsar,mu,time,debug)
-%RRFUN_SINE Is the objective function for range-rate hodograph fitting.
+function [fVal,V,optOut] = rrFun_sineV2(OPT,obsv,pulsar,mu,time,debug)
+%RRFUN_SINEV2 Is the objective function for range-rate hodograph fitting.
 %
 % Author:
 %   Tiger Hou
@@ -22,10 +22,7 @@ function [optDiff,V,optOut] = rrFun_sine(OPT,obsv,pulsar,mu,time,debug)
 %   time   - MxN array of observation time stamps since first obsv
 %            |- M is the number of pulsars
 %            |- N is the number of measurements per pulsar
-%
-% Outputs:
-%   v_diff - range-rate difference between guess and true values
-%   V      - velocities corresponding to hodograph defined by C
+
 
 % take data from optimization variables
 g_e = OPT(1); % eccentricity
@@ -179,6 +176,8 @@ vp = R - norm(C);
 a = mu / vp^2 * (1+e^2-2*e)/(1-e^2);
 period = 2*pi * sqrt(abs(a^3/mu));
 
+optOut  = [e,period,g_timepe];
+
 if exist('debug','var')
     % output full velocity measurements
     V = nan(size(obsv,1),size(obsv,2),3);
@@ -193,17 +192,13 @@ else
     V = nan;
 end
 
-% finalizing outputs
-optDiff = [e,period,residual+fVal] - [g_e,g_period,0];
-weight = [5 1 2];
-scale = 100;
-optDiff = optDiff .* weight / norm(weight) * scale;
-optOut  = [e,period,g_timepe];
+% finalize outputs
+fVal = [fVal,residual];
 
 % if the time since periapse is out of bounds (i.e. < 0 or > period)
 % then we add a penalty for being a periodic solution that is out of range
 if mod(g_timepe,g_period) ~= g_timepe
-    optDiff = optDiff * (abs(mod(g_timepe,g_period)-g_timepe)/g_period+1);
+    fVal = fVal * (abs(mod(g_timepe,g_period)-g_timepe)/g_period+1);
 end
 
 end

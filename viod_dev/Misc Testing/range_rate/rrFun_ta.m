@@ -59,7 +59,6 @@ cy = c_vect(2);
 
 % find the intercept of the first range-rate measurement to get starting TA
 % --- calculate perpendicular line
-
 P1 = obsv(1) * pulsar(:,1) * norm(pulsar(:,1))^2 / norm(pulsar(1:2,1))^2;
 P2 = P1 + cross([0;0;1],P1);
 

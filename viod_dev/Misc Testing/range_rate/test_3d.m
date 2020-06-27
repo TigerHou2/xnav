@@ -3,11 +3,10 @@ clear;clc
 
 mu = 1;
 a = 1;
-e = 0.8;
+e = 0.6;
 i = pi/5;
 omg = 3*pi/2;
 w = pi/3;
-
 params = [a e i omg w 0];
 
 % define pulsars
@@ -17,7 +16,7 @@ P = [0 1 1;... % pulsar 1
 P = P ./ vecnorm(P,2,1);
 
 % calculate true position and velocity values
-f = deg2rad([0 10 20 40 60 70 80]);
+f = deg2rad([0 10 20 40 50 60 80]);
 E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
 M = E - e*sin(E);
 t = sqrt(a^3/mu)*M;

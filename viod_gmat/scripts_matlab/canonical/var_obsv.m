@@ -1,4 +1,4 @@
-function var_obsv(V,mu,noise,num_monte,num_obsv,pos_ref,period_ref,ecc_ref)
+function var_obsv(DU,TU,noise,V,mu,num_monte,num_obsv,pos_ref,period_ref,ecc_ref)
 %VAR_OBSV Plots error statistics for VIOD w.r.t number of observations.
 %
 % Author:
@@ -9,7 +9,9 @@ function var_obsv(V,mu,noise,num_monte,num_obsv,pos_ref,period_ref,ecc_ref)
 persistent rms period ecc obsv_mat
 
 %% data collection mode
-if nargin == 8
+if nargin == 10
+    
+    noise = noise / DU * TU;
     
     rms_temp = nan(num_monte,1);
     period_temp = nan(num_monte,1);
@@ -41,7 +43,7 @@ if nargin == 8
     return;
     
 %% data plotting mode
-else
+elseif nargin == 3
     
     obsv = obsv_mat(1,:);
     
@@ -61,7 +63,7 @@ else
     errorbar(obsv,mean(rms),std(rms),errFormat,'LineWidth',linewidth)
     hold off
     xlabel('Number of Observations, nd')
-    ylabel('RMS Position Error, $km$')
+    ylabel('RMS Position Error, DU')
     xlim(lim_x)
     setgrid
 
@@ -71,7 +73,7 @@ else
     errorbar(obsv,mean(period),std(period),errFormat,'LineWidth',linewidth)
     hold off
     xlabel('Number of Observations, nd')
-    ylabel('Period Error, seconds')
+    ylabel('Period Error, TU')
     xlim(lim_x)
     setgrid
 
@@ -87,8 +89,16 @@ else
     
     latexify(40,18,22)
     
+    sgtitle(['DU = ' num2str(DU,5) ' $km$ \hspace{1em} $\mid$ \hspace{1em}',...
+             'TU = ' num2str(TU,5) ' $s$ \hspace{1em}$\mid$ \hspace{1em}',...
+             'DU/TU = ' num2str(DU/TU,5) ' $km/s$ \hspace{1em} $\mid$ \hspace{1em}',...
+             'Noise = ' num2str(noise/DU*TU/1000,5) ' DU/TU'])
+    
     % clean up persistent variables
     clear rms period ecc obsv_mat
+    
+else
+    error('Incorrect number of arguments.')
 
 end
 

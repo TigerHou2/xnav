@@ -48,6 +48,7 @@ angles = linspace(-pi/2,pi/2,numHodoPoints);
 rrFromSine = nan(M,numHodoPoints);
 
 % fit range-rate and true anomaly data to sine waves for each pulsar
+eErr = 0;
 for i = 1:M
     % find number of observations for this pulsar
     N = sum(~isnan(obsv(i,:)));
@@ -62,6 +63,9 @@ for i = 1:M
     pha = atan(x(2)/x(1)); % phase
     amp = x(2) / sin(pha); % amplitude
     off = x(3);            % offset
+%     eErr = eErr + abs( (abs(amp)+off)/(abs(amp)-off)...
+%                       -sin(pha+pi/2-asin(g_e*sin(pha+pi/2))) / ...
+%                        sin(pha+pi/2+asin(g_e*sin(pha+pi/2))) ) / 100;
     % get points on the sine wave to use later to define hodograph
     rrFromSine(i,:) = amp * sin(angles-pha) + off;
     % debugging
@@ -93,14 +97,45 @@ for k = 1:numHodoPoints
     hodoPoints(:,k) = A\b;
 end
 
-% use singular value decomposition to find hodograph plane normal
-[~,~,V] = svd(hodoPoints',0);
-normal = V(:,end);
-% --- check if the sign is correct by comparing against cross product of
-% velocities at f = -90 and f = 0
-if normal'*cross(hodoPoints(:,1),hodoPoints(:,2)) < 0
-    normal = -normal;
-end
+% if exist('debug','var')
+%     figure(9)
+%     scatter3(hodoPoints(1,:),hodoPoints(2,:),hodoPoints(3,:))
+%     axis equal
+% end
+
+%     % here, we have a problem: the circle found by sine waves may not all
+%     % contain the origin, which is required for the hodograph
+%     % for now, we will simply shift the circle.
+%     % --- use vectors from adjacent points on circle to find normal
+%     hodoAdj = hodoPoints(:,2:end) - hodoPoints(:,1:end-1);
+%     [~,~,V] = svd(hodoAdj',0);
+%     normal = V(:,end);
+%     % --- check if the sign is correct by comparing against cross product of
+%     % adjacent vectors in hodoAdj
+%     if normal'*cross(hodoAdj(:,1),hodoAdj(:,2)) < 0
+%         normal = -normal;
+%     end
+%     % --- now, we will offset hodoPoints along the normal
+%     offset = mean(normal'*hodoPoints);
+%     hodoPoints = hodoPoints - offset;
+
+    % use singular value decomposition to find hodograph plane normal
+    [~,~,V] = svd(hodoPoints',0);
+    normal = V(:,end);
+    % --- check if the sign is correct by comparing against cross product of
+    % velocities at adjecent true anomalies
+    if normal'*cross(hodoPoints(:,1),hodoPoints(:,2)) < 0
+        normal = -normal;
+    end
+
+% if exist('debug','var')
+%     figure(10)
+%     scatter3(hodoPoints(1,:),hodoPoints(2,:),hodoPoints(3,:))
+%     hold on
+%     quiver3(0,0,0,normal(1),normal(2),normal(3))
+%     hold off
+%     axis equal
+% end
 
 % find the transformation matrix to bring the hodograph points to 2D
 u1 = hodoPoints(:,1) / norm(hodoPoints(:,1));
@@ -110,6 +145,11 @@ T = [u1';u2';normal'];
 % transform hodograph points to 2D, then fit circle
 hodo2D = T * hodoPoints; % third row should be zero
 [C,R,residual] = fitcircle(hodo2D(1:2,:));
+if exist('debug','var')
+    figure(11)
+    scatter3(hodo2D(1,:),hodo2D(2,:),hodo2D(3,:))
+    axis equal
+end
 
 % convert hodograph center back to 3D
 C = T' * [C;0];
@@ -135,8 +175,8 @@ else
 end
 
 % finalizing outputs
-optDiff = [e,period,residual] - [g_e,g_period,0];
-weight = [50 1 10];
+optDiff = [e,period,residual+eErr] - [g_e,g_period,0];
+weight = [50 1 20];
 scale = 100;
 optDiff = optDiff .* weight / norm(weight) * scale;
 optOut  = [e,period,g_timepe];

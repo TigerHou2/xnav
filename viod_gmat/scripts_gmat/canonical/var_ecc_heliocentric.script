@@ -184,7 +184,7 @@ Create MatlabFunction init;
 
 % GMAT init.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\';
 % GMAT savefig.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\misc';
-% GMAT var_ecc.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\scripts_matlab\';
+% GMAT var_ecc.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\viod_gmat\scripts_matlab\canonical';
 
 GMAT init.FunctionPath = 'E:\Research\XNAV\viod_gmat';
 
@@ -192,15 +192,16 @@ Create MatlabFunction savefig;
 GMAT savefig.FunctionPath = 'E:\Research\XNAV\viod_gmat\misc';
 
 Create MatlabFunction var_ecc;
-GMAT var_ecc.FunctionPath = 'E:\Research\XNAV\viod_gmat\matlab_scripts';
+GMAT var_ecc.FunctionPath = 'E:\Research\XNAV\viod_gmat\matlab_scripts\canonical\';
 
 %----------------------------------------
 %---------- Arrays, Variables, Strings
 %----------------------------------------
 
-Create Array v[100,3] v_noisy[100,3] r[100,3] r_ref[1,3] ecc_vect[1,7];
+Create Array v[100,3] r_ref[1,3] ecc_vect[1,7];
 Create Variable mu noise f0 dT dt temp num_monte runTime period ecc;
 Create Variable i j k ecc_count num_obsv usePerturbations save;
+Create Variable DU TU;
 Create String svnm;
 GMAT ecc_vect(1, 2) = 0.1;
 GMAT ecc_vect(1, 3) = 0.2;
@@ -214,11 +215,8 @@ GMAT dT = 80000000; % s
 GMAT num_monte = 1000;
 GMAT ecc_count = 7;
 GMAT num_obsv = 6;
-GMAT usePerturbations = 1; % 0 = Two-Body Motion, 1 = Perturbed Motion
+GMAT usePerturbations = 0; % 0 = Two-Body Motion, 1 = Perturbed Motion
 GMAT save = 1; % 0 = don't save figure, 1 = save figure
-
-
-
 
 
 %----------------------------------------
@@ -227,22 +225,32 @@ GMAT save = 1; % 0 = don't save figure, 1 = save figure
 
 BeginMissionSequence;
 
+% initialize MATLAB workspace
 GMAT init;
 GMAT mu = SolarSystem.Sun.Mu;
+
+% canonical time unit calculation
+GMAT DU = sc.Sun.SMA;
+GMAT TU = sqrt((DU^3)/mu); % seconds
+GMAT mu = mu / DU^3 * TU^2;
+
+Report report mu;
+
+
 GMAT dT = -1 * dT;
 GMAT dt = -1 * dT / (num_obsv-1);
 
 %---------- Perturbed vs. Two-Body Motion ----------
 If usePerturbations == 1
    GMAT propagator = perturbed;
-   GMAT svnm = '.\figures\var_ecc_heliocentric_perturbed';
+   GMAT svnm = '.\figures\canon_var_ecc_heliocentric_perturbed';
 Else
    GMAT propagator = twoBody;
-   GMAT svnm = '.\figures\var_ecc_heliocentric';
+   GMAT svnm = '.\figures\canon_var_ecc_heliocentric';
 EndIf;
 
 PenUp orbitView;
-Propagate propagator(sc) {sc.Sun.TA = f0};
+GMAT sc.Sun.TA = f0;
 PenDown orbitView;
 
 For k = 1:1:ecc_count;
@@ -251,12 +259,9 @@ For k = 1:1:ecc_count;
    
    For i = 1:1:num_obsv;
       
-      GMAT v(i,1) = sc.SunMJ2000Eq.VX;
-      GMAT v(i,2) = sc.SunMJ2000Eq.VY;
-      GMAT v(i,3) = sc.SunMJ2000Eq.VZ;
-      GMAT r(i,1) = sc.SunMJ2000Eq.X;
-      GMAT r(i,2) = sc.SunMJ2000Eq.Y;
-      GMAT r(i,3) = sc.SunMJ2000Eq.Z;
+      GMAT v(i,1) = sc.SunMJ2000Eq.VX / DU * TU;
+      GMAT v(i,2) = sc.SunMJ2000Eq.VY / DU * TU;
+      GMAT v(i,3) = sc.SunMJ2000Eq.VZ / DU * TU;
       
       If i ~= num_obsv
          
@@ -277,22 +282,22 @@ For k = 1:1:ecc_count;
    Propagate BackProp propagator(sc) {sc.ElapsedSecs = dT};
    PenDown orbitView;
    
-   GMAT r_ref(1) = sc.SunMJ2000Eq.X;
-   GMAT r_ref(2) = sc.SunMJ2000Eq.Y;
-   GMAT r_ref(3) = sc.SunMJ2000Eq.Z;
+   GMAT r_ref(1) = sc.SunMJ2000Eq.X / DU;
+   GMAT r_ref(2) = sc.SunMJ2000Eq.Y / DU;
+   GMAT r_ref(3) = sc.SunMJ2000Eq.Z / DU;
    
-   GMAT period = sc.OrbitPeriod;
+   GMAT period = sc.Sun.OrbitPeriod / TU;
    GMAT ecc = sc.Sun.ECC;
    
    %---------- Store Observation Data ----------
    
-   GMAT var_ecc(v, mu, noise, num_monte, r_ref, period, ecc);
+   GMAT var_ecc(DU, TU, noise, v, mu, num_monte, r_ref, period, ecc);
 
 EndFor;
 
 %---------- Begin Monte Carlo Sim ----------
 
-GMAT var_ecc;
+GMAT var_ecc(DU,TU,noise);
 
 %---------- Save Results ----------
 

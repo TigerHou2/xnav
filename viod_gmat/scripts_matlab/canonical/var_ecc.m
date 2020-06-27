@@ -1,4 +1,4 @@
-function var_ecc(DU,TU,V,mu,noise,num_monte,pos_ref,period_ref,ecc_ref)
+function var_ecc(DU,TU,noise,V,mu,num_monte,pos_ref,period_ref,ecc_ref)
 %VAR_ECC Plots error statistics for VIOD w.r.t eccentricity.
 %
 % Author:
@@ -43,7 +43,7 @@ if nargin == 9
     return;
     
 %% data plotting mode
-elseif nargin == 2
+elseif nargin == 3
     
     ecc_vect = ecc_mat(1,:);
     
@@ -89,9 +89,10 @@ elseif nargin == 2
     
     latexify(40,18,22)
     
-    sgtitle(['DU = ' num2str(DU) ' $km$,  ',...
-             'TU = ' num2str(TU) ' $s$,  ',...
-             'DU/TU = ' num2str(DU/TU) ' km/s'])
+    sgtitle(['DU = ' num2str(DU,5) ' $km$ \hspace{1em} $\mid$ \hspace{1em}',...
+             'TU = ' num2str(TU,5) ' $s$ \hspace{1em}$\mid$ \hspace{1em}',...
+             'DU/TU = ' num2str(DU/TU,5) ' $km/s$ \hspace{1em} $\mid$ \hspace{1em}',...
+             'Noise = ' num2str(noise/DU*TU/1000,5) ' DU/TU'])
     
     % clean up persistent variables
     clear rms period ecc ecc_mat

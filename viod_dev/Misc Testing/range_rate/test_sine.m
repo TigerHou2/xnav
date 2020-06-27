@@ -16,8 +16,8 @@ period = 2*pi * sqrt(a^3/mu);
 t_offset = mod(t_offset,period);
 
 % define pulsars
-P = [0 1 1;... % pulsar 1
-     1 1 1;... % pulsar 2
+P = [1 1 1;... % pulsar 1
+     0 1 1;... % pulsar 2
      3 1 2]';  % pulsar 3
 P = P ./ vecnorm(P,2,1);
 
@@ -54,13 +54,18 @@ end
 
 % visualize range rate
 figure(1)
-scatter(f(:),obsv(:))
+for i = 1:size(obsv,2)
+    plot(f(i,:),obsv(i,:),'-o')
+    hold on
+end
+hold off
 
 % calculate perfect inputs
 OPT = [e,period,t_offset];
 
 % check if perfect input yields perfect output
-[optDiff,V] = rrFun_sine(OPT,obsv,pulsar,mu,t)
+[optDiff,V] = rrFun_sine(OPT,obsv,pulsar,mu,t,'debug');
+optDiff
 
 %% global search
 
@@ -145,25 +150,23 @@ disp('Searching for solution...')
 f1 = f0;
 
 fun = @(x) norm(rrFun_sine(x,obsv,pulsar,mu,t));
-options = optimoptions('fmincon','Display','final' ...
+options = optimoptions('fmincon','Display','iter' ...
                                 ,'MaxFunctionEvaluations',2000 ...
-                                ,'MaxIterations',300 ...
-                                ,'StepTolerance',1e-9 ...
-                                ,'FunctionTolerance',1e-9);
+                                ,'MaxIterations',300);
 f1 = fmincon(fun,f0,-eye(3),[0;0;0],[],[],[],[],[],options);
 
 fun = @(x) rrFun_sine(x,obsv,pulsar,mu,t);
 options = optimoptions('fsolve','Display','iter' ...
                                ,'MaxFunctionEvaluations',2000 ...
-                               ,'MaxIterations',300 ...
-                               ,'StepTolerance',1e-9 ...
-                               ,'FunctionTolerance',1e-9);
+                               ,'MaxIterations',300);
 g_opt = fsolve(fun,f1,options);
 
 soln_opt = g_opt;
-soln_opt(3) = mod(g_opt(3),g_opt(2))
+soln_opt(3) = mod(g_opt(3),g_opt(2));
 
 [optDiff,V,optOut] = rrFun_sine(soln_opt,obsv,pulsar,mu,t,'debug');
+
+optOut
 
 toc
 

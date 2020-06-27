@@ -20,4 +20,6 @@ clear;clc
 addpath(['.' filesep 'od']);
 addpath(['.' filesep 'misc']);
 addpath(['.' filesep 'scripts_gmat'])
+addpath(['.' filesep 'scripts_gmat\canonical'])
 addpath(['.' filesep 'scripts_matlab'])
+addpath(['.' filesep 'scripts_matlab\canonical'])

@@ -50,10 +50,10 @@ N2d = (T * N')'; % [1] eqn.3
 % construct linear system [1] eqn.9
 A = 2*N2d;
 A(:,3) = -1;
-A = A .* vecnorm(N,2,2);
+A = A .* vecnorm(N,2,2).^6;
 B = N2d.^2;
 B = sum(B(:,1:2),2);
-B = B .* vecnorm(N,2,2);
+B = B .* vecnorm(N,2,2).^6;
 x = A\B;
 
 % find radius of hodograph

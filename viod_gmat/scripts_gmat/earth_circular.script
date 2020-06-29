@@ -11,11 +11,11 @@ GMAT sc.DateFormat = TAIModJulian;
 GMAT sc.Epoch = '21545';
 GMAT sc.CoordinateSystem = EarthMJ2000Eq;
 GMAT sc.DisplayStateType = Keplerian;
-GMAT sc.SMA = 9499.999999999991;
-GMAT sc.ECC = 0.2999999999999989;
+GMAT sc.SMA = 15000.00000000001;
+GMAT sc.ECC = 0.5000000000000003;
 GMAT sc.INC = 29.99999999999998;
-GMAT sc.RAAN = 40.00000000000001;
-GMAT sc.AOP = 70.00000000000038;
+GMAT sc.RAAN = 40.00000000000003;
+GMAT sc.AOP = 70.00000000000033;
 GMAT sc.TA = 0;
 GMAT sc.DryMass = 850;
 GMAT sc.Cd = 2.2;
@@ -44,6 +44,8 @@ GMAT sc.AttitudeDisplayStateType = 'Quaternion';
 GMAT sc.AttitudeRateDisplayStateType = 'AngularVelocity';
 GMAT sc.AttitudeCoordinateSystem = EarthMJ2000Eq;
 GMAT sc.EulerAngleSequence = '321';
+
+
 
 
 
@@ -89,8 +91,8 @@ GMAT prop_earth.StopIfAccuracyIsViolated = true;
 Create OrbitView DefaultOrbitView;
 GMAT DefaultOrbitView.SolverIterations = Current;
 GMAT DefaultOrbitView.UpperLeft = [ 0 0 ];
-GMAT DefaultOrbitView.Size = [ 0.5005882352941177 0.45 ];
-GMAT DefaultOrbitView.RelativeZOrder = 63;
+GMAT DefaultOrbitView.Size = [ 0.5005882352941177 0.4497549019607843 ];
+GMAT DefaultOrbitView.RelativeZOrder = 452;
 GMAT DefaultOrbitView.Maximized = false;
 GMAT DefaultOrbitView.Add = {sc, Earth, Luna, Sun};
 GMAT DefaultOrbitView.CoordinateSystem = EarthMJ2000Eq;
@@ -163,11 +165,13 @@ GMAT monteScatter_compare.FunctionPath = 'E:\Research\XNAV\viod_gmat\scripts_mat
 Create Array v[100,3] r[100,3] rDiff[100,3] r2[1,3] bias[1,3];
 Create Variable mu num_obsv f df i j temp noise num_monte runTime;
 Create String blank;
-GMAT num_obsv = 12;
-GMAT f = 36;
-GMAT df = 108;
+GMAT num_obsv = 6;
+GMAT f = 10;
+GMAT df = 25;
 GMAT noise = 1; % m/s
 GMAT num_monte = 1000;
+
+
 
 
 %----------------------------------------
@@ -181,7 +185,12 @@ GMAT mu = SolarSystem.Earth.Mu;
 
 For i = 1:1:num_obsv;
    
-   Propagate prop_earth(sc) {sc.TA = f};
+   GMAT temp = mod(i,2);
+   If temp == 0
+      Propagate prop_earth(sc) {sc.TA = f, OrbitColor = LightBlue};
+   Else
+      Propagate prop_earth(sc) {sc.TA = f, OrbitColor = Red};
+   EndIf;
    
    GMAT v(i,1) = sc.EarthMJ2000Eq.VX;
    GMAT v(i,2) = sc.EarthMJ2000Eq.VY;
@@ -201,8 +210,10 @@ GMAT monteScatter_compare(v, mu, noise, r, num_monte);
 
 %---------- Misc Testing Code Here ----------
 
-Propagate prop_earth(sc) {sc.TA = 0};
+Propagate prop_earth(sc) {sc.TA = 0, OrbitColor = Green};
 Report report sc.Altitude;
 % Report report runTime;
+
+
 
 

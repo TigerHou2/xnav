@@ -4,7 +4,7 @@ clear;clc
 % define orbit
 mu = 1;
 a = 1;
-e = 0.6;
+e = 0.3;
 i = pi/5;
 omg = 3*pi/2;
 w = pi/3;
@@ -27,13 +27,14 @@ P = P ./ vecnorm(P,2,1);
 f = [ 0  40  80;... % pulsar 1
      10  50  90;... % pulsar 2
      20  60  100]; % pulsar 3
-f = f-40;
+f = f+40;
 f = deg2rad(f);
 E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
 M = E - e*sin(E);
 t_true = sqrt(a^3/mu)*M;
 
 t = t_true + t_offset;
+M_offset = t_offset / sqrt(a^3/mu);
 
 % perform observations
 r = nan(size(f,1),size(f,2),3);
@@ -70,7 +71,7 @@ hold off
 legend('Location','Best')
 
 % calculate perfect inputs
-OPT = [e,period,t_offset];
+OPT = [e,period,M_offset];
 
 % check if perfect input yields perfect output
 [optDiff,V] = rrFun_sine(OPT,obsv,pulsar,mu,t,'debug');
@@ -84,13 +85,13 @@ disp('Searching for initial guess...')
 
 warning('off','all')
 
-res = [20,20,100];
+res = [25,25,40];
 dat = nan(res);
-ee = linspace(0,0.9,res(1));
+ee = linspace(0,0.8,res(1));
 pmin = max(t(:))-min(t(:));
-pmax = 20 * 2*pi*mu/mean(obsv(:))^3;
+pmax = 2*pi*mu/mean(abs(obsv(:)))^3;
 pp = linspace(pmin,pmax,res(2));
-tt = linspace(0,pmax,res(3));
+tt = linspace(0,2*pi,res(3));
 
 E = nan(res(1),res(2),res(3));
 P = nan(res(1),res(2),res(3));
@@ -99,14 +100,8 @@ T = nan(res(1),res(2),res(3));
 for i = 1:res(1)
 for j = 1:res(2)
 for k = 1:res(3)
-    if tt(k) > pp(j)
-        % we don't care about redunrant guesses where the time since
-        % periapsis is greater than the period
-        dat(i,j,k) = Inf;
-    else
-        fin = [ee(i),pp(j),tt(k)];
-        dat(i,j,k) = norm(rrFun_sine(fin,obsv,pulsar,mu,t));
-    end
+    fin = [ee(i),pp(j),tt(k)];
+    dat(i,j,k) = norm(rrFun_sine(fin,obsv,pulsar,mu,t));
     E(i,j,k) = ee(i);
     P(i,j,k) = pp(j);
     T(i,j,k) = tt(k);
@@ -121,7 +116,7 @@ end
 %     filter = ones(edge,edge);
 %     dat = (convn(dat,filter,'same') + dat*edge^2) / edge^2;
 % --- version 2: gaussian blur
-    dat = imgaussfilt3(dat);
+%     dat = imgaussfilt3(dat);
 
 [~,idx] = min(dat(:));
 [i,j,k] = ind2sub(size(dat),idx);
@@ -133,7 +128,7 @@ Emesh = E(:);
 Pmesh = P(:);
 Tmesh = T(:);
 D = dat(:);
-cutoff = 600;
+cutoff = min(D)*10;
 Emesh = Emesh(D<cutoff);
 Pmesh = Pmesh(D<cutoff);
 Tmesh = Tmesh(D<cutoff);
@@ -158,11 +153,14 @@ disp('Searching for solution...')
 
 f1 = f0;
 
+% fun = @(x) norm(rrFun_sine(x,obsv,pulsar,mu,t));
+% options = optimoptions('fmincon','Display','iter' ...
+%                                 ,'MaxFunctionEvaluations',2000 ...
+%                                 ,'MaxIterations',300);
+% f1 = fmincon(fun,f0,-eye(3),[0;0;0],[],[],[],[],[],options);
+
 fun = @(x) norm(rrFun_sine(x,obsv,pulsar,mu,t));
-options = optimoptions('fmincon','Display','iter' ...
-                                ,'MaxFunctionEvaluations',2000 ...
-                                ,'MaxIterations',300);
-f1 = fmincon(fun,f0,-eye(3),[0;0;0],[],[],[],[],[],options);
+f1 = fminsearch(fun,f0);
 
 fun = @(x) rrFun_sine(x,obsv,pulsar,mu,t);
 options = optimoptions('fsolve','Display','iter' ...

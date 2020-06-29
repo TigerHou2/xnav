@@ -30,14 +30,13 @@ function [optDiff,V,optOut] = rrFun_sine(OPT,obsv,pulsar,mu,time,debug)
 % take data from optimization variables
 g_e = OPT(1); % eccentricity
 g_period = OPT(2); % period
-g_timepe = OPT(3); % time since periapsis
+g_Moffset = OPT(3); % time since periapsis
 
 % get number of pulsars
 M = size(pulsar,2);
 
 % convert time of flight to true anomaly
-g_tpArray = time - g_timepe;
-g_M = mod( g_tpArray/g_period*2*pi, 2*pi );
+g_M = mod( time/g_period*2*pi-g_Moffset, 2*pi );
 g_E = kepler(g_M,g_e);
 if g_e < 1, g_f = 2 * atan( tan(g_E/2) * sqrt((1+g_e)/(1-g_e)) );
 else,       g_f = 2 * atan(tanh(g_E/2) * sqrt((g_e+1)/(g_e-1)) ); end
@@ -166,6 +165,21 @@ R = sqrt(x(1)^2 + x(2)^2 - x(3));
 C = T' * [x(1); x(2); 0];
 % find residual
 residual = norm(A*x-B);
+% add radius error to residual
+g_sma = ((g_period/2/pi)^2*mu)^(1/3);
+g_R = (sqrt(mu*(1+g_e)/g_sma/(1-g_e))+sqrt(mu*(1-g_e)/g_sma/(1+g_e)))/2;
+residual = residual + (R-g_R)^2;
+
+% % circle fitting with known radius
+% g_sma = ((g_period/2/pi)^2*mu)^(1/3);
+% R = ( sqrt(mu*(1+g_e)/g_sma/(1-g_e)) + sqrt(mu*(1-g_e)/g_sma/(1+g_e)) )/2;
+% A = hodo2D';
+% A(:,3) = [];
+% fun = @(x) norm(vecnorm(A-x,2,2).^2-R^2);
+% options = optimoptions('fminunc','Display','none');
+% C = fminunc(fun,mean(A),options);
+% residual = fun(C) / 1000;
+% C = T' * [C,0]';
 
 if exist('debug','var')
     figure(11)
@@ -198,12 +212,12 @@ optDiff = [e,period,residual+fVal] - [g_e,g_period,0];
 weight = [5 1 2];
 scale = 100;
 optDiff = optDiff .* weight / norm(weight) * scale;
-optOut  = [e,period,g_timepe];
+optOut  = [e,period,g_Moffset];
 
 % if the time since periapse is out of bounds (i.e. < 0 or > period)
 % then we add a penalty for being a periodic solution that is out of range
-if mod(g_timepe,g_period) ~= g_timepe
-    optDiff = optDiff * (abs(mod(g_timepe,g_period)-g_timepe)/g_period+1);
+if mod(g_Moffset,2*pi) ~= g_Moffset
+    optDiff = optDiff * (abs(mod(g_Moffset,2*pi)-g_Moffset)/2/pi+1);
 end
 
 end

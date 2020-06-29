@@ -205,8 +205,8 @@ GMAT df = 200; % deg
 GMAT num_monte = 1000;
 GMAT sma_count = 7;
 GMAT num_obsv = 6;
-GMAT usePerturbations = 0; % 0 = Two-Body Motion, 1 = Perturbed Motion
-GMAT save = 0; % 0 = don't save figure, 1 = save figure
+GMAT usePerturbations = 1; % 0 = Two-Body Motion, 1 = Perturbed Motion
+GMAT save = 1; % 0 = don't save figure, 1 = save figure
 GMAT DU = 6378.1; % km (1 Earth radii)
 
 

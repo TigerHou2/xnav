@@ -41,7 +41,7 @@ if nargin == 7
     return;
     
 %% data plotting mode
-else
+elseif nargin == 0
     
     ecc_vect = ecc_mat(1,:);
     
@@ -89,6 +89,9 @@ else
     
     % clean up persistent variables
     clear rms period ecc ecc_mat
+    
+else
+    error('Incorrect number of arguments.')
 
 end
 

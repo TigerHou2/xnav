@@ -185,13 +185,13 @@ Create MatlabFunction var_ecc;
 
 GMAT init.FunctionPath = 'E:\Research\XNAV\viod_gmat';
 GMAT savefig.FunctionPath = 'E:\Research\XNAV\viod_gmat\misc';
-GMAT var_ecc.FunctionPath = 'E:\Research\XNAV\viod_gmat\matlab_scripts';
+GMAT var_ecc.FunctionPath = 'E:\Research\XNAV\viod_gmat\scripts_matlab';
 
 %----------------------------------------
 %---------- Arrays, Variables, Strings
 %----------------------------------------
 
-Create Array v[100,3] v_noisy[100,3] r[100,3] r_ref[1,3] ecc_vect[1,7];
+Create Array v[100,3] r_ref[1,3] ecc_vect[1,7];
 Create Variable mu noise f0 dT dt temp num_monte runTime period ecc;
 Create Variable i j k ecc_count num_obsv;
 Create Variable usePerturbations save;
@@ -202,7 +202,7 @@ GMAT ecc_vect(1, 4) = 0.4;
 GMAT ecc_vect(1, 5) = 0.6;
 GMAT ecc_vect(1, 6) = 0.8;
 GMAT ecc_vect(1, 7) = 0.9;
-GMAT noise = 0.1; % m/s
+GMAT noise = 1; % m/s
 GMAT f0 = 0; % deg
 GMAT dT = 200000; % s
 GMAT num_monte = 1000;
@@ -245,9 +245,6 @@ For k = 1:1:ecc_count;
       GMAT v(i,1) = sc.EarthMJ2000Eq.VX;
       GMAT v(i,2) = sc.EarthMJ2000Eq.VY;
       GMAT v(i,3) = sc.EarthMJ2000Eq.VZ;
-      GMAT r(i,1) = sc.EarthMJ2000Eq.X;
-      GMAT r(i,2) = sc.EarthMJ2000Eq.Y;
-      GMAT r(i,3) = sc.EarthMJ2000Eq.Z;
       
       If i ~= num_obsv
          

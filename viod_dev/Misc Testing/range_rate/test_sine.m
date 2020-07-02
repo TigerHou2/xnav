@@ -4,10 +4,10 @@ clear;clc
 % define orbit
 mu = 1;
 a = 1;
-e = 0.3;
-i = pi/5;
-omg = 3*pi/2;
-w = pi/3;
+e = 0.5;
+i = pi/3;
+omg = pi/2;
+w = pi/2;
 params = [a e i omg w 0];
 
 % define time offset
@@ -16,8 +16,8 @@ period = 2*pi * sqrt(a^3/mu);
 t_offset = mod(t_offset,period);
 
 % define pulsars
-P = [2 2 1;... % pulsar 1
-     0 1 1;... % pulsar 2
+P = [0 1 1;... % pulsar 1
+     2 2 1;... % pulsar 2
      3 1 2]';  % pulsar 3
 P = P ./ vecnorm(P,2,1);
 
@@ -27,7 +27,7 @@ P = P ./ vecnorm(P,2,1);
 f = [ 0  40  80;... % pulsar 1
      10  50  90;... % pulsar 2
      20  60  100]; % pulsar 3
-f = f+40;
+f = f-40;
 f = deg2rad(f);
 E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
 M = E - e*sin(E);
@@ -55,10 +55,10 @@ end
 
 % visualize range rate
 figure(1)
-for i = 1:size(obsv,2)
-    plot(f(i,:),obsv(i,:),'-o')
-    hold on
-end
+plot(f(1,:),obsv(1,:),'r-o')
+hold on
+plot(f(2,:),obsv(2,:),'g-o')
+plot(f(3,:),obsv(3,:),'b-o')
 hold off
 
 % visualize pulsars
@@ -76,6 +76,7 @@ OPT = [e,period,M_offset];
 % check if perfect input yields perfect output
 [optDiff,V] = rrFun_sine(OPT,obsv,pulsar,mu,t,'debug');
 optDiff
+
 
 %% global search
 
@@ -136,8 +137,8 @@ D = D(D<cutoff);
 scatter3(OPT(1),OPT(2),OPT(3),24,'magenta','filled','DisplayName','True Soln')
 hold on
 scatter3( f0(1), f0(2), f0(3),24,'red','DisplayName','Init Guess')
-f1 = scatter3(Emesh,Pmesh,Tmesh,18,D,'filled','DisplayName','Objective Function');
-f1.MarkerFaceAlpha = 0.6;
+fig = scatter3(Emesh,Pmesh,Tmesh,18,D,'filled','DisplayName','Objective Function');
+fig.MarkerFaceAlpha = 0.6;
 hold off
 colormap(bone(200))
 xlabel('eccentricity')
@@ -147,11 +148,25 @@ pbaspect([1 1 1])
 colorbar
 legend('Location','Best')
 
+f1 = f0;
+
+%% testing section
+
+% f2 = f0;
+% fJump = nan(1000,3);
+% for i = 1:1000
+%     [fVal,~,f2] = rrFun_sine(f2,obsv,pulsar,mu,t);
+%     disp(num2str(norm(fVal)))
+%     disp(mat2str(f2))
+%     disp(' ')
+%     fJump(i,:) = f2;
+% end
+% 
+% scatter3(fJump(:,1),fJump(:,2),fJump(:,3))
+
 %% optimization
 
 disp('Searching for solution...')
-
-f1 = f0;
 
 % fun = @(x) norm(rrFun_sine(x,obsv,pulsar,mu,t));
 % options = optimoptions('fmincon','Display','iter' ...

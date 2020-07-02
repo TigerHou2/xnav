@@ -1,12 +1,13 @@
-function [fVal,V,optOut] = rrFun_sineV2(OPT,obsv,pulsar,mu,time,debug)
+function [optDiff,V,optOut] = rrFun_sineV2(OPT,obsv,pulsar,mu,time,debug)
 %RRFUN_SINEV2 Is the objective function for range-rate hodograph fitting.
 %
 % Author:
 %   Tiger Hou
 %
 % Note: 
-%   This version uses the fact that range-rate vs. true anomaly is a sine
-%   wave to perform RROD. 
+%   This version makes no assumption on sine wave shape, instead it relies
+%   on having sufficient inputs to determine the sine wave. This means each
+%   pulsar needs 4 measurements or more.
 %
 % Arguments:
 %   OPT    - 1x3 array, optimization variable
@@ -22,19 +23,21 @@ function [fVal,V,optOut] = rrFun_sineV2(OPT,obsv,pulsar,mu,time,debug)
 %   time   - MxN array of observation time stamps since first obsv
 %            |- M is the number of pulsars
 %            |- N is the number of measurements per pulsar
-
+%
+% Outputs:
+%   v_diff - range-rate difference between guess and true values
+%   V      - velocities corresponding to hodograph defined by C
 
 % take data from optimization variables
 g_e = OPT(1); % eccentricity
 g_period = OPT(2); % period
-g_timepe = OPT(3); % time since periapsis
+g_Moffset = OPT(3); % time since periapsis
 
 % get number of pulsars
 M = size(pulsar,2);
 
 % convert time of flight to true anomaly
-g_tpArray = time - g_timepe;
-g_M = mod( g_tpArray/g_period*2*pi, 2*pi );
+g_M = mod( time/g_period*2*pi-g_Moffset, 2*pi );
 g_E = kepler(g_M,g_e);
 if g_e < 1, g_f = 2 * atan( tan(g_E/2) * sqrt((1+g_e)/(1-g_e)) );
 else,       g_f = 2 * atan(tanh(g_E/2) * sqrt((g_e+1)/(g_e-1)) ); end
@@ -163,6 +166,21 @@ R = sqrt(x(1)^2 + x(2)^2 - x(3));
 C = T' * [x(1); x(2); 0];
 % find residual
 residual = norm(A*x-B);
+% add radius error to residual
+g_sma = ((g_period/2/pi)^2*mu)^(1/3);
+g_R = (sqrt(mu*(1+g_e)/g_sma/(1-g_e))+sqrt(mu*(1-g_e)/g_sma/(1+g_e)))/2;
+residual = residual + (R-g_R)^2;
+
+% % circle fitting with known radius
+% g_sma = ((g_period/2/pi)^2*mu)^(1/3);
+% R = ( sqrt(mu*(1+g_e)/g_sma/(1-g_e)) + sqrt(mu*(1-g_e)/g_sma/(1+g_e)) )/2;
+% A = hodo2D';
+% A(:,3) = [];
+% fun = @(x) norm(vecnorm(A-x,2,2).^2-R^2);
+% options = optimoptions('fminunc','Display','none');
+% C = fminunc(fun,mean(A),options);
+% residual = fun(C) / 1000;
+% C = T' * [C,0]';
 
 if exist('debug','var')
     figure(11)
@@ -175,8 +193,6 @@ e = norm(C) / R;
 vp = R - norm(C);
 a = mu / vp^2 * (1+e^2-2*e)/(1-e^2);
 period = 2*pi * sqrt(abs(a^3/mu));
-
-optOut  = [e,period,g_timepe];
 
 if exist('debug','var')
     % output full velocity measurements
@@ -192,14 +208,9 @@ else
     V = nan;
 end
 
-% finalize outputs
-fVal = [fVal,residual];
-
-% if the time since periapse is out of bounds (i.e. < 0 or > period)
-% then we add a penalty for being a periodic solution that is out of range
-if mod(g_timepe,g_period) ~= g_timepe
-    fVal = fVal * (abs(mod(g_timepe,g_period)-g_timepe)/g_period+1);
-end
+% finalizing outputs
+optDiff = fVal;
+optOut  = [e,period,g_Moffset];
 
 end
 

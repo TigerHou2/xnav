@@ -78,11 +78,12 @@ for i = 1:M
     rrFromSine(i,:) = amp * sin(angles-pha) + off;
     % debugging
     if exist('debug','var')
+        colors = ['r','g','b'];
         figure(1)
         hold on
         lb = min(min(g_f(:)),0);
         rb = max(max(g_f(:)),2*pi);
-        fplot(@(x) amp * sin(x-pha) + off, [lb,rb])
+        fplot(@(x) amp * sin(x-pha) + off, [lb,rb], colors(i))
         hold off
     end
 end

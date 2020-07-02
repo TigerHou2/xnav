@@ -32,10 +32,18 @@ theta = C(4); % hodograph rotation w.r.t line thru origin and center
               % where theta = 0 is defined by the point where the
               % orbit normal crosses the z-axis in the inertial frame
 R = C(5); % radius of hodograph
+% e = C(5); % eccentricity of hodograph
 
 numObsv = size(obsv,2);
 
 e = sqrt(x^2 + y^2 + z^2) / R; % eccentricity
+% if e == 0 && sqrt(x^2 + y^2 + z^2) ~= 0
+%     % return penalty if eccentricity is zero but hodograph not centered
+%     v_diff = ones(1,numObsv) * 10000;
+%     V = nan;
+%     return
+% end
+% R = sqrt(x^2 + y^2 + z^2) / e; % radius of hodograph
 
 % find k, the orbit normal vector
 uc = [x;y;z] / norm([x;y;z]);
@@ -251,6 +259,8 @@ end
 
 % --- final processing of outputs
 V = T' * V; % back to 3D frame
+% v_diff = v_diff * std( v_diff/norm(v_diff) ./ (obsv/norm(obsv)) );
+v_diff(end+1) = std( v_diff./obsv );
 
 end
 

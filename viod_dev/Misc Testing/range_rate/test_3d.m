@@ -3,20 +3,20 @@ clear;clc
 
 mu = 1;
 a = 1;
-e = 0.6;
-i = pi/5;
+e = 0.9;
+i = pi/4;
 omg = 3*pi/2;
 w = pi/3;
 params = [a e i omg w 0];
 
 % define pulsars
 P = [0 1 1;... % pulsar 1
-     1 1 1;... % pulsar 2
+     2 2 1;... % pulsar 2
      3 1 2]';  % pulsar 3
 P = P ./ vecnorm(P,2,1);
 
 % calculate true position and velocity values
-f = deg2rad([0 10 20 40 50 60 80]);
+f = deg2rad([0 10 20 40 50 60 80 90 100] - 70);
 E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
 M = E - e*sin(E);
 t = sqrt(a^3/mu)*M;
@@ -62,6 +62,7 @@ v
 % ----- true hodograph ------
 vt = T * v;
 [C,R] = fitcircle(vt(1:2,:));
+e = norm(C) / R;
 Z = T' * [C;0];
 % find theta
 uc = Z / norm(Z);
@@ -107,20 +108,22 @@ end
 % test if objective function returns 0 given perfect input
 hodo_true = [Z',theta,R];
 % [err,val] = rrFun([Z',theta,R],v_obsv,mu,dt)
-[err,vel] = rrFun_ta([Z',theta,R],obsv,pulsar,mu,dt);
+[err,vel] = rrFun_ta(hodo_true,obsv,pulsar,mu,dt);
 
 disp(['Max range-rate error: ' num2str(max(err))])
 disp(['Max velocity error:   ' num2str(max(max(abs(v-vel))))])
 
 %% global search
 
-res = [8,8,8,8,8];
+res = [20,20,20,8,10];
 dat = nan(res);
-lb = mean(abs(obsv));
+lb = min(abs(obsv));
 ub = 3*mean(abs(obsv));
-xx = linspace(-lb,lb,res(1)); % hodograph center x pos
-yy = linspace(-lb,lb,res(2)); % hodograph center y pos
-zz = linspace(-lb,lb,res(3)); % hodograph center z pos
+% lb = 0.01;
+% ub = 0.99;
+xx = linspace(-ub,ub,res(1)); % hodograph center x pos
+yy = linspace(-ub,ub,res(2)); % hodograph center y pos
+zz = linspace(-ub,ub,res(3)); % hodograph center z pos
 tt = linspace(-pi,pi,res(4)); % hodograph rotation about uc
 rr = linspace( lb,ub,res(5)); % hodograph radius
 idx = 0;
@@ -141,10 +144,10 @@ end
 
 % use convolution to find element with best neighbors
 % --- version 1: poor man's gaussian blur
-    neighbors = 2;
-    edge = 2*neighbors + 1;
-    filter = ones(edge,edge,edge,edge,edge);
-    dat = (convn(dat,filter,'same') + dat*edge^5) / edge^5 / 2;
+%     neighbors = 2;
+%     edge = 2*neighbors + 1;
+%     filter = ones(edge,edge,edge,edge,edge);
+%     dat = (convn(dat,filter,'same') + dat*edge^5) / edge^5 / 2;
 
 [~,idx] = min(dat(:));
 [i,j,k,m,n] = ind2sub(size(dat),idx);

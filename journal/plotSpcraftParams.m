@@ -58,9 +58,20 @@ for j = 1:length(obsVect)
 % initialize position error matrix
 errOrig = nan(numSims,length(noiseVect));
 errHodo = nan(numSims,length(noiseVect));
-
 % reset random number generator
 rng(rngSeed);
+% calculate mean anomaly
+period = 2*pi*sqrt(SMA^3/mu);
+e = orbitParams(2);
+f = orbitParams(6);
+E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
+M = E - e*sin(E);
+% determine measurement locations
+Mvect = M + linspace(0,duration,numObsv) * 2*pi;
+Evect = kepler(Mvect,e);
+fVect = 2 * atan(sqrt((1+e)/(1-e))*tan(Evect/2));
+% store ground truth position vector at starting true anomaly
+rRef = Get_Orb_Vects(orbitParams,mu);
 
 % perform Monte Carlo sim
 for n = 1:numSims
@@ -72,18 +83,6 @@ for k = 1:length(noiseVect)
     noise = noiseBase * noiseVect(k);
     % initialize empty velocity matrix
     v = nan(numObsv,3);
-    % calculate mean anomaly
-    period = 2*pi*sqrt(SMA^3/mu);
-    e = orbitParams(2);
-    f = orbitParams(6);
-    E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
-    M = E - e*sin(E);
-    % determine measurement locations
-    Mvect = M + linspace(0,duration,numObsv) * 2*pi;
-    Evect = kepler(Mvect,e);
-    fVect = 2 * atan(sqrt((1+e)/(1-e))*tan(Evect/2));
-    % store ground truth position vector at starting true anomaly
-    rRef = Get_Orb_Vects(orbitParams,mu);
     % fetch all measurements
     for p = 1:numObsv
         orbitParams(6) = fVect(p);
@@ -92,7 +91,9 @@ for k = 1:length(noiseVect)
     % restore true anomaly in orbit parameter
     orbitParams(6) = f;
     % do orbit determination
-    rOrig = viod(v+noise,mu);
+    % --- note the scaling dor the original method: this is because
+    % --- precision issues arise when using canonical units. 
+    rOrig = viod((v+noise)*1e4,mu*1e12)/1e4;
     rHodo = hodo(v+noise,mu);
     % we choose to compare the position estimate at the first measurement
     rOrig = rOrig(1,:)';
@@ -117,7 +118,7 @@ errorbar(noiseVect/noiseScale,...
 hold off
 setgrid
 expand(0.05,0.05,0.05,0.05)
-legend('Energy Method','Hodograph Method','Location','SouthEast')
+legend('Energy Method','Hodograph Method','Location','NorthWest')
 xlabel(['Noise, ' num2str(noiseScale) ' DU/TU'])
 ylabel('Position Error, fraction of SMA')
 title([ 'DUR = ' num2str(duration,4) ', ' ...

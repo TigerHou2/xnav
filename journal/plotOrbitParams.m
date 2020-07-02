@@ -95,7 +95,9 @@ for k = 1:length(taVect)
         [~,v(p,:)] = Get_Orb_Vects(orbitParams,mu);
     end
     % do orbit determination
-    rOrig = viod(v+noiseVect,mu);
+    % --- note the scaling dor the original method: this is because
+    % --- precision issues arise when using canonical units. 
+    rOrig = viod((v+noiseVect)*1e4,mu*1e12)/1e4;
     rHodo = hodo(v+noiseVect,mu);
     % we choose to compare the position estimate at the first measurement
     rOrig = rOrig(1,:)';
@@ -119,7 +121,7 @@ errorbar(taDeg,mean(errHodo)/SMA,...
 hold off
 setgrid
 expand(0.05,0.05,0.05,0.05)
-legend('Energy Method','Hodograph Method','Location','SouthEast')
+legend('Energy Method','Hodograph Method','Location','NorthWest')
 xlabel('True Anomaly, deg')
 ylabel('Position Error, fraction of SMA')
 title([ names{i} ':   ' ...

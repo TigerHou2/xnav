@@ -11,12 +11,12 @@ GMAT sc.DateFormat = TAIModJulian;
 GMAT sc.Epoch = '21545';
 GMAT sc.CoordinateSystem = EarthMJ2000Eq;
 GMAT sc.DisplayStateType = Keplerian;
-GMAT sc.SMA = 15000.00000000001;
+GMAT sc.SMA = 7500.00000000001;
 GMAT sc.ECC = 0.5000000000000003;
-GMAT sc.INC = 29.99999999999998;
-GMAT sc.RAAN = 40.00000000000003;
-GMAT sc.AOP = 70.00000000000033;
-GMAT sc.TA = 0;
+GMAT sc.INC = 45;
+GMAT sc.RAAN = 30;
+GMAT sc.AOP = 30;
+GMAT sc.TA = 20;
 GMAT sc.DryMass = 850;
 GMAT sc.Cd = 2.2;
 GMAT sc.Cr = 1.8;
@@ -91,7 +91,7 @@ GMAT prop_earth.StopIfAccuracyIsViolated = true;
 Create OrbitView DefaultOrbitView;
 GMAT DefaultOrbitView.SolverIterations = Current;
 GMAT DefaultOrbitView.UpperLeft = [ 0 0 ];
-GMAT DefaultOrbitView.Size = [ 0.5005882352941177 0.4497549019607843 ];
+GMAT DefaultOrbitView.Size = [ 0.6 0.8 ];
 GMAT DefaultOrbitView.RelativeZOrder = 452;
 GMAT DefaultOrbitView.Maximized = false;
 GMAT DefaultOrbitView.Add = {sc, Earth, Luna, Sun};
@@ -122,8 +122,8 @@ GMAT DefaultOrbitView.EnableConstellations = On;
 
 Create ReportFile report;
 GMAT report.SolverIterations = Current;
-GMAT report.UpperLeft = [ 0.03896103896103896 0.0693135935397039 ];
-GMAT report.Size = [ 0.5957268537913699 0.7927321668909825 ];
+GMAT report.UpperLeft = [ 0 0 ];
+GMAT report.Size = [ 0.6 0.8 ];
 GMAT report.RelativeZOrder = 570;
 GMAT report.Maximized = false;
 GMAT report.Filename = 'report.txt';
@@ -165,11 +165,11 @@ GMAT monteScatter_compare.FunctionPath = 'E:\Research\XNAV\viod_gmat\scripts_mat
 Create Array v[100,3] r[100,3] rDiff[100,3] r2[1,3] bias[1,3];
 Create Variable mu num_obsv f df i j temp noise num_monte runTime;
 Create String blank;
-GMAT num_obsv = 6;
-GMAT f = 10;
-GMAT df = 25;
-GMAT noise = 1; % m/s
-GMAT num_monte = 1000;
+GMAT num_obsv = 3;
+GMAT f = 20;
+GMAT df = 30;
+GMAT noise = 3; % m/s
+GMAT num_monte = 100;
 
 
 

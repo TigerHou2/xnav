@@ -31,7 +31,7 @@ r2_vect_1 = nan(itr,3);
 r2_vect_2 = nan(itr,3);
 
 if ~exist('idx','var')
-    idx = 2;
+    idx = 1;
 end
 if ~exist('bias','var')
     bias = zeros(1,3);
@@ -41,8 +41,8 @@ for i = 1:itr
     
     v_noisy = addnoise(v,noise,bias);
     
-    rEst_1 = hodo_od(v_noisy, mu);
-    rEst_2 = hodoWgt(v_noisy,mu);
+    rEst_1 = viod(v_noisy, mu);
+    rEst_2 = hodo_od(v_noisy,mu);
     
     r2_1 = rRef(idx,:) - rEst_1(idx,:);
     r2_2 = rRef(idx,:) - rEst_2(idx,:);
@@ -60,7 +60,7 @@ hold off
 axis equal
 xlabel('$\delta_x, km$')
 ylabel('$\delta_y, km$')
-legend('HODO','HodoWgt')
+legend('VIOD','HODO')
 
 subplot(1,3,2)
 hold on
@@ -70,7 +70,7 @@ hold off
 axis equal
 xlabel('$\delta_x, km$')
 ylabel('$\delta_z, km$')
-legend('HODO','HodoWgt')
+legend('VIOD','HODO')
 
 subplot(1,3,3)
 hold on
@@ -80,7 +80,7 @@ hold off
 axis equal
 xlabel('$\delta_y, km$')
 ylabel('$\delta_z, km$')
-legend('HODO','HodoWgt')
+legend('VIOD','HODO')
 
 end
 

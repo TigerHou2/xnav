@@ -17,6 +17,6 @@ noiseVect = [1e-7,5e-7,1e-6,5e-6,1e-5]; % DU/TU
 durVect = [0.01 0.05 0.1 0.2]; % nd
 
 % measurement count
-obsVect = [3 6 10]; % nd
+obsVect = [3 8 20]; % nd
 
 end % load_spcraft_cases.m

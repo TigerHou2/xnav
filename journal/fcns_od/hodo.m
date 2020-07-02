@@ -80,4 +80,3 @@ rho = mu * vecnorm(e'+ull,2,2) ./ vecnorm(N,2,2) ./ vecnorm(Npp,2,2);
 r = rho .* ull;
 
 end %hodo.m
-

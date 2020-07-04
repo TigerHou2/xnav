@@ -47,30 +47,16 @@ duration = 0.1; % nd, measurement duration as fraction of the orbit period
 numSims = 100;
 rngSeed = 1;
 
-%% iterate through all cases
+%% generate ground truth data and perturbations
 
-% plotting formats
-linewidth = 1;
-origFormat = '-k+';
-hodoFormat = '-r+';
-
+% initialize cell array of velocity measurements and position references
+vArray = cell(length(smaVect),length(eccVect),length(taVect));
+rArray = cell(length(smaVect),length(eccVect),length(taVect));
+% populate velocity and position cell arrays
 for i = 1:length(smaVect)
     SMA = smaVect(i);
 for j = 1:length(eccVect)
     ECC = eccVect(j);
-    
-% initialize position error matrix
-errOrig = nan(numSims,length(taVect));
-errHodo = nan(numSims,length(taVect));
-
-% reset random number generator
-rng(rngSeed);
-
-% perform Monte Carlo sim
-for n = 1:numSims
-noiseVect = randn(numObsv,3);
-noiseVect = noiseVect ./ vecnorm(noiseVect,2,2) * noise;
-
 for k = 1:length(taVect)
     TA = taVect(k);
     % load new case
@@ -94,6 +80,51 @@ for k = 1:length(taVect)
         orbitParams(6) = fVect(p);
         [~,v(p,:)] = Get_Orb_Vects(orbitParams,mu);
     end
+    vArray{i,j,k} = v;
+    rArray{i,j,k} = rRef;
+end %taVect
+end %eccVect
+end %smaVect
+
+% initialize cell array of noise values
+nArray = cell(1,numSims);
+% populate noise cell array
+rng(rngSeed);
+for n = 1:numSims
+    noiseVect = randn(numObsv,3);
+    noiseVect = noiseVect ./ vecnorm(noiseVect,2,2) * noise;
+    nArray{n} = noiseVect;
+end %numSims
+
+%% apply perturbations and perform VIOD
+
+% line formats
+origWidth = 1.5;
+hodoWidth = 0.3;
+origFormat = '-x';
+hodoFormat = '--k';
+
+% color formats
+cmap = hsv(length(smaVect));
+
+% initialize cell array for custom labeling
+labelArray = cell(length(smaVect),length(eccVect),2);
+
+for i = 1:length(smaVect)
+    SMA = smaVect(i);
+for j = 1:length(eccVect)
+    ECC = eccVect(j);
+    
+% initialize position error matrix
+errOrig = nan(numSims,length(taVect));
+errHodo = nan(numSims,length(taVect));
+
+% perform Monte Carlo sim
+for n = 1:numSims
+for k = 1:length(taVect)
+    v = vArray{i,j,k};
+    noiseVect = nArray{n};
+    rRef = rArray{i,j,k};
     % do orbit determination
     % --- note the scaling dor the original method: this is because
     % --- precision issues arise when using canonical units. 
@@ -106,28 +137,135 @@ for k = 1:length(taVect)
     errOrig(n,k) = norm(rOrig-rRef);
     errHodo(n,k) = norm(rHodo-rRef);
 end %taVect
-
 end %numSims
 
 % plot results for each case
-figure;
+color = cmap(i,:);
 taDeg = rad2deg(taVect);
+
+% --- mean error
+figure(1)
+latexify('plotSize',[24 18])
 hold on
-% scatter(taMat(:),errOrig(:),scFormat)
-errorbar(taDeg,mean(errOrig)/SMA,...
-                std(errOrig)/SMA,origFormat,'LineWidth',linewidth)
-errorbar(taDeg,mean(errHodo)/SMA,...
-                std(errHodo)/SMA,hodoFormat,'LineWidth',linewidth)
+plot(taDeg,mean(errOrig)/SMA,origFormat,'Color',color,'LineWidth',origWidth)
+plot(taDeg,mean(errHodo)/SMA,hodoFormat,'LineWidth',hodoWidth)
 hold off
-setgrid
-expand(0.05,0.05,0.05,0.05)
-legend('Energy Method','Hodograph Method','Location','NorthWest')
+legend('Energy Method','Hodograph Method','Location','SouthEast')
 xlabel('True Anomaly, deg')
-ylabel('Position Error, fraction of SMA')
-title([ names{i} ':   ' ...
-        'SMA = ' num2str(SMA,4) ', ' ...
-        'ECC = ' num2str(ECC,4)])
-latexify
+ylabel('Position Error Avg., fraction of SMA')
+% store annotation data point
+labelArray{i,j,1} = [taDeg(end),mean(errOrig(:,end))/SMA];
+latexify('fontSize',18)
+
+% --- standard deviation
+figure(2)
+latexify('plotSize',[24 18])
+hold on
+plot(taDeg,std(errOrig)/SMA,origFormat,'Color',color,'LineWidth',origWidth)
+plot(taDeg,std(errHodo)/SMA,hodoFormat,'LineWidth',hodoWidth)
+hold off
+legend('Energy Method','Hodograph Method','Location','SouthEast')
+xlabel('True Anomaly, deg')
+ylabel('Position Error StDev, fraction of SMA')
+% store annotation data point
+labelArray{i,j,2} = [taDeg(end),std(errOrig(:,end))/SMA];
+latexify('fontSize',18)
 
 end %eccVect
 end %smaVect
+
+%% add annotations
+
+figure(1)
+set(gca, 'YScale', 'log')
+setgrid
+expand(0.07,0.12,0.07,0.05)
+axis tight
+axlim = axis(gca) .* [1 1 0.3 3];
+xlim(axlim(1:2))
+ylim(axlim(3:4))
+for i = 1:length(smaVect)
+    SMA = smaVect(i);
+for j = 1:length(eccVect)
+    ECC = eccVect(j);
+    p = labelArray{i,j,1};
+    % convert from log scale to linear scale
+    p(2) = (axlim(4)-axlim(3)) * log(p(2)/axlim(3)) / log(axlim(4)/axlim(3));
+    [figx,figy] = ax2fig(p(1),p(2));
+    annotation('textbox',[figx figy-0.08 1 .1],...
+               'String',['e = ' num2str(ECC,4)],...
+               'EdgeColor','none',...
+               'Interpreter','latex',...
+               'FontSize',14)
+end
+end
+
+figure(2)
+set(gca, 'YScale', 'log')
+setgrid
+expand(0.07,0.12,0.07,0.05)
+axis tight
+axlim = axis(gca) .* [1 1 0.3 3];
+xlim(axlim(1:2))
+ylim(axlim(3:4))
+for i = 1:length(smaVect)
+    SMA = smaVect(i);
+for j = 1:length(eccVect)
+    ECC = eccVect(j);
+    p = labelArray{i,j,2};
+    % convert from log scale to linear scale
+    p(2) = (axlim(4)-axlim(3)) * log(p(2)/axlim(3)) / log(axlim(4)/axlim(3));
+    [figx,figy] = ax2fig(p(1),p(2));
+    annotation('textbox',[figx figy-0.08 1 .1],...
+               'String',['e = ' num2str(ECC,4)],...
+               'EdgeColor','none',...
+               'Interpreter','latex',...
+               'FontSize',14)
+end
+end
+
+%% add orbit case legend
+
+figure(1)
+ax = gca;
+ax2 = copyobj(ax,gcf);
+delete(get(ax2,'Children')) % delete its children
+hold(ax2,'on')
+for i = 1:length(smaVect)
+    h(i) = plot(sin(1:10),'Parent',ax2,...
+                          'Color',cmap(i,:),...
+                          'LineWidth',1,...
+                          'DisplayName',names{i});
+end
+hold(ax2,'off')
+legend(ax2, 'Location','NorthWest')
+for i = 1:length(smaVect)
+    set(h(i),'XData',[],'YData',[]);
+end
+set(ax2,'Color','none',...
+    'XTick',[],'YTick',[],...
+    'Box','off') % make legend axes transparent
+ax2.XLabel.String = '';
+ax2.YLabel.String = '';
+
+figure(2)
+ax = gca;
+ax2 = copyobj(ax,gcf);
+delete(get(ax2,'Children')) % delete its children
+hold(ax2,'on')
+for i = 1:length(smaVect)
+    h(i) = plot(sin(1:10),'Parent',ax2,...
+                          'Color',cmap(i,:),...
+                          'LineWidth',1,...
+                          'DisplayName',names{i});
+end
+hold(ax2,'off')
+legend(ax2, 'Location','NorthWest')
+for i = 1:length(smaVect)
+    set(h(i),'XData',[],'YData',[]);
+end
+set(ax2,'Color','none',...
+    'XTick',[],'YTick',[],...
+    'Box','off') % make legend axes transparent
+ax2.XLabel.String = '';
+ax2.YLabel.String = '';

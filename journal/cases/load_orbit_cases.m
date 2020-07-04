@@ -23,22 +23,22 @@ taVect  = deg2rad(taVect);
 smaVect = [];
 names = {};
 
-%% LEO case
+%% GEO case
 mu  = 3.986e5; % km^3/s^2
-SMA = 7500; % km
+SMA = 41864; % km
 smaVect(end+1) = SMA / (mu/noise^2) / noise_canon^2;
-names{end+1} = 'LEO';
+names{end+1} = 'GEO';
 
 %% Earth-Neptune transfer case
 mu = 1.327e11; % km^3/s^2
 SMA = 2.3e9; % km
 smaVect(end+1) = SMA / (mu/noise^2) / noise_canon^2;
-names{end+1} = 'Earth-Neptune Transfer';
+names{end+1} = 'Earth-Neptune';
 
 %% Earth-Mars transfer case
 mu = 1.327e11; % km^3/s^2
 SMA = 1.9e8; % km
 smaVect(end+1) = SMA / (mu/noise^2) / noise_canon^2;
-names{end+1} = 'Earth-Mars Transfer';
+names{end+1} = 'Earth-Mars';
 
 end % load_orbit_cases.m

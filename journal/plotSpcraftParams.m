@@ -46,9 +46,9 @@ rngSeed = 1;
 %% iterate through all cases
 
 % plotting formats
-linewidth = 1;
+linewidth = 1.5;
 origFormat = '-k+';
-hodoFormat = '-r+';
+hodoFormat = '--r+';
 
 for i = 1:length(durVect)
     duration = durVect(i);
@@ -117,13 +117,19 @@ errorbar(noiseVect/noiseScale,...
           std(errHodo)/SMA,hodoFormat,'LineWidth',linewidth)
 hold off
 setgrid
-expand(0.05,0.05,0.05,0.05)
+expand(0.07,0.07,0.18,0.05)
 legend('Energy Method','Hodograph Method','Location','NorthWest')
 xlabel(['Noise, ' num2str(noiseScale) ' DU/TU'])
 ylabel('Position Error, fraction of SMA')
 title([ 'DUR = ' num2str(duration,4) ', ' ...
         'Observations = ' num2str(numObsv,4)])
-latexify
+latexify('fontSize',20)
+% move title to the bottom of the figure
+txt = get(gca,'xlabel');
+titlePos = txt.Position .* [1 2.7 0];
+set(get(gca,'title'),'Position',titlePos)
+set(get(gca,'title'),'BackgroundColor',[0.7 0.7 0.7])
+set(get(gca,'title'),'FontSize',16)
 
 end %obsVect
 end %durVect

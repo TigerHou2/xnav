@@ -14,7 +14,7 @@ GMAT sc.DisplayStateType = Keplerian;
 GMAT sc.SMA = 2323300000.000012;
 GMAT sc.ECC = 0.9356000000000003;
 GMAT sc.INC = 4.560708889999991;
-GMAT sc.RAAN = 0;
+GMAT sc.RAAN = 360;
 GMAT sc.AOP = 0;
 GMAT sc.TA = 358.9999999999998;
 GMAT sc.DryMass = 850;
@@ -44,6 +44,7 @@ GMAT sc.AttitudeDisplayStateType = 'Quaternion';
 GMAT sc.AttitudeRateDisplayStateType = 'AngularVelocity';
 GMAT sc.AttitudeCoordinateSystem = EarthMJ2000Eq;
 GMAT sc.EulerAngleSequence = '321';
+
 
 
 %----------------------------------------
@@ -216,6 +217,7 @@ GMAT save = 1; % 0 = don't save figure, 1 = save figure
 
 
 
+
 %----------------------------------------
 %---------- Mission Sequence
 %----------------------------------------
@@ -293,6 +295,7 @@ If save == 1
 EndIf;
 
 %---------- Misc Testing Code Here ----------
+
 
 
 

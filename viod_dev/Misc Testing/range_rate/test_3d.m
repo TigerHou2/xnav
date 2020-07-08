@@ -3,10 +3,10 @@ clear;clc
 
 mu = 1;
 a = 1;
-e = 0.9;
-i = pi/4;
-omg = 3*pi/2;
-w = pi/3;
+e = 0.95;
+i = pi/3;
+omg = pi/2;
+w = pi/2;
 params = [a e i omg w 0];
 
 % define pulsars
@@ -16,7 +16,7 @@ P = [0 1 1;... % pulsar 1
 P = P ./ vecnorm(P,2,1);
 
 % calculate true position and velocity values
-f = deg2rad([0 10 20 40 50 60 80 90 100] - 70);
+f = deg2rad([0 10 20 40 50 60 80 90 100] + 40);
 E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
 M = E - e*sin(E);
 t = sqrt(a^3/mu)*M;
@@ -107,7 +107,6 @@ end
 
 % test if objective function returns 0 given perfect input
 hodo_true = [Z',theta,R];
-% [err,val] = rrFun([Z',theta,R],v_obsv,mu,dt)
 [err,vel] = rrFun_ta(hodo_true,obsv,pulsar,mu,dt);
 
 disp(['Max range-rate error: ' num2str(max(err))])
@@ -115,7 +114,7 @@ disp(['Max velocity error:   ' num2str(max(max(abs(v-vel))))])
 
 %% global search
 
-res = [20,20,20,8,10];
+res = [15,15,15,10,15];
 dat = nan(res);
 lb = min(abs(obsv));
 ub = 3*mean(abs(obsv));
@@ -171,8 +170,8 @@ hodo = fsolve(f,f0,options)
 [v_err,vel] = rrFun_ta(hodo,obsv,pulsar,mu,dt,1);
 
 v_diff = (v-vel)./vecnorm(v);
-if max(abs(v_diff(:))) > 1e-3
-    warning('Velocities do not converge!')
+if max(abs(v_diff(:))) > 1e-3 || any(isnan(vel(:)))
+    error('Velocities do not converge!')
 end
 
 
@@ -187,18 +186,18 @@ options = optimoptions('fsolve','Display','none' ...
 
 guess_valid = [];
 guess_inval = [];
-for i = 1:300
+for i = 1:500
     
-    pert = (rand(1,5)-0.5);
+    pert = (rand(1,5)-0.8);
     % ----- test section -----
 % 	pert(end) = abs(pert(end));
     % ----- end test -----
     f0 = hodo_true + hodo_true .* pert;
     hodo = fsolve(f,f0,options);
-    if max(abs(hodo-hodo_true)) < 1e-3
-        guess_valid(end+1,:) = pert;
-    else
+    if max(abs(hodo-hodo_true)) > 1e-3
         guess_inval(end+1,:) = pert;
+    else
+        guess_valid(end+1,:) = pert;
     end
     
 end

@@ -25,6 +25,11 @@ function [v_diff,V] = rrFun_ta(C,obsv,pulsar,mu,dt,testing)
 %   v_diff - range-rate difference between guess and true values
 %   V      - velocities corresponding to hodograph defined by C
 
+scaleFactor = 1;
+C = C .* [scaleFactor scaleFactor scaleFactor 1 scaleFactor];
+mu = mu * scaleFactor^3;
+obsv = obsv * scaleFactor;
+
 x = C(1); % x-offset of hodograph
 y = C(2); % y-offset of hodograph
 z = C(3); % z-offset of hodograph
@@ -259,8 +264,10 @@ end
 
 % --- final processing of outputs
 V = T' * V; % back to 3D frame
+V = V / scaleFactor;
+v_diff = v_diff / scaleFactor;
 % v_diff = v_diff * std( v_diff/norm(v_diff) ./ (obsv/norm(obsv)) );
-v_diff(end+1) = std( v_diff./obsv );
+% v_diff(end+1) = std( v_diff./obsv );
 
 end
 

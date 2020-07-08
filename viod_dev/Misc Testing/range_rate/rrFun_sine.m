@@ -112,30 +112,30 @@ end
 %     axis equal
 % end
 
-%     % here, we have a problem: the circle found by sine waves may not all
-%     % contain the origin, which is required for the hodograph
-%     % for now, we will simply shift the circle.
-%     % --- use vectors from adjacent points on circle to find normal
-%     hodoAdj = hodoPoints(:,2:end) - hodoPoints(:,1:end-1);
-%     [~,~,V] = svd(hodoAdj',0);
-%     normal = V(:,end);
-%     % --- check if the sign is correct by comparing against cross product of
-%     % adjacent vectors in hodoAdj
-%     if normal'*cross(hodoAdj(:,1),hodoAdj(:,2)) < 0
-%         normal = -normal;
-%     end
-%     % --- now, we will offset hodoPoints along the normal
-%     offset = mean(normal'*hodoPoints);
-%     hodoPoints = hodoPoints - offset;
-
-    % use singular value decomposition to find hodograph plane normal
-    [~,~,V] = svd(hodoPoints',0);
+    % here, we have a problem: the circle found by sine waves may not all
+    % contain the origin, which is required for the hodograph
+    % for now, we will simply shift the circle.
+    % --- use vectors from adjacent points on circle to find normal
+    hodoAdj = hodoPoints(:,2:end) - hodoPoints(:,1:end-1);
+    [~,~,V] = svd(hodoAdj',0);
     normal = V(:,end);
     % --- check if the sign is correct by comparing against cross product of
-    % velocities at adjecent true anomalies
-    if normal'*cross(hodoPoints(:,1),hodoPoints(:,2)) < 0
+    % adjacent vectors in hodoAdj
+    if normal'*cross(hodoAdj(:,1),hodoAdj(:,2)) < 0
         normal = -normal;
     end
+    % --- now, we will offset hodoPoints along the normal
+    offset = mean(normal'*hodoPoints);
+    hodoPoints = hodoPoints - offset;
+
+%     % use singular value decomposition to find hodograph plane normal
+%     [~,~,V] = svd(hodoPoints',0);
+%     normal = V(:,end);
+%     % --- check if the sign is correct by comparing against cross product of
+%     % velocities at adjecent true anomalies
+%     if normal'*cross(hodoPoints(:,1),hodoPoints(:,2)) < 0
+%         normal = -normal;
+%     end
 
 % if exist('debug','var')
 %     figure(10)
@@ -194,23 +194,23 @@ vp = R - norm(C);
 a = mu / vp^2 * (1+e^2-2*e)/(1-e^2);
 period = 2*pi * sqrt(abs(a^3/mu));
 
-if exist('debug','var')
-    % output full velocity measurements
-    V = nan(size(obsv,1),size(obsv,2),3);
-    radius = C*R / norm(C);
-    for i = 1:M
-        for j = 1:N
-            df = g_f(i,j);
-            V(i,j,:) = rotVec(radius,normal,df) + C;
-        end
-    end
-else
-    V = nan;
-end
+% if exist('debug','var')
+%     % output full velocity measurements
+%     V = nan(size(obsv,1),size(obsv,2),3);
+%     radius = C*R / norm(C);
+%     for i = 1:M
+%         for j = 1:N
+%             df = g_f(i,j);
+%             V(i,j,:) = rotVec(radius,normal,df) + C;
+%         end
+%     end
+% else
+%     V = nan;
+% end
 
 % finalizing outputs
 optDiff = [e,period,residual+fVal] - [g_e,g_period,0];
-weight = [5 1 2];
+weight = [5 1 10];
 scale = 100;
 optDiff = optDiff .* weight / norm(weight) * scale;
 optOut  = [e,period,g_Moffset];
@@ -221,8 +221,25 @@ if mod(g_Moffset,2*pi) ~= g_Moffset
     optDiff = optDiff * (abs(mod(g_Moffset,2*pi)-g_Moffset)/2/pi+1);
 end
 
+% calcualte velocity projections
+V = nan(size(obsv,1),size(obsv,2),3);
+radius = C*R / norm(C);
+g_obsv = nan(size(obsv));
+for i = 1:M
+    for j = 1:N
+        df = g_f(i,j);
+        vtemp = rotVec(radius,normal,df) + C;
+        V(i,j,:) = vtemp;
+        g_obsv(i,j) = pulsar(:,i)' * vtemp;
+    end
+end
+% 
+% quality = g_obsv - obsv;
+% optDiff = quality(:);
+
 end
 
+%% function definitions
 function Evect = kepler(Mvect,e)
 
 Evect = nan(size(Mvect));

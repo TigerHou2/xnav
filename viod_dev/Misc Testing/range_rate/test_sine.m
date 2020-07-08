@@ -4,14 +4,14 @@ clear;clc
 % define orbit
 mu = 1;
 a = 1;
-e = 0.5;
+e = 0.9;
 i = pi/3;
 omg = pi/2;
 w = pi/2;
 params = [a e i omg w 0];
 
 % define time offset
-t_offset = 3.9; % just has to be a number unrelated to anything else
+t_offset = 3.5; % just has to be a number unrelated to anything else
 period = 2*pi * sqrt(a^3/mu);
 t_offset = mod(t_offset,period);
 
@@ -88,9 +88,9 @@ warning('off','all')
 
 res = [25,25,40];
 dat = nan(res);
-ee = linspace(0,0.8,res(1));
+ee = linspace(0,0.99,res(1));
 pmin = max(t(:))-min(t(:));
-pmax = 2*pi*mu/mean(abs(obsv(:)))^3;
+pmax = 2*pi*mu/min(abs(obsv(:)))^3;
 pp = linspace(pmin,pmax,res(2));
 tt = linspace(0,2*pi,res(3));
 
@@ -129,7 +129,7 @@ Emesh = E(:);
 Pmesh = P(:);
 Tmesh = T(:);
 D = dat(:);
-cutoff = min(D)*10;
+cutoff = min(D)*300;
 Emesh = Emesh(D<cutoff);
 Pmesh = Pmesh(D<cutoff);
 Tmesh = Tmesh(D<cutoff);
@@ -153,6 +153,7 @@ f1 = f0;
 %% testing section
 
 % f2 = f0;
+% f2(end) = OPT(end);
 % fJump = nan(1000,3);
 % for i = 1:1000
 %     [fVal,~,f2] = rrFun_sine(f2,obsv,pulsar,mu,t);

@@ -45,10 +45,17 @@ rngSeed = 1;
 
 %% iterate through all cases
 
-% plotting formats
-linewidth = 1.5;
-origFormat = '-k+';
-hodoFormat = '--r+';
+% line formats
+origWidth = 1.5;
+hodoWidth = 0.3;
+origFormat = '-x';
+hodoFormat = '--k';
+
+% color formats
+cmap = hsv(length(durVect));
+
+% initialize cell array for custom labeling
+labelArray = cell(length(durVect),length(obsVect),2);
 
 for i = 1:length(durVect)
     duration = durVect(i);
@@ -91,7 +98,7 @@ for k = 1:length(noiseVect)
     % restore true anomaly in orbit parameter
     orbitParams(6) = f;
     % do orbit determination
-    % --- note the scaling dor the original method: this is because
+    % --- note the scaling for the original method: this is because
     % --- precision issues arise when using canonical units. 
     rOrig = viod((v+noise)*1e4,mu*1e12)/1e4;
     rHodo = hodo(v+noise,mu);
@@ -106,30 +113,138 @@ end %nVect
 end %numSims
 
 % plot results for each case
-figure;
+color = cmap(i,:);
+
+% plot results for each case
+% --- mean error
+figure(1)
+latexify('plotSize',[24 18])
 noiseScale = 1e-6;
 hold on
-errorbar(noiseVect/noiseScale,...
-         mean(errOrig)/SMA,...
-          std(errOrig)/SMA,origFormat,'LineWidth',linewidth)
-errorbar(noiseVect/noiseScale,...
-         mean(errHodo)/SMA,...
-          std(errHodo)/SMA,hodoFormat,'LineWidth',linewidth)
+plot(noiseVect/noiseScale,...
+        mean(errOrig)/SMA,origFormat,'LineWidth',origWidth,'Color',color)
+plot(noiseVect/noiseScale,...
+        mean(errHodo)/SMA,hodoFormat,'LineWidth',hodoWidth)
 hold off
-setgrid
-expand(0.07,0.07,0.18,0.05)
-legend('Energy Method','Hodograph Method','Location','NorthWest')
+legend('Energy Method','Hodograph Method','Location','SouthEast')
 xlabel(['Noise, ' num2str(noiseScale) ' DU/TU'])
-ylabel('Position Error, fraction of SMA')
-title([ 'DUR = ' num2str(duration,4) ', ' ...
-        'Observations = ' num2str(numObsv,4)])
-latexify('fontSize',20)
-% move title to the bottom of the figure
-txt = get(gca,'xlabel');
-titlePos = txt.Position .* [1 2.7 0];
-set(get(gca,'title'),'Position',titlePos)
-set(get(gca,'title'),'BackgroundColor',[0.7 0.7 0.7])
-set(get(gca,'title'),'FontSize',16)
+ylabel('Position Error Avg., fraction of SMA')
+latexify('fontSize',18)
+% store annotation data point
+labelArray{i,j,1} = [noiseVect(end)/noiseScale,mean(errOrig(:,end))/SMA];
+
+% --- standard deviation
+figure(2)
+latexify('plotSize',[24 18])
+noiseScale = 1e-6;
+hold on
+plot(noiseVect/noiseScale,...
+        std(errOrig)/SMA,origFormat,'LineWidth',origWidth,'Color',color)
+plot(noiseVect/noiseScale,...
+        std(errHodo)/SMA,hodoFormat,'LineWidth',hodoWidth)
+hold off
+legend('Energy Method','Hodograph Method','Location','SouthEast')
+xlabel(['Noise, ' num2str(noiseScale) ' DU/TU'])
+ylabel('Position Error StDev, fraction of SMA')
+latexify('fontSize',18)
+% store annotation data point
+labelArray{i,j,2} = [noiseVect(end)/noiseScale,std(errOrig(:,end))/SMA];
 
 end %obsVect
 end %durVect
+
+%% add annotations
+
+figure(1)
+set(gca, 'YScale', 'log')
+setgrid
+expand(0.07,0.12,0.07,0.05)
+axis tight
+axlim = axis(gca) .* [1 1 0.3 3];
+xlim(axlim(1:2))
+ylim(axlim(3:4))
+for i = 1:length(durVect)
+    duration = durVect(i);
+for j = 1:length(obsVect)
+    numObsv = obsVect(j);
+    p = labelArray{i,j,1};
+    % convert from log scale to linear scale
+    p(2) = (axlim(4)-axlim(3)) * log(p(2)/axlim(3)) / log(axlim(4)/axlim(3));
+    [figx,figy] = ax2fig(p(1),p(2));
+    annotation('textbox',[figx figy-0.08 1 .1],...
+               'String',['obsv = ' num2str(numObsv)],...
+               'EdgeColor','none',...
+               'Interpreter','latex',...
+               'FontSize',14)
+end
+end
+
+figure(2)
+set(gca, 'YScale', 'log')
+setgrid
+expand(0.07,0.12,0.07,0.05)
+axis tight
+axlim = axis(gca) .* [1 1 0.3 3];
+xlim(axlim(1:2))
+ylim(axlim(3:4))
+for i = 1:length(durVect)
+    duration = durVect(i);
+for j = 1:length(obsVect)
+    numObsv = obsVect(j);
+    p = labelArray{i,j,2};
+    % convert from log scale to linear scale
+    p(2) = (axlim(4)-axlim(3)) * log(p(2)/axlim(3)) / log(axlim(4)/axlim(3));
+    [figx,figy] = ax2fig(p(1),p(2));
+    annotation('textbox',[figx figy-0.08 1 .1],...
+               'String',['obsv = ' num2str(numObsv)],...
+               'EdgeColor','none',...
+               'Interpreter','latex',...
+               'FontSize',14)
+end
+end
+
+%% add measurement duration legend
+
+figure(1)
+ax = gca;
+ax2 = copyobj(ax,gcf);
+delete(get(ax2,'Children')) % delete its children
+hold(ax2,'on')
+for i = 1:length(durVect)
+    h(i) = plot(sin(1:10),'Parent',ax2,...
+                          'Color',cmap(i,:),...
+                          'LineWidth',1,...
+                          'DisplayName',['Dur = ' num2str(durVect(i),4)]);
+end
+hold(ax2,'off')
+legend(ax2, 'Location','NorthWest')
+for i = 1:length(durVect)
+    set(h(i),'XData',[],'YData',[]);
+end
+set(ax2,'Color','none',...
+    'XTick',[],'YTick',[],...
+    'Box','off') % make legend axes transparent
+ax2.XLabel.String = '';
+ax2.YLabel.String = '';
+
+figure(2)
+ax = gca;
+ax2 = copyobj(ax,gcf);
+delete(get(ax2,'Children')) % delete its children
+hold(ax2,'on')
+for i = 1:length(durVect)
+    h(i) = plot(sin(1:10),'Parent',ax2,...
+                          'Color',cmap(i,:),...
+                          'LineWidth',1,...
+                          'DisplayName',['Dur = ' num2str(durVect(i),4)]);
+end
+hold(ax2,'off')
+legend(ax2, 'Location','NorthWest')
+for i = 1:length(durVect)
+    set(h(i),'XData',[],'YData',[]);
+end
+set(ax2,'Color','none',...
+    'XTick',[],'YTick',[],...
+    'Box','off') % make legend axes transparent
+ax2.XLabel.String = '';
+ax2.YLabel.String = '';

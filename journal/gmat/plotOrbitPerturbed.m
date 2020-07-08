@@ -1,4 +1,5 @@
-%% plotOrbitParams.m
+%% plotOrbitPerturbed.m
+function plotOrbitPerturbed(numObsv,numSims,rngSeed)
 %
 % Author:
 %   Tiger Hou
@@ -6,7 +7,10 @@
 % Description:
 %   Generates plots for velocity initial orbit determination (VIOD) error
 %   with respect to variations in orbital parameters, including semi-major
-%   axis, eccentricity, and true anomaly.
+%   axis, eccentricity, and true anomaly. 
+%   This version accounts for perturbations from other solar system objects
+%   as well as solar radiation pressure and Earth oblateness. Propagation
+%   is performed in GMAT.
 %
 % Notes:
 %   In the case of varying orbital parameters, we choose to hold spacecraft
@@ -19,72 +23,14 @@
 
 %% initialization
 
-close all hidden
-clear;clc;init
-
 % load orbital parameter config case studies
-[smaVect,eccVect,taVect,noise,names] = load_orbit_cases();
+[smaVect,eccVect,taVect,~,~,~,~,~,~,noise] = load_orbit_cases(1);
+[~,~,~,~,names,~,~,~,~,~] = load_orbit_cases(0);
 
-% define gravitational parameter as 1 in canonical units
-mu = 1; % DU^3/TU^2
+%% collect ground truth data from .mat file and generate perturbations
 
-% define orbital parameters
-SMA  = 1e6; % DU
-ECC  = 0.1; % nd
-INC  = 45;  % deg
-RAAN = 30;  % deg
-AOP  = 30;  % deg
-TA   = 0;   % deg
-
-% convert to radians and combine parameters
-orbitParams = [SMA,ECC,deg2rad([INC,RAAN,AOP,TA])];
-
-% spacecraft parameters (fixed)
-numObsv = 3; % nd, number of measurements
-duration = 0.1; % nd, measurement duration as fraction of the orbit period
-
-% Monte Carlo settings
-numSims = 100;
-rngSeed = 1;
-
-%% generate ground truth data and perturbations
-
-% initialize cell array of velocity measurements and position references
-vArray = cell(length(smaVect),length(eccVect),length(taVect));
-rArray = cell(length(smaVect),length(eccVect),length(taVect));
-% populate velocity and position cell arrays
-for i = 1:length(smaVect)
-    SMA = smaVect(i);
-for j = 1:length(eccVect)
-    ECC = eccVect(j);
-for k = 1:length(taVect)
-    TA = taVect(k);
-    % load new case
-    orbitParams(1) = SMA;
-    orbitParams(2) = ECC;
-    orbitParams(6) = TA;
-    % initialize empty velocity matrix
-    v = nan(numObsv,3);
-    % calculate mean anomaly
-    period = 2*pi*sqrt(SMA^3/mu);
-    E = 2 * atan(sqrt((1-ECC)/(1+ECC))*tan(TA/2));
-    M = E - ECC*sin(E);
-    % determine measurement locations
-    Mvect = M + linspace(0,duration,numObsv) * 2*pi;
-    Evect = kepler(Mvect,ECC);
-    fVect = 2 * atan(sqrt((1+ECC)/(1-ECC))*tan(Evect/2));
-    % store ground truth position vector at starting true anomaly
-    rRef = Get_Orb_Vects(orbitParams,mu);
-    % fetch all measurements
-    for p = 1:numObsv
-        orbitParams(6) = fVect(p);
-        [~,v(p,:)] = Get_Orb_Vects(orbitParams,mu);
-    end
-    vArray{i,j,k} = v;
-    rArray{i,j,k} = rRef;
-end %taVect
-end %eccVect
-end %smaVect
+% load cell matrix of position, velocity, and mu data
+load('temp\datOrbit.mat','rArray','vArray','muArray');
 
 % initialize cell array of noise values
 nArray = cell(1,numSims);
@@ -122,17 +68,18 @@ errHodo = nan(numSims,length(taVect));
 % perform Monte Carlo sim
 for n = 1:numSims
 for k = 1:length(taVect)
-    v = vArray{i,j,k};
-    noiseVect = nArray{n};
     rRef = rArray{i,j,k};
+    v = vArray{i,j,k};
+    mu = muArray{i,j,k};
+    noiseVect = nArray{n};
     % do orbit determination
     % --- note the scaling dor the original method: this is because
     % --- precision issues arise when using canonical units. 
     rOrig = viod((v+noiseVect)*1e4,mu*1e12)/1e4;
     rHodo = hodo(v+noiseVect,mu);
     % we choose to compare the position estimate at the first measurement
-    rOrig = rOrig(1,:)';
-    rHodo = rHodo(1,:)';
+    rOrig = rOrig(1,:);
+    rHodo = rHodo(1,:);
     % store error data
     errOrig(n,k) = norm(rOrig-rRef);
     errHodo(n,k) = norm(rHodo-rRef);
@@ -269,3 +216,4 @@ set(ax2,'Color','none',...
     'Box','off') % make legend axes transparent
 ax2.XLabel.String = '';
 ax2.YLabel.String = '';
+end % plotOrbitPerturbed.m

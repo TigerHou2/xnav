@@ -14,9 +14,9 @@ function [noiseVect,durVect,obsVect] = load_spcraft_cases()
 noiseVect = [1e-7,5e-7,1e-6,5e-6,1e-5]; % DU/TU
 
 % measurement duration as fraction of the orbit period
-durVect = [0.01 0.05 0.1 0.2]; % nd
+durVect = [0.01 0.04 0.8]; % nd
 
 % measurement count
-obsVect = [3 8 20]; % nd
+obsVect = [3 10 40]; % nd
 
 end % load_spcraft_cases.m

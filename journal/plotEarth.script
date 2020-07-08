@@ -12,11 +12,11 @@ GMAT sc.Epoch = '21545';
 GMAT sc.CoordinateSystem = EarthMJ2000Eq;
 GMAT sc.DisplayStateType = Keplerian;
 GMAT sc.SMA = 15000;
-GMAT sc.ECC = 0.4999999999999999;
+GMAT sc.ECC = 0.4999999999999998;
 GMAT sc.INC = 0;
 GMAT sc.RAAN = 0;
 GMAT sc.AOP = 360;
-GMAT sc.TA = 45.00000000000001;
+GMAT sc.TA = 45.00000000000002;
 GMAT sc.DryMass = 850;
 GMAT sc.Cd = 2.2;
 GMAT sc.Cr = 1.8;
@@ -44,6 +44,7 @@ GMAT sc.AttitudeDisplayStateType = 'Quaternion';
 GMAT sc.AttitudeRateDisplayStateType = 'AngularVelocity';
 GMAT sc.AttitudeCoordinateSystem = EarthMJ2000Eq;
 GMAT sc.EulerAngleSequence = '321';
+
 
 %----------------------------------------
 %---------- ForceModels
@@ -111,6 +112,13 @@ GMAT orbitView.UseInitialView = On;
 GMAT orbitView.StarCount = 7000;
 GMAT orbitView.EnableStars = On;
 GMAT orbitView.EnableConstellations = On;
+
+%----------------------------------------
+%---------- Functions
+%----------------------------------------
+
+Create GmatFunction testFun;
+GMAT testFun.FunctionPath = 'testFun.gmf';
 
 
 %----------------------------------------

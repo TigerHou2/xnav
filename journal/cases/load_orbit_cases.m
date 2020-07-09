@@ -23,8 +23,8 @@ noise_canon = 1e-6;
 noise = 3; % m/s
 noise = noise / 1000; % km/s
 
-eccVect = [0.1,0.5,0.8];
-taVect  = [0, 15, 30, 45, 90, 120];
+eccVect = [0.1,0.5,0.9];
+taVect  = [0, 20, 45, 90, 120, 160, 180];
 taVect  = deg2rad(taVect);
 smaVect = [];
 names = {};

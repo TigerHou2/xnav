@@ -44,8 +44,15 @@ numObsv = 3; % nd, number of measurements
 duration = 0.1; % nd, measurement duration as fraction of the orbit period
 
 % Monte Carlo settings
-numSims = 100;
+numSims = 1000;
 rngSeed = 1;
+
+% data logging
+filepath = 'data\orbitParams.mat';
+meanOrig = nan(length(eccVect),length(taVect),length(smaVect));
+meanHodo = nan(length(eccVect),length(taVect),length(smaVect));
+ stdOrig = nan(length(eccVect),length(taVect),length(smaVect));
+ stdHodo = nan(length(eccVect),length(taVect),length(smaVect));
 
 %% generate ground truth data and perturbations
 
@@ -145,7 +152,7 @@ taDeg = rad2deg(taVect);
 
 % --- mean error
 figure(1)
-latexify('plotSize',[24 18])
+latexify('plotSize',[30 18])
 hold on
 plot(taDeg,mean(errOrig)/SMA,origFormat,'Color',color,'LineWidth',origWidth)
 plot(taDeg,mean(errHodo)/SMA,hodoFormat,'LineWidth',hodoWidth)
@@ -159,7 +166,7 @@ latexify('fontSize',18)
 
 % --- standard deviation
 figure(2)
-latexify('plotSize',[24 18])
+latexify('plotSize',[30 18])
 hold on
 plot(taDeg,std(errOrig)/SMA,origFormat,'Color',color,'LineWidth',origWidth)
 plot(taDeg,std(errHodo)/SMA,hodoFormat,'LineWidth',hodoWidth)
@@ -171,15 +178,45 @@ ylabel('Position Error StDev, fraction of SMA')
 labelArray{i,j,2} = [taDeg(end),std(errOrig(:,end))/SMA];
 latexify('fontSize',18)
 
+% --- log data
+meanOrig(j,:,i) = mean(errOrig)'/SMA;
+meanHodo(j,:,i) = mean(errHodo)'/SMA;
+ stdOrig(j,:,i) =  std(errOrig)'/SMA;
+ stdHodo(j,:,i) =  std(errHodo)'/SMA;
+
 end %eccVect
 end %smaVect
+
+% save data to file
+save(filepath,'meanOrig','meanHodo','stdOrig','stdHodo',...
+              'smaVect','eccVect','taVect');
+
+% print data in latex table formatting
+regexprep(...
+regexprep(...
+regexprep(latex(vpa(sym(meanOrig(:,:,1)),10)),...
+    '([0-9]+\.[0-9]+)','${num2str(str2num($1),''%.3e'')}'),...
+    '(e[+-][0-9]+)',' \\times 10^{${strtok($1,''e'')}}'),...
+    '((?<=\{[+-])[0-9])','${regexprep($1,''^0*'','''')}')
+regexprep(...
+regexprep(...
+regexprep(latex(vpa(sym(meanOrig(:,:,2)),10)),...
+    '([0-9]+\.[0-9]+)','${num2str(str2num($1),''%.3e'')}'),...
+    '(e[+-][0-9]+)',' \\times 10^{${strtok($1,''e'')}}'),...
+    '((?<=\{[+-])[0-9])','${regexprep($1,''^0*'','''')}')
+regexprep(...
+regexprep(...
+regexprep(latex(vpa(sym(meanOrig(:,:,3)),10)),...
+    '([0-9]+\.[0-9]+)','${num2str(str2num($1),''%.3e'')}'),...
+    '(e[+-][0-9]+)',' \\times 10^{${strtok($1,''e'')}}'),...
+    '((?<=\{[+-])[0-9])','${regexprep($1,''^0*'','''')}')
 
 %% add annotations
 
 figure(1)
 set(gca, 'YScale', 'log')
 setgrid
-expand(0.07,0.12,0.07,0.05)
+expand(0.05,0.10,0.02,0.03)
 axis tight
 axlim = axis(gca) .* [1 1 0.3 3];
 xlim(axlim(1:2))
@@ -203,7 +240,7 @@ end
 figure(2)
 set(gca, 'YScale', 'log')
 setgrid
-expand(0.07,0.12,0.07,0.05)
+expand(0.05,0.10,0.02,0.03)
 axis tight
 axlim = axis(gca) .* [1 1 0.3 3];
 xlim(axlim(1:2))
@@ -235,7 +272,7 @@ for i = 1:length(smaVect)
     h(i) = plot(sin(1:10),'Parent',ax2,...
                           'Color',cmap(i,:),...
                           'LineWidth',1,...
-                          'DisplayName',names{i});
+                          'DisplayName',['SMA = ' num2str(smaVect(i),4)]);
 end
 hold(ax2,'off')
 legend(ax2, 'Location','NorthWest')
@@ -257,7 +294,7 @@ for i = 1:length(smaVect)
     h(i) = plot(sin(1:10),'Parent',ax2,...
                           'Color',cmap(i,:),...
                           'LineWidth',1,...
-                          'DisplayName',names{i});
+                          'DisplayName',['SMA = ' num2str(smaVect(i),4)]);
 end
 hold(ax2,'off')
 legend(ax2, 'Location','NorthWest')

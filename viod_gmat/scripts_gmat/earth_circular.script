@@ -11,12 +11,12 @@ GMAT sc.DateFormat = TAIModJulian;
 GMAT sc.Epoch = '21545';
 GMAT sc.CoordinateSystem = EarthMJ2000Eq;
 GMAT sc.DisplayStateType = Keplerian;
-GMAT sc.SMA = 7500.00000000001;
-GMAT sc.ECC = 0.5000000000000003;
-GMAT sc.INC = 45;
+GMAT sc.SMA = 39999.99999999998;
+GMAT sc.ECC = 0.7999999999999998;
+GMAT sc.INC = 19.99999999999999;
 GMAT sc.RAAN = 30;
 GMAT sc.AOP = 30;
-GMAT sc.TA = 20;
+GMAT sc.TA = 19.99999999999994;
 GMAT sc.DryMass = 850;
 GMAT sc.Cd = 2.2;
 GMAT sc.Cr = 1.8;
@@ -58,17 +58,28 @@ GMAT sc.EulerAngleSequence = '321';
 
 
 
+
+
 %----------------------------------------
 %---------- ForceModels
 %----------------------------------------
 
 Create ForceModel prop_earth_ForceModel;
 GMAT prop_earth_ForceModel.CentralBody = Earth;
-GMAT prop_earth_ForceModel.PointMasses = {Earth};
+GMAT prop_earth_ForceModel.PrimaryBodies = {Earth};
+GMAT prop_earth_ForceModel.PointMasses = {Luna, Sun};
 GMAT prop_earth_ForceModel.Drag = None;
-GMAT prop_earth_ForceModel.SRP = Off;
+GMAT prop_earth_ForceModel.SRP = On;
 GMAT prop_earth_ForceModel.RelativisticCorrection = Off;
 GMAT prop_earth_ForceModel.ErrorControl = RSSStep;
+GMAT prop_earth_ForceModel.GravityField.Earth.Degree = 4;
+GMAT prop_earth_ForceModel.GravityField.Earth.Order = 4;
+GMAT prop_earth_ForceModel.GravityField.Earth.StmLimit = 100;
+GMAT prop_earth_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
+GMAT prop_earth_ForceModel.GravityField.Earth.TideModel = 'None';
+GMAT prop_earth_ForceModel.SRP.Flux = 1367;
+GMAT prop_earth_ForceModel.SRP.SRPModel = Spherical;
+GMAT prop_earth_ForceModel.SRP.Nominal_Sun = 149597870.691;
 
 %----------------------------------------
 %---------- Propagators
@@ -91,8 +102,8 @@ GMAT prop_earth.StopIfAccuracyIsViolated = true;
 Create OrbitView DefaultOrbitView;
 GMAT DefaultOrbitView.SolverIterations = Current;
 GMAT DefaultOrbitView.UpperLeft = [ 0 0 ];
-GMAT DefaultOrbitView.Size = [ 0.6 0.8 ];
-GMAT DefaultOrbitView.RelativeZOrder = 452;
+GMAT DefaultOrbitView.Size = [ 0.6 0.8002450980392157 ];
+GMAT DefaultOrbitView.RelativeZOrder = 36;
 GMAT DefaultOrbitView.Maximized = false;
 GMAT DefaultOrbitView.Add = {sc, Earth, Luna, Sun};
 GMAT DefaultOrbitView.CoordinateSystem = EarthMJ2000Eq;
@@ -165,11 +176,13 @@ GMAT monteScatter_compare.FunctionPath = 'E:\Research\XNAV\viod_gmat\scripts_mat
 Create Array v[100,3] r[100,3] rDiff[100,3] r2[1,3] bias[1,3];
 Create Variable mu num_obsv f df i j temp noise num_monte runTime;
 Create String blank;
-GMAT num_obsv = 3;
-GMAT f = 20;
-GMAT df = 30;
-GMAT noise = 3; % m/s
-GMAT num_monte = 100;
+GMAT num_obsv = 16;
+GMAT f = 160;
+GMAT df = 2;
+GMAT noise = 10; % m/s
+GMAT num_monte = 300;
+
+
 
 
 
@@ -213,6 +226,8 @@ GMAT monteScatter_compare(v, mu, noise, r, num_monte);
 Propagate prop_earth(sc) {sc.TA = 0, OrbitColor = Green};
 Report report sc.Altitude;
 % Report report runTime;
+
+
 
 
 

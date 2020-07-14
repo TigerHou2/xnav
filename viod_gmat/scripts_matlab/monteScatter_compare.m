@@ -1,4 +1,4 @@
-function monteScatter_compare(v,mu,noise,rRef,itr,idx,bias)
+function [r2_vect_1,r2_vect_2] = monteScatter_compare(v,mu,noise,rRef,itr,idx,bias)
 %MONTESCATTER_COMPARE Generates a scatter plot od OD errors from Monte Carlo sims
 %
 % Author: 
@@ -42,7 +42,7 @@ for i = 1:itr
     v_noisy = addnoise(v,noise,bias);
     
     rEst_1 = viod(v_noisy, mu);
-    rEst_2 = hodo_od(v_noisy,mu);
+    rEst_2 = hodoHyp(v_noisy,mu);
     
     r2_1 = rRef(idx,:) - rEst_1(idx,:);
     r2_2 = rRef(idx,:) - rEst_2(idx,:);
@@ -60,7 +60,7 @@ hold off
 axis equal
 xlabel('$\delta_x, km$')
 ylabel('$\delta_y, km$')
-legend('VIOD','HODO')
+legend('VIOD','HYPER')
 
 subplot(1,3,2)
 hold on
@@ -70,7 +70,7 @@ hold off
 axis equal
 xlabel('$\delta_x, km$')
 ylabel('$\delta_z, km$')
-legend('VIOD','HODO')
+legend('VIOD','HYPER')
 
 subplot(1,3,3)
 hold on
@@ -80,7 +80,7 @@ hold off
 axis equal
 xlabel('$\delta_y, km$')
 ylabel('$\delta_z, km$')
-legend('VIOD','HODO')
+legend('VIOD','HYPER')
 
 end
 

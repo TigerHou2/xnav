@@ -11,12 +11,12 @@ GMAT sc.DateFormat = TAIModJulian;
 GMAT sc.Epoch = '21545';
 GMAT sc.CoordinateSystem = EarthMJ2000Eq;
 GMAT sc.DisplayStateType = Keplerian;
-GMAT sc.SMA = 7191.93881762902;
-GMAT sc.ECC = 0.02454974900598161;
+GMAT sc.SMA = 7191.938817629039;
+GMAT sc.ECC = 0.02454974900598168;
 GMAT sc.INC = 12.85008005658097;
 GMAT sc.RAAN = 306.6148021947984;
-GMAT sc.AOP = 314.1905515359928;
-GMAT sc.TA = 99.88774933204815;
+GMAT sc.AOP = 314.1905515359962;
+GMAT sc.TA = 99.88774933204479;
 GMAT sc.DryMass = 850;
 GMAT sc.Cd = 2.2;
 GMAT sc.Cr = 1.8;
@@ -50,12 +50,12 @@ GMAT sc_earth.DateFormat = TAIModJulian;
 GMAT sc_earth.Epoch = '21545';
 GMAT sc_earth.CoordinateSystem = EarthMJ2000Eq;
 GMAT sc_earth.DisplayStateType = Keplerian;
-GMAT sc_earth.SMA = 7199.999999999999;
-GMAT sc_earth.ECC = 2.56693528899301e-016;
-GMAT sc_earth.INC = 0;
-GMAT sc_earth.RAAN = 0;
+GMAT sc_earth.SMA = 7199.99999999998;
+GMAT sc_earth.ECC = 3.85414389272683e-016;
+GMAT sc_earth.INC = 23.99999999999999;
+GMAT sc_earth.RAAN = 29.99999999999999;
 GMAT sc_earth.AOP = 0;
-GMAT sc_earth.TA = 0;
+GMAT sc_earth.TA = 29.99999999999998;
 GMAT sc_earth.DryMass = 850;
 GMAT sc_earth.Cd = 2.2;
 GMAT sc_earth.Cr = 1.8;
@@ -89,12 +89,12 @@ GMAT sc_sun.DateFormat = TAIModJulian;
 GMAT sc_sun.Epoch = '21545';
 GMAT sc_sun.CoordinateSystem = SunMJ2000Eq;
 GMAT sc_sun.DisplayStateType = Keplerian;
-GMAT sc_sun.SMA = 145864620.9857952;
-GMAT sc_sun.ECC = 2.499070545773887e-016;
-GMAT sc_sun.INC = 24.00000000000004;
-GMAT sc_sun.RAAN = 0;
+GMAT sc_sun.SMA = 145864620.9857949;
+GMAT sc_sun.ECC = 3.786669903725402e-016;
+GMAT sc_sun.INC = 24.00000000000002;
+GMAT sc_sun.RAAN = 29.99999999999998;
 GMAT sc_sun.AOP = 0;
-GMAT sc_sun.TA = 0;
+GMAT sc_sun.TA = 29.99999999999994;
 GMAT sc_sun.DryMass = 850;
 GMAT sc_sun.Cd = 2.2;
 GMAT sc_sun.Cr = 1.8;
@@ -147,40 +147,47 @@ GMAT propagator_ForceModel.GravityField.Earth.TideModel = 'None';
 
 Create ForceModel prop_earth_ForceModel;
 GMAT prop_earth_ForceModel.CentralBody = Earth;
-GMAT prop_earth_ForceModel.PrimaryBodies = {Earth};
-GMAT prop_earth_ForceModel.PointMasses = {Luna, Sun};
-GMAT prop_earth_ForceModel.SRP = On;
+GMAT prop_earth_ForceModel.PointMasses = {Earth};
+GMAT prop_earth_ForceModel.Drag = None;
+GMAT prop_earth_ForceModel.SRP = Off;
 GMAT prop_earth_ForceModel.RelativisticCorrection = Off;
 GMAT prop_earth_ForceModel.ErrorControl = RSSStep;
-GMAT prop_earth_ForceModel.GravityField.Earth.Degree = 4;
-GMAT prop_earth_ForceModel.GravityField.Earth.Order = 4;
-GMAT prop_earth_ForceModel.GravityField.Earth.StmLimit = 100;
-GMAT prop_earth_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
-GMAT prop_earth_ForceModel.GravityField.Earth.TideModel = 'None';
-GMAT prop_earth_ForceModel.Drag.AtmosphereModel = JacchiaRoberts;
-GMAT prop_earth_ForceModel.Drag.HistoricWeatherSource = 'ConstantFluxAndGeoMag';
-GMAT prop_earth_ForceModel.Drag.PredictedWeatherSource = 'ConstantFluxAndGeoMag';
-GMAT prop_earth_ForceModel.Drag.CSSISpaceWeatherFile = 'SpaceWeather-All-v1.2.txt';
-GMAT prop_earth_ForceModel.Drag.SchattenFile = 'SchattenPredict.txt';
-GMAT prop_earth_ForceModel.Drag.F107 = 150;
-GMAT prop_earth_ForceModel.Drag.F107A = 150;
-GMAT prop_earth_ForceModel.Drag.MagneticIndex = 3;
-GMAT prop_earth_ForceModel.Drag.SchattenErrorModel = 'Nominal';
-GMAT prop_earth_ForceModel.Drag.SchattenTimingModel = 'NominalCycle';
-GMAT prop_earth_ForceModel.SRP.Flux = 1367;
-GMAT prop_earth_ForceModel.SRP.SRPModel = Spherical;
-GMAT prop_earth_ForceModel.SRP.Nominal_Sun = 149597870.691;
 
 Create ForceModel prop_sun_ForceModel;
 GMAT prop_sun_ForceModel.CentralBody = Sun;
-GMAT prop_sun_ForceModel.PointMasses = {Earth, Jupiter, Mars, Mercury, Neptune, Pluto, Saturn, Sun, Uranus, Venus};
+GMAT prop_sun_ForceModel.PointMasses = {Sun};
 GMAT prop_sun_ForceModel.Drag = None;
-GMAT prop_sun_ForceModel.SRP = On;
+GMAT prop_sun_ForceModel.SRP = Off;
 GMAT prop_sun_ForceModel.RelativisticCorrection = Off;
 GMAT prop_sun_ForceModel.ErrorControl = RSSStep;
-GMAT prop_sun_ForceModel.SRP.Flux = 1367;
-GMAT prop_sun_ForceModel.SRP.SRPModel = Spherical;
-GMAT prop_sun_ForceModel.SRP.Nominal_Sun = 149597870.691;
+
+Create ForceModel prop_earth_perturbed_ForceModel;
+GMAT prop_earth_perturbed_ForceModel.CentralBody = Earth;
+GMAT prop_earth_perturbed_ForceModel.PrimaryBodies = {Earth};
+GMAT prop_earth_perturbed_ForceModel.PointMasses = {Luna, Sun};
+GMAT prop_earth_perturbed_ForceModel.Drag = None;
+GMAT prop_earth_perturbed_ForceModel.SRP = On;
+GMAT prop_earth_perturbed_ForceModel.RelativisticCorrection = Off;
+GMAT prop_earth_perturbed_ForceModel.ErrorControl = RSSStep;
+GMAT prop_earth_perturbed_ForceModel.GravityField.Earth.Degree = 4;
+GMAT prop_earth_perturbed_ForceModel.GravityField.Earth.Order = 4;
+GMAT prop_earth_perturbed_ForceModel.GravityField.Earth.StmLimit = 100;
+GMAT prop_earth_perturbed_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
+GMAT prop_earth_perturbed_ForceModel.GravityField.Earth.TideModel = 'None';
+GMAT prop_earth_perturbed_ForceModel.SRP.Flux = 1367;
+GMAT prop_earth_perturbed_ForceModel.SRP.SRPModel = Spherical;
+GMAT prop_earth_perturbed_ForceModel.SRP.Nominal_Sun = 149597870.691;
+
+Create ForceModel prop_sun_perturbed_ForceModel;
+GMAT prop_sun_perturbed_ForceModel.CentralBody = Sun;
+GMAT prop_sun_perturbed_ForceModel.PointMasses = {Earth, Jupiter, Mars, Mercury, Neptune, Pluto, Saturn, Sun, Uranus, Venus};
+GMAT prop_sun_perturbed_ForceModel.Drag = None;
+GMAT prop_sun_perturbed_ForceModel.SRP = On;
+GMAT prop_sun_perturbed_ForceModel.RelativisticCorrection = Off;
+GMAT prop_sun_perturbed_ForceModel.ErrorControl = RSSStep;
+GMAT prop_sun_perturbed_ForceModel.SRP.Flux = 1367;
+GMAT prop_sun_perturbed_ForceModel.SRP.SRPModel = Spherical;
+GMAT prop_sun_perturbed_ForceModel.SRP.Nominal_Sun = 149597870.691;
 
 %----------------------------------------
 %---------- Propagators
@@ -216,6 +223,26 @@ GMAT prop_sun.MaxStep = 86400;
 GMAT prop_sun.MaxStepAttempts = 50;
 GMAT prop_sun.StopIfAccuracyIsViolated = true;
 
+Create Propagator prop_earth_perturbed;
+GMAT prop_earth_perturbed.FM = prop_earth_perturbed_ForceModel;
+GMAT prop_earth_perturbed.Type = RungeKutta89;
+GMAT prop_earth_perturbed.InitialStepSize = 60;
+GMAT prop_earth_perturbed.Accuracy = 9.999999999999999e-012;
+GMAT prop_earth_perturbed.MinStep = 0.001;
+GMAT prop_earth_perturbed.MaxStep = 2700;
+GMAT prop_earth_perturbed.MaxStepAttempts = 50;
+GMAT prop_earth_perturbed.StopIfAccuracyIsViolated = true;
+
+Create Propagator prop_sun_perturbed;
+GMAT prop_sun_perturbed.FM = prop_sun_perturbed_ForceModel;
+GMAT prop_sun_perturbed.Type = PrinceDormand78;
+GMAT prop_sun_perturbed.InitialStepSize = 600;
+GMAT prop_sun_perturbed.Accuracy = 9.999999999999999e-012;
+GMAT prop_sun_perturbed.MinStep = 0;
+GMAT prop_sun_perturbed.MaxStep = 86400;
+GMAT prop_sun_perturbed.MaxStepAttempts = 50;
+GMAT prop_sun_perturbed.StopIfAccuracyIsViolated = true;
+
 %----------------------------------------
 %---------- Coordinate Systems
 %----------------------------------------
@@ -228,37 +255,101 @@ GMAT SunMJ2000Eq.Axes = MJ2000Eq;
 %---------- Subscribers
 %----------------------------------------
 
-Create OrbitView orbitView;
-GMAT orbitView.SolverIterations = Current;
-GMAT orbitView.UpperLeft = [ 0.002352941176470588 0 ];
-GMAT orbitView.Size = [ 0.8 0.8005354752342704 ];
-GMAT orbitView.RelativeZOrder = 434;
-GMAT orbitView.Maximized = false;
-GMAT orbitView.Add = {sc, Earth};
-GMAT orbitView.CoordinateSystem = EarthMJ2000Eq;
-GMAT orbitView.DrawObject = [ true true ];
-GMAT orbitView.DataCollectFrequency = 1;
-GMAT orbitView.UpdatePlotFrequency = 50;
-GMAT orbitView.NumPointsToRedraw = 0;
-GMAT orbitView.ShowPlot = true;
-GMAT orbitView.MaxPlotPoints = 20000;
-GMAT orbitView.ShowLabels = true;
-GMAT orbitView.ViewPointReference = Earth;
-GMAT orbitView.ViewPointVector = [ 900000 900000 0 ];
-GMAT orbitView.ViewDirection = Earth;
-GMAT orbitView.ViewScaleFactor = 1;
-GMAT orbitView.ViewUpCoordinateSystem = EarthMJ2000Eq;
-GMAT orbitView.ViewUpAxis = Z;
-GMAT orbitView.EclipticPlane = Off;
-GMAT orbitView.XYPlane = On;
-GMAT orbitView.WireFrame = Off;
-GMAT orbitView.Axes = On;
-GMAT orbitView.Grid = Off;
-GMAT orbitView.SunLine = Off;
-GMAT orbitView.UseInitialView = On;
-GMAT orbitView.StarCount = 7000;
-GMAT orbitView.EnableStars = On;
-GMAT orbitView.EnableConstellations = On;
+Create OrbitView earthView;
+GMAT earthView.SolverIterations = Current;
+GMAT earthView.UpperLeft = [ 0 0 ];
+GMAT earthView.Size = [ 0.3 0.5994729907773386 ];
+GMAT earthView.RelativeZOrder = 619;
+GMAT earthView.Maximized = false;
+GMAT earthView.Add = {sc, Earth, Luna};
+GMAT earthView.CoordinateSystem = EarthMJ2000Eq;
+GMAT earthView.DrawObject = [ true true true ];
+GMAT earthView.DataCollectFrequency = 1;
+GMAT earthView.UpdatePlotFrequency = 50;
+GMAT earthView.NumPointsToRedraw = 0;
+GMAT earthView.ShowPlot = true;
+GMAT earthView.MaxPlotPoints = 20000;
+GMAT earthView.ShowLabels = true;
+GMAT earthView.ViewPointReference = Earth;
+GMAT earthView.ViewPointVector = [ 90000 0 90000 ];
+GMAT earthView.ViewDirection = Earth;
+GMAT earthView.ViewScaleFactor = 1;
+GMAT earthView.ViewUpCoordinateSystem = EarthMJ2000Eq;
+GMAT earthView.ViewUpAxis = Z;
+GMAT earthView.EclipticPlane = Off;
+GMAT earthView.XYPlane = On;
+GMAT earthView.WireFrame = Off;
+GMAT earthView.Axes = On;
+GMAT earthView.Grid = Off;
+GMAT earthView.SunLine = Off;
+GMAT earthView.UseInitialView = On;
+GMAT earthView.StarCount = 7000;
+GMAT earthView.EnableStars = On;
+GMAT earthView.EnableConstellations = On;
+
+Create OrbitView sunViewMars;
+GMAT sunViewMars.SolverIterations = Current;
+GMAT sunViewMars.UpperLeft = [ 0.3288235294117647 0 ];
+GMAT sunViewMars.Size = [ 0.3 0.5994729907773386 ];
+GMAT sunViewMars.RelativeZOrder = 611;
+GMAT sunViewMars.Maximized = false;
+GMAT sunViewMars.Add = {sc, Sun, Earth, Jupiter, Mars, Mercury, Venus};
+GMAT sunViewMars.CoordinateSystem = SunMJ2000Eq;
+GMAT sunViewMars.DrawObject = [ true true true true true true true ];
+GMAT sunViewMars.DataCollectFrequency = 10;
+GMAT sunViewMars.UpdatePlotFrequency = 100;
+GMAT sunViewMars.NumPointsToRedraw = 0;
+GMAT sunViewMars.ShowPlot = true;
+GMAT sunViewMars.MaxPlotPoints = 20000;
+GMAT sunViewMars.ShowLabels = true;
+GMAT sunViewMars.ViewPointReference = Sun;
+GMAT sunViewMars.ViewPointVector = [ 450000000 0 450000000 ];
+GMAT sunViewMars.ViewDirection = Sun;
+GMAT sunViewMars.ViewScaleFactor = 1;
+GMAT sunViewMars.ViewUpCoordinateSystem = SunMJ2000Eq;
+GMAT sunViewMars.ViewUpAxis = Z;
+GMAT sunViewMars.EclipticPlane = Off;
+GMAT sunViewMars.XYPlane = On;
+GMAT sunViewMars.WireFrame = Off;
+GMAT sunViewMars.Axes = On;
+GMAT sunViewMars.Grid = Off;
+GMAT sunViewMars.SunLine = Off;
+GMAT sunViewMars.UseInitialView = On;
+GMAT sunViewMars.StarCount = 7000;
+GMAT sunViewMars.EnableStars = On;
+GMAT sunViewMars.EnableConstellations = On;
+
+Create OrbitView sunViewNeptune;
+GMAT sunViewNeptune.SolverIterations = Current;
+GMAT sunViewNeptune.UpperLeft = [ 0.6588235294117647 0 ];
+GMAT sunViewNeptune.Size = [ 0.3 0.5994729907773386 ];
+GMAT sunViewNeptune.RelativeZOrder = 607;
+GMAT sunViewNeptune.Maximized = false;
+GMAT sunViewNeptune.Add = {sc, Sun, Jupiter, Mars, Saturn, Pluto, Neptune, Uranus};
+GMAT sunViewNeptune.CoordinateSystem = SunMJ2000Eq;
+GMAT sunViewNeptune.DrawObject = [ true true true true true true true true ];
+GMAT sunViewNeptune.DataCollectFrequency = 10;
+GMAT sunViewNeptune.UpdatePlotFrequency = 100;
+GMAT sunViewNeptune.NumPointsToRedraw = 0;
+GMAT sunViewNeptune.ShowPlot = true;
+GMAT sunViewNeptune.MaxPlotPoints = 20000;
+GMAT sunViewNeptune.ShowLabels = true;
+GMAT sunViewNeptune.ViewPointReference = Sun;
+GMAT sunViewNeptune.ViewPointVector = [ 6000000000 0 6000000000 ];
+GMAT sunViewNeptune.ViewDirection = Sun;
+GMAT sunViewNeptune.ViewScaleFactor = 1;
+GMAT sunViewNeptune.ViewUpCoordinateSystem = SunMJ2000Eq;
+GMAT sunViewNeptune.ViewUpAxis = Z;
+GMAT sunViewNeptune.EclipticPlane = Off;
+GMAT sunViewNeptune.XYPlane = On;
+GMAT sunViewNeptune.WireFrame = Off;
+GMAT sunViewNeptune.Axes = On;
+GMAT sunViewNeptune.Grid = Off;
+GMAT sunViewNeptune.SunLine = Off;
+GMAT sunViewNeptune.UseInitialView = On;
+GMAT sunViewNeptune.StarCount = 7000;
+GMAT sunViewNeptune.EnableStars = On;
+GMAT sunViewNeptune.EnableConstellations = On;
 
 %----------------------------------------
 %---------- Functions
@@ -283,20 +374,21 @@ GMAT plotOrbitPerturbed.FunctionPath = 'E:\Research\XNAV\journal\gmat';
 %---------- Arrays, Variables, Strings
 %----------------------------------------
 
-Create Array smaVect[1,3] eccVect[1,3] taVect[1,6] centralBody[1,3] rData[1,3] vData[3,3];
+Create Array smaVect[1,3] eccVect[1,3] taVect[1,7] centralBody[1,3] rData[1,3] vData[3,3];
 Create Variable smaLen eccLen taLen noise duration temp SMA ECC TA numObsv;
 Create Variable numSims rngSeed mu period dt dtBack i j k m;
-Create Variable b1 b2 b3 b4;
-Create String filepath;
+Create Variable pi b1 b2 b3 b4 perturbed;
+Create String filepath fp1 fp2;
 GMAT duration = 0.1;
 GMAT temp = 1;
 GMAT numObsv = 3;
 GMAT numSims = 100;
 GMAT rngSeed = 1;
+GMAT pi = 3.1415927;
+GMAT perturbed = 1;
 GMAT filepath = 'temp\datOrbit.mat';
-
-
-
+GMAT fp1 = 'temp\datOrbit.mat';
+GMAT fp2 = 'temp\datOrbitPerturbed.mat';
 
 
 %----------------------------------------
@@ -311,6 +403,13 @@ GMAT init_gmat;
 %---- load orbit cases from MATLAB
 GMAT [smaVect, eccVect, taVect, b1, b2, centralBody, smaLen, eccLen, taLen, noise] = load_orbit_cases(temp);
 
+%---- define save file path based on perturbed / non-perturbed
+If perturbed == 0
+   GMAT filepath = fp1;
+Else
+   GMAT filepath = fp2;
+EndIf;
+
 %---- iterate over each case and store velocity data
 % iterate over SMA (semi-major axis)
 For i = 1:1:smaLen;
@@ -321,15 +420,23 @@ For i = 1:1:smaLen;
       % iterate over TA (true anomaly)
       For k = 1:1:taLen;
          GMAT TA = taVect(k);
+         % draw trajectory
+         PenDown earthView;
+         PenDown sunViewMars;
+         PenDown sunViewNeptune;
          % switch spacecraft and propagators, set spacecraft Keplerian orbital elements
-         If centralBody(i) == 0 % Earth orbit
+         If centralBody(1,i) == 0 % Earth orbit
             GMAT sc = sc_earth;
-            GMAT propagator = prop_earth;
+            If perturbed == 0
+               GMAT propagator = prop_earth;
+            Else
+               GMAT propagator = prop_earth_perturbed;
+            EndIf;
             GMAT sc.Earth.SMA = SMA;
             GMAT sc.Earth.ECC = ECC;
-            GMAT sc.Earth.TA = TA;
+            GMAT sc.Earth.TA = TA / pi * 180;
             GMAT mu = SolarSystem.Earth.Mu;
-            GMAT period = sqrt(SMA^3/mu);
+            GMAT period = 2 * pi * sqrt(SMA^3/mu) * duration;
             GMAT dt = period / (numObsv-1);
             GMAT dtBack = -1 * period;
             % propagate and collect data
@@ -345,14 +452,18 @@ For i = 1:1:smaLen;
                Propagate propagator(sc) {sc.ElapsedSecs = dt};
             EndFor; %numObsv
          EndIf;
-         If centralBody(i) == 1 % Solar orbit
+         If centralBody(1,i) == 1 % Solar orbit
             GMAT sc = sc_sun;
-            GMAT propagator = prop_sun;
+            If perturbed == 0
+               GMAT propagator = prop_sun;
+            Else
+               GMAT propagator = prop_sun_perturbed;
+            EndIf;
             GMAT sc.Sun.SMA = SMA;
             GMAT sc.Sun.ECC = ECC;
-            GMAT sc.Sun.TA = TA;
+            GMAT sc.Sun.TA = TA / pi * 180;
             GMAT mu = SolarSystem.Sun.Mu;
-            GMAT period = sqrt(SMA^3/mu);
+            GMAT period = 2 * pi * sqrt(SMA^3/mu) * duration;
             GMAT dt = period / (numObsv-1);
             GMAT dtBack = -1 * period;
             % propagate and collect data
@@ -369,6 +480,9 @@ For i = 1:1:smaLen;
             EndFor; %numObsv
          EndIf;
          % back propagate to reset spacecraft after measurements are collected
+         PenUp earthView;
+         PenUp sunViewMars;
+         PenUp sunViewNeptune;
          Propagate BackProp propagator(sc) {sc.ElapsedSecs = dtBack};
          % store collected data in .mat structure
          GMAT g2mat(rData, vData);
@@ -378,4 +492,4 @@ For i = 1:1:smaLen;
 EndFor; %SMA
 
 %---- add noise to velocity data in a Monte Carlo sim and plot results
-GMAT plotOrbitPerturbed(numObsv, numSims, rngSeed);
+GMAT plotOrbitPerturbed(numObsv, numSims, rngSeed, perturbed);

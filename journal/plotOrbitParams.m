@@ -31,7 +31,7 @@ mu = 1; % DU^3/TU^2
 % define orbital parameters
 SMA  = 1e6; % DU
 ECC  = 0.1; % nd
-INC  = 45;  % deg
+INC  = 24;  % deg
 RAAN = 30;  % deg
 AOP  = 30;  % deg
 TA   = 0;   % deg

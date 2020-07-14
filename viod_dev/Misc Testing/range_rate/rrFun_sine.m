@@ -154,18 +154,10 @@ T = [u1';u2';normal'];
 % transform hodograph points to 2D
 hodo2D = T * hodoPoints; % third row should be zero if no error
 
-% construct linear system [1] eqn.9
-A = 2*hodo2D';
-A(:,3) = -1;
-B = (hodo2D').^2;
-B = sum(B(:,1:2),2);
-x = A\B;
-% find radius of hodograph
-R = sqrt(x(1)^2 + x(2)^2 - x(3));
+% fit data to circle
+[A,B,R,residual] = hyperfit(hodo2D(1:2,:));
 % find center of hodograph
-C = T' * [x(1); x(2); 0];
-% find residual
-residual = norm(A*x-B);
+C = T' * [A; B; 0];
 % add radius error to residual
 g_sma = ((g_period/2/pi)^2*mu)^(1/3);
 g_R = (sqrt(mu*(1+g_e)/g_sma/(1-g_e))+sqrt(mu*(1-g_e)/g_sma/(1+g_e)))/2;

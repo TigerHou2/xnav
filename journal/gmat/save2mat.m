@@ -2,6 +2,12 @@ function save2mat(filepath,rData,vData,mu,i,j,k)
 %SAVE2MAT saves pos/vel/mu data in a 3D cell structure from GMAT
 %   Detailed explanation goes here
 
+if ~isfile(filepath)
+    temp = matfile(filepath,'Writable',true);
+    temp.rArray = {};
+    temp.vArray = {};
+    temp.muArray = {};
+end
 variableInfo = who('-file', filepath);
 
 if ismember('rArray', variableInfo), load(filepath,'rArray');

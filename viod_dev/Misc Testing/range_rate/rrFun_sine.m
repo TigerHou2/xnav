@@ -106,12 +106,6 @@ for k = 1:numHodoPoints
     hodoPoints(:,k) = A\b;
 end
 
-% if exist('debug','var')
-%     figure(9)
-%     scatter3(hodoPoints(1,:),hodoPoints(2,:),hodoPoints(3,:))
-%     axis equal
-% end
-
     % here, we have a problem: the circle found by sine waves may not all
     % contain the origin, which is required for the hodograph
     % for now, we will simply shift the circle.
@@ -163,17 +157,6 @@ g_sma = ((g_period/2/pi)^2*mu)^(1/3);
 g_R = (sqrt(mu*(1+g_e)/g_sma/(1-g_e))+sqrt(mu*(1-g_e)/g_sma/(1+g_e)))/2;
 residual = residual + (R-g_R)^2;
 
-% % circle fitting with known radius
-% g_sma = ((g_period/2/pi)^2*mu)^(1/3);
-% R = ( sqrt(mu*(1+g_e)/g_sma/(1-g_e)) + sqrt(mu*(1-g_e)/g_sma/(1+g_e)) )/2;
-% A = hodo2D';
-% A(:,3) = [];
-% fun = @(x) norm(vecnorm(A-x,2,2).^2-R^2);
-% options = optimoptions('fminunc','Display','none');
-% C = fminunc(fun,mean(A),options);
-% residual = fun(C) / 1000;
-% C = T' * [C,0]';
-
 if exist('debug','var')
     figure(11)
     scatter3(hodo2D(1,:),hodo2D(2,:),hodo2D(3,:))
@@ -185,33 +168,6 @@ e = norm(C) / R;
 vp = R - norm(C);
 a = mu / vp^2 * (1+e^2-2*e)/(1-e^2);
 period = 2*pi * sqrt(abs(a^3/mu));
-
-% if exist('debug','var')
-%     % output full velocity measurements
-%     V = nan(size(obsv,1),size(obsv,2),3);
-%     radius = C*R / norm(C);
-%     for i = 1:M
-%         for j = 1:N
-%             df = g_f(i,j);
-%             V(i,j,:) = rotVec(radius,normal,df) + C;
-%         end
-%     end
-% else
-%     V = nan;
-% end
-
-% finalizing outputs
-optDiff = [e,period,residual+fVal] - [g_e,g_period,0];
-weight = [5 1 10];
-scale = 100;
-optDiff = optDiff .* weight / norm(weight) * scale;
-optOut  = [e,period,g_Moffset];
-
-% if the time since periapse is out of bounds (i.e. < 0 or > period)
-% then we add a penalty for being a periodic solution that is out of range
-if mod(g_Moffset,2*pi) ~= g_Moffset
-    optDiff = optDiff * (abs(mod(g_Moffset,2*pi)-g_Moffset)/2/pi+1);
-end
 
 % calcualte velocity projections
 V = nan(size(obsv,1),size(obsv,2),3);
@@ -225,9 +181,35 @@ for i = 1:M
         g_obsv(i,j) = pulsar(:,i)' * vtemp;
     end
 end
-% 
-% quality = g_obsv - obsv;
-% optDiff = quality(:);
+
+vtemp = reshape(V(1,1,:),3,1)-C;
+F = atan2(norm(cross(C,vtemp)),dot(C,vtemp));
+if cross(C,vtemp)'*normal < 0
+    F = 2*pi - F;
+end
+if e < 1, E = 2 * atan( tan(F/2) * sqrt((1-e)/(1+e)) ); M = E - e*sin(E);
+else,     E = 2 * atan(tanh(F/2) * sqrt((e-1)/(e+1)) ); M = e*sinh(E) - E; end
+
+offset = time(1,1)/period*2*pi - M;
+
+% finalizing outputs
+optDiff = [e,period,offset] - [g_e,g_period,g_Moffset];
+weight = [5 1 10];
+scale = 100;
+optDiff = optDiff .* weight / norm(weight) * scale;
+optOut  = [e,period,offset];
+
+optDiff = g_obsv - obsv;
+optDiff = optDiff(:) * optDiff(:)' * 1e8;
+
+% if the time since periapse is out of bounds (i.e. < 0 or > period)
+% then we add a penalty for being a periodic solution that is out of range
+if mod(offset,2*pi) ~= offset
+    optDiff = optDiff * (abs(mod(offset,2*pi)-offset)/2/pi+1);
+end
+if mod(g_Moffset,2*pi) ~= g_Moffset
+    optDiff = optDiff * (abs(mod(g_Moffset,2*pi)-g_Moffset)/2/pi+1);
+end
 
 end
 

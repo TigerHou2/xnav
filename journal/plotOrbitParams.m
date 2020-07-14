@@ -40,7 +40,7 @@ TA   = 0;   % deg
 orbitParams = [SMA,ECC,deg2rad([INC,RAAN,AOP,TA])];
 
 % spacecraft parameters (fixed)
-numObsv = 3; % nd, number of measurements
+numObsv = 6; % nd, number of measurements
 duration = 0.1; % nd, measurement duration as fraction of the orbit period
 
 % Monte Carlo settings

@@ -83,8 +83,8 @@ figure;
 colormap hsv
 % size = (log(errDat) - min(log(errDat)) + 1).^1;
 % size = size / max(size) * 30;
-pos = 0;
-tol = 0.2;
+pos = 0.2;
+tol = 0.02;
 lb = (max(log(errDat))-min(log(errDat)))*(pos-tol) + min(log(errDat));
 ub = (max(log(errDat))-min(log(errDat)))*(pos+tol) + min(log(errDat));
 ff = rad2deg(f0Dat);

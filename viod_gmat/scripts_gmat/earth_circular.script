@@ -177,8 +177,8 @@ Create Array v[100,3] r[100,3] rDiff[100,3] r2[1,3] bias[1,3];
 Create Variable mu num_obsv f df i j temp noise num_monte runTime;
 Create String blank;
 GMAT num_obsv = 16;
-GMAT f = 160;
-GMAT df = 2;
+GMAT f = 20;
+GMAT df = 5;
 GMAT noise = 10; % m/s
 GMAT num_monte = 300;
 

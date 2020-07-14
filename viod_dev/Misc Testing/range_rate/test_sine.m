@@ -24,9 +24,9 @@ P = P ./ vecnorm(P,2,1);
 % calculate true position and velocity values
 % --- at least 3 measurements for each pulsar
 % --- if some pulsars have fewer measurements, fill to end with NaN
-f = [ 0  40  80;... % pulsar 1
-     10  50  90;... % pulsar 2
-     20  60  100]; % pulsar 3
+f = [ 0  20  40;... % pulsar 1
+      5  25  45;... % pulsar 2
+     10  30  50]; % pulsar 3
 f = f-40;
 f = deg2rad(f);
 E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
@@ -91,7 +91,12 @@ dat = nan(res);
 ee = linspace(0,0.99,res(1));
 pmin = max(t(:))-min(t(:));
 pmax = 2*pi*mu/min(abs(obsv(:)))^3;
+% pmin = 0.1 * pmax;
 pp = linspace(pmin,pmax,res(2));
+tt = linspace(0,2*pi,res(3));
+
+ee = linspace(0,0.99,res(1));
+pp = linspace(period*0.5,period*1.5,res(2));
 tt = linspace(0,2*pi,res(3));
 
 E = nan(res(1),res(2),res(3));
@@ -102,7 +107,8 @@ for i = 1:res(1)
 for j = 1:res(2)
 for k = 1:res(3)
     fin = [ee(i),pp(j),tt(k)];
-    dat(i,j,k) = norm(rrFun_sine(fin,obsv,pulsar,mu,t));
+    out = rrFun_sine(fin,obsv,pulsar,mu,t);
+    dat(i,j,k) = norm(out(:));
     E(i,j,k) = ee(i);
     P(i,j,k) = pp(j);
     T(i,j,k) = tt(k);
@@ -129,7 +135,7 @@ Emesh = E(:);
 Pmesh = P(:);
 Tmesh = T(:);
 D = dat(:);
-cutoff = min(D)*300;
+cutoff = quantile(D,0.01);
 Emesh = Emesh(D<cutoff);
 Pmesh = Pmesh(D<cutoff);
 Tmesh = Tmesh(D<cutoff);
@@ -175,8 +181,8 @@ disp('Searching for solution...')
 %                                 ,'MaxIterations',300);
 % f1 = fmincon(fun,f0,-eye(3),[0;0;0],[],[],[],[],[],options);
 
-fun = @(x) norm(rrFun_sine(x,obsv,pulsar,mu,t));
-f1 = fminsearch(fun,f0);
+% fun = @(x) norm(rrFun_sine(x,obsv,pulsar,mu,t));
+% f1 = fminsearch(fun,f0);
 
 fun = @(x) rrFun_sine(x,obsv,pulsar,mu,t);
 options = optimoptions('fsolve','Display','iter' ...
@@ -195,7 +201,8 @@ toc
 
 warning('on','all')
 
-if max(abs(optDiff)) > 1e-4
+vDiff = V-v;
+if max(vDiff(:)) > 1e-3
     warning('Solution does not converge!')
 end
 

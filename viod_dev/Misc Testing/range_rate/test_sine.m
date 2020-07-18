@@ -6,7 +6,7 @@ mu = 1;
 a = 1;
 e = 0.9;
 i = pi/3;
-omg = pi/2;
+omg = pi/4;
 w = pi/2;
 params = [a e i omg w 0];
 
@@ -27,7 +27,7 @@ P = P ./ vecnorm(P,2,1);
 f = [ 0  20  40;... % pulsar 1
       5  25  45;... % pulsar 2
      10  30  50]; % pulsar 3
-f = f-40;
+f = f+40;
 f = deg2rad(f);
 E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
 M = E - e*sin(E);
@@ -86,18 +86,19 @@ disp('Searching for initial guess...')
 
 warning('off','all')
 
-res = [25,25,40];
+res = [10,100,100];
 dat = nan(res);
 ee = linspace(0,0.99,res(1));
 pmin = max(t(:))-min(t(:));
-pmax = 2*pi*mu/min(abs(obsv(:)))^3;
+% pmax = 2*pi*mu/min(abs(obsv(:)))^3;
+pmax = 10;
 % pmin = 0.1 * pmax;
 pp = linspace(pmin,pmax,res(2));
 tt = linspace(0,2*pi,res(3));
 
-ee = linspace(0,0.99,res(1));
-pp = linspace(period*0.5,period*1.5,res(2));
-tt = linspace(0,2*pi,res(3));
+% ee = linspace(0,0.99,res(1));
+% pp = linspace(period*0.3,period*2,res(2));
+% tt = linspace(0,2*pi,res(3));
 
 E = nan(res(1),res(2),res(3));
 P = nan(res(1),res(2),res(3));
@@ -129,17 +130,21 @@ end
 [i,j,k] = ind2sub(size(dat),idx);
 f0 = [ee(i(1)),pp(j(1)),tt(k(1))];
 
+
+%% scatter global research results
+
 % scatter to see solution space
 figure(2)
 Emesh = E(:);
 Pmesh = P(:);
 Tmesh = T(:);
 D = dat(:);
-cutoff = quantile(D,0.01);
-Emesh = Emesh(D<cutoff);
-Pmesh = Pmesh(D<cutoff);
-Tmesh = Tmesh(D<cutoff);
-D = D(D<cutoff);
+lb = quantile(D,0.00);
+ub = quantile(D,0.005);
+Emesh = Emesh(D>lb&D<ub);
+Pmesh = Pmesh(D>lb&D<ub);
+Tmesh = Tmesh(D>lb&D<ub);
+D = D(D>lb&D<ub);
 scatter3(OPT(1),OPT(2),OPT(3),24,'magenta','filled','DisplayName','True Soln')
 hold on
 scatter3( f0(1), f0(2), f0(3),24,'red','DisplayName','Init Guess')
@@ -184,10 +189,12 @@ disp('Searching for solution...')
 % fun = @(x) norm(rrFun_sine(x,obsv,pulsar,mu,t));
 % f1 = fminsearch(fun,f0);
 
+% fun = @(x) norm(rrFun_sine(x,obsv,pulsar,mu,t));
 fun = @(x) rrFun_sine(x,obsv,pulsar,mu,t);
 options = optimoptions('fsolve','Display','iter' ...
-                               ,'MaxFunctionEvaluations',2000 ...
-                               ,'MaxIterations',300);
+                               ,'MaxFunctionEvaluations',3000 ...
+                               ,'StepTolerance', 1e-8 ...
+                               ,'MaxIterations',600);
 g_opt = fsolve(fun,f1,options);
 
 soln_opt = g_opt;
@@ -195,7 +202,8 @@ soln_opt(3) = mod(g_opt(3),g_opt(2));
 
 [optDiff,V,optOut] = rrFun_sine(soln_opt,obsv,pulsar,mu,t,'debug');
 
-optOut
+disp(['Input:  ' mat2str(soln_opt,4)])
+disp(['Output: ' mat2str(optOut,4)])
 
 toc
 
@@ -205,6 +213,16 @@ vDiff = V-v;
 if max(vDiff(:)) > 1e-3
     warning('Solution does not converge!')
 end
+
+%% refine solution
+% if output is sufficiently close to true solution, 
+% we should be able to iterate a few more times to get the accuracy higher
+
+f3 = soln_opt;
+for i = 1:20
+    [~,~,f3] = rrFun_sine(soln_opt,obsv,pulsar,mu,t);
+end
+f3
 
 %% plot velocities
 
@@ -223,3 +241,47 @@ scatter3(t1(1),t2(1),t3(1),'Filled','DisplayName','True Vel Initial')
 hold off
 axis equal
 legend('Location','Best')
+
+
+%% function definitions
+function Evect = kepler(Mvect,e)
+
+Evect = nan(size(Mvect));
+
+for i = 1:length(Mvect(:))
+    
+M = Mvect(i);
+
+if M == 0
+    Evect(i) = 0;
+    continue
+end
+
+d = 1;
+n = 5;
+
+if e < 1
+    E = mod(M+e/2,2*pi);
+    while d > 1e-9
+        E = E - n*(E-e*sin(E)-M) / ...
+            (1-e*cos(E) + sign(1-e*cos(E)) ...
+                        * sqrt(abs((n-1)^2*(1-e*cos(E))^2 ...
+                                   -n*(n-1)*(E-e*sin(E)-M)*(e*sin(E)))));
+        d = abs(E-e*sin(E)-M);
+    end
+else
+    E = mod(M+e/2,2*pi);
+    while d > 1e-9
+        E = E - n*(e*sinh(E)-E-M) / ...
+            (e*cosh(E)-1 + sign(e*cosh(E)-1) ...
+                         * sqrt(abs((n-1)^2*(e*cosh(E)-1)^2 ...
+                                    -n*(n-1)*(e*sinh(E)-E-M)*(e*sinh(E)))));
+        d = abs(e*sinh(E)-E-M);
+    end
+end
+
+Evect(i) = E;
+
+end
+
+end

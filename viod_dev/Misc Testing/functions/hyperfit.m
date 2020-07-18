@@ -1,27 +1,17 @@
-function [x,y,R,residual] = hyperfit(dat)
-%HYPERFIT Hyperaccurate circle fitting algorithm
-%   The details of this algorithm are described here:
-%   https://people.cas.uab.edu/~mosya/cl/AC1c.pdf
-%   and converted to C++ here:
-%   https://github.com/SohranEliassi/Circle-Fitting-Hyper-Fit
+function [x,y,R] = hyperfit(dat)
+%HYPERFIT Summary of this function goes here
+%   Detailed explanation goes here
 
 % compute moments
 means = mean(dat,2);
 dat_c = dat - means;
 dat_z = dat_c(1,:).^2 + dat_c(2,:).^2;
-Mxx = dat_c(1,:).*dat_c(1,:);
-Mxy = dat_c(1,:).*dat_c(2,:);
-Myy = dat_c(2,:).*dat_c(2,:);
-Mxz = dat_c(1,:).*dat_z(1,:);
-Myz = dat_c(2,:).*dat_z(1,:);
-Mzz = dat_z(1,:).*dat_z(1,:);
-
-Mxx = sum(Mxx) / length(Mxx);
-Mxy = sum(Mxy) / length(Mxy);
-Myy = sum(Myy) / length(Myy);
-Mxz = sum(Mxz) / length(Mxz);
-Myz = sum(Myz) / length(Myz);
-Mzz = sum(Mzz) / length(Mzz);
+Mxx = mean(dat_c(1,:).*dat_c(1,:));
+Mxy = mean(dat_c(1,:).*dat_c(2,:));
+Myy = mean(dat_c(2,:).*dat_c(2,:));
+Mxz = mean(dat_c(1,:).*dat_z(1,:));
+Myz = mean(dat_c(2,:).*dat_z(1,:));
+Mzz = mean(dat_z(1,:).*dat_z(1,:));
 
 % compute coefficients of characteristic polynomial
 Mz = Mxx + Myy;
@@ -53,7 +43,6 @@ Ycenter = (Myz*(Mxx - x) - Mxz*Mxy)/DET/2;
 x = Xcenter + means(1);
 y = Ycenter + means(2);
 R = sqrt(Xcenter*Xcenter + Ycenter*Ycenter + Mz);
-residual = mean((sqrt(sum((dat-[x;y]).^2))-R).^2);
 
 end
 

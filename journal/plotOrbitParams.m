@@ -40,7 +40,7 @@ TA   = 0;   % deg
 orbitParams = [SMA,ECC,deg2rad([INC,RAAN,AOP,TA])];
 
 % spacecraft parameters (fixed)
-numObsv = 6; % nd, number of measurements
+numObsv = 3; % nd, number of measurements
 duration = 0.1; % nd, measurement duration as fraction of the orbit period
 
 % Monte Carlo settings
@@ -136,7 +136,7 @@ for k = 1:length(taVect)
     % --- note the scaling dor the original method: this is because
     % --- precision issues arise when using canonical units. 
     rOrig = viod((v+noiseVect)*1e4,mu*1e12)/1e4;
-    rHodo = hodo(v+noiseVect,mu);
+    rHodo = hodoHyp(v+noiseVect,mu);
     % we choose to compare the position estimate at the first measurement
     rOrig = rOrig(1,:)';
     rHodo = rHodo(1,:)';

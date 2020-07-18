@@ -17,6 +17,7 @@ cd 'E:\Research\XNAV\journal\gmat'
 addpath(['..' filesep 'fcns_od'])
 addpath(['..' filesep 'fcns_orb'])
 addpath(['..' filesep 'fcns_vis'])
+addpath(['..' filesep 'fcns_misc'])
 addpath(['..' filesep 'figures'])
 addpath(['..' filesep 'cases'])
 

@@ -191,25 +191,24 @@ if e < 1, E = 2 * atan( tan(F/2) * sqrt((1-e)/(1+e)) ); M = E - e*sin(E);
 else,     E = 2 * atan(tanh(F/2) * sqrt((e-1)/(e+1)) ); M = e*sinh(E) - E; end
 
 offset = time(1,1)/period*2*pi - M;
+offset = mod(offset,2*pi);
 
 % finalizing outputs
-optDiff = [e,period,offset] - [g_e,g_period,g_Moffset];
-weight = [5 1 10];
-scale = 100;
-optDiff = optDiff .* weight / norm(weight) * scale;
 optOut  = [e,period,offset];
-
-optDiff = g_obsv - obsv;
-optDiff = optDiff(:) * optDiff(:)' * 1e8;
+optDiff = (g_obsv - obsv) * 1e2;
+optDiff = optDiff(:) * optDiff(:)';
 
 % if the time since periapse is out of bounds (i.e. < 0 or > period)
 % then we add a penalty for being a periodic solution that is out of range
-if mod(offset,2*pi) ~= offset
-    optDiff = optDiff * (abs(mod(offset,2*pi)-offset)/2/pi+1);
-end
-if mod(g_Moffset,2*pi) ~= g_Moffset
-    optDiff = optDiff * (abs(mod(g_Moffset,2*pi)-g_Moffset)/2/pi+1);
-end
+% if mod(offset,2*pi) ~= offset
+%     optDiff = optDiff * (abs(mod(offset,2*pi)-offset)/2/pi+1);
+% end
+% if mod(g_Moffset,2*pi) ~= g_Moffset
+%     optDiff = optDiff * (abs(mod(g_Moffset,2*pi)-g_Moffset)/2/pi+1);
+% end
+
+% optDiff = optDiff * 5^abs(log(period/g_period));
+optDiff = optDiff(:);
 
 end
 

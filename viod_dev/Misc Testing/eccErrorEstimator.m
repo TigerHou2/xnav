@@ -28,6 +28,8 @@ switch f0deg
         ref = [2.038e-2 8.754e-2 1.224e-1];
     case 180
         ref = [2.079e-2 1.053e-1 6.672e-1];
+    otherwise
+        error('This f0 value is not catalogued!')
 end
 
 for i = 1:length(eccs)
@@ -36,12 +38,32 @@ for i = 1:length(eccs)
     M0 = E0 - e*sin(E0);
     M = M0 + period;
     E = kepler(M,e);
-    f = 2 * atan(sqrt((1+e)/(1-e))*tan(E/2));
-    f = mod(f,2*pi);
+    Mvect = linspace(M0,M,6);
+    Evect = kepler(Mvect,e);
+    fvect = 2 * atan(sqrt((1+e)/(1-e))*tan(Evect/2));
+    fvect = mod(fvect,2*pi);
+    f = fvect(end);
     df = f-f0;
     df = mod(df,2*pi);
     error = sqrt((1-e^2)/(1+2*e*cos(f0)+e^2)) ...
           * 1/df^2;
+      
+    % measure how even our f distribution
+%     ro = 0;
+%     for j = 1:length(fvect)
+%         temp = fvect;
+%         temp(j) = [];
+%         ro = ro + min(abs(temp-fvect(j))) / length(fvect);
+%     end
+%     re = 0.5*sqrt((f-f0)/length(fvect));
+%     R = ro/re;
+
+    R = 1 - 0.5 * sum(abs((fvect-mean(fvect)))/mean(fvect)/length(fvect));
+
+    disp(['R = ' num2str(R)])
+    
+    % calculate error
+    error = error;
     errVect(i) = error;
     disp(['Error = ' num2str(error)])
 end

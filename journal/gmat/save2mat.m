@@ -17,8 +17,8 @@ else, vArray = {}; end
 if ismember('muArray',variableInfo), load(filepath,'muArray');
 else, muArray = {};end
 
-rArray{i,j,k}  = rData;
-vArray{i,j,k}  = vData;
+rArray{i,j,k}  = vclean(rData);
+vArray{i,j,k}  = vclean(vData);
 muArray{i,j,k} = mu;
 save(filepath,'rArray','vArray','muArray');
 

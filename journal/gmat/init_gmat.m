@@ -13,7 +13,11 @@
 %% initialization
 
 % change pwd to location of init_gmat.m
-cd 'E:\Research\XNAV\journal\gmat'
+if exist('E:\Research\XNAV\journal\gmat','dir')
+    cd 'E:\Research\XNAV\journal\gmat'
+else
+    cd 'C:\Users\tigre\Desktop\Directory\Research\xnav\journal\gmat'
+end
 addpath(['..' filesep 'fcns_od'])
 addpath(['..' filesep 'fcns_orb'])
 addpath(['..' filesep 'fcns_vis'])

@@ -11,12 +11,12 @@ GMAT sc.DateFormat = TAIModJulian;
 GMAT sc.Epoch = '21545';
 GMAT sc.CoordinateSystem = EarthMJ2000Eq;
 GMAT sc.DisplayStateType = Keplerian;
-GMAT sc.SMA = 7191.938817629039;
-GMAT sc.ECC = 0.02454974900598168;
-GMAT sc.INC = 12.85008005658097;
+GMAT sc.SMA = 7191.93881762905;
+GMAT sc.ECC = 0.02454974900598156;
+GMAT sc.INC = 12.850080056581;
 GMAT sc.RAAN = 306.6148021947984;
-GMAT sc.AOP = 314.1905515359962;
-GMAT sc.TA = 99.88774933204479;
+GMAT sc.AOP = 314.1905515359986;
+GMAT sc.TA = 99.88774933204243;
 GMAT sc.DryMass = 850;
 GMAT sc.Cd = 2.2;
 GMAT sc.Cr = 1.8;
@@ -50,8 +50,8 @@ GMAT sc_earth.DateFormat = TAIModJulian;
 GMAT sc_earth.Epoch = '21545';
 GMAT sc_earth.CoordinateSystem = EarthMJ2000Eq;
 GMAT sc_earth.DisplayStateType = Keplerian;
-GMAT sc_earth.SMA = 7199.99999999998;
-GMAT sc_earth.ECC = 3.85414389272683e-016;
+GMAT sc_earth.SMA = 7199.999999999975;
+GMAT sc_earth.ECC = 1.49363406018766e-016;
 GMAT sc_earth.INC = 23.99999999999999;
 GMAT sc_earth.RAAN = 29.99999999999999;
 GMAT sc_earth.AOP = 0;
@@ -89,12 +89,12 @@ GMAT sc_sun.DateFormat = TAIModJulian;
 GMAT sc_sun.Epoch = '21545';
 GMAT sc_sun.CoordinateSystem = SunMJ2000Eq;
 GMAT sc_sun.DisplayStateType = Keplerian;
-GMAT sc_sun.SMA = 145864620.9857949;
-GMAT sc_sun.ECC = 3.786669903725402e-016;
-GMAT sc_sun.INC = 24.00000000000002;
+GMAT sc_sun.SMA = 145864620.9857948;
+GMAT sc_sun.ECC = 2.050394822027422e-016;
+GMAT sc_sun.INC = 24.00000000000005;
 GMAT sc_sun.RAAN = 29.99999999999998;
 GMAT sc_sun.AOP = 0;
-GMAT sc_sun.TA = 29.99999999999994;
+GMAT sc_sun.TA = 29.9999999999999;
 GMAT sc_sun.DryMass = 850;
 GMAT sc_sun.Cd = 2.2;
 GMAT sc_sun.Cr = 1.8;
@@ -122,6 +122,9 @@ GMAT sc_sun.AttitudeDisplayStateType = 'Quaternion';
 GMAT sc_sun.AttitudeRateDisplayStateType = 'AngularVelocity';
 GMAT sc_sun.AttitudeCoordinateSystem = EarthMJ2000Eq;
 GMAT sc_sun.EulerAngleSequence = '321';
+
+
+
 
 
 
@@ -351,6 +354,22 @@ GMAT sunViewNeptune.StarCount = 7000;
 GMAT sunViewNeptune.EnableStars = On;
 GMAT sunViewNeptune.EnableConstellations = On;
 
+Create ReportFile report;
+GMAT report.SolverIterations = Current;
+GMAT report.UpperLeft = [ 0 0 ];
+GMAT report.Size = [ 0 0 ];
+GMAT report.RelativeZOrder = 0;
+GMAT report.Maximized = false;
+GMAT report.Filename = 'ReportFile1.txt';
+GMAT report.Precision = 16;
+GMAT report.WriteHeaders = true;
+GMAT report.LeftJustify = On;
+GMAT report.ZeroFill = Off;
+GMAT report.FixedWidth = true;
+GMAT report.Delimiter = ' ';
+GMAT report.ColumnWidth = 23;
+GMAT report.WriteReport = true;
+
 %----------------------------------------
 %---------- Functions
 %----------------------------------------
@@ -359,9 +378,9 @@ Create MatlabFunction init_gmat;
 % GMAT init_gmat.FunctionPath = 'E:\Research\XNAV\journal\gmat';
 GMAT init_gmat.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\journal\gmat';
 
-Create MatlabFunction load_orbit_cases;
-% GMAT load_orbit_cases.FunctionPath = 'E:\Research\XNAV\journal\cases';
-GMAT load_orbit_cases.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\journal\cases';
+Create MatlabFunction load_spcraft_cases;
+% GMAT load_spcraft_cases.FunctionPath = 'E:\Research\XNAV\journal\cases';
+GMAT load_spcraft_cases.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\journal\cases';
 
 Create MatlabFunction save2mat;
 % GMAT save2mat.FunctionPath = 'E:\Research\XNAV\journal\gmat';
@@ -371,28 +390,31 @@ Create MatlabFunction g2mat;
 % GMAT g2mat.FunctionPath = 'E:\Research\XNAV\journal\gmat';
 GMAT g2mat.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\journal\gmat';
 
-Create MatlabFunction plotOrbitPerturbed;
-% GMAT plotOrbitPerturbed.FunctionPath = 'E:\Research\XNAV\journal\gmat';
-GMAT plotOrbitPerturbed.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\journal\gmat';
+Create MatlabFunction plotSpcraftPerturbed;
+% GMAT plotSpcraftPerturbed.FunctionPath = 'E:\Research\XNAV\journal\gmat';
+GMAT plotSpcraftPerturbed.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\journal\gmat';
 
 %----------------------------------------
 %---------- Arrays, Variables, Strings
 %----------------------------------------
 
-Create Array smaVect[1,3] eccVect[1,3] taVect[1,7] centralBody[1,3] rData[1,3] vData[3,3];
-Create Variable smaLen eccLen taLen noise duration temp SMA ECC TA numObsv;
+Create Array durVect[1,3] obsVect[1,3] noiseVect[1,5] rData[1,3] vData[100,3];
+Create Variable durLen obsLen noiseLen noise duration temp SMA ECC TA numObsv;
 Create Variable numSims rngSeed mu period dt dtBack i j k m;
-Create Variable pi b1 b2 b3 b4 perturbed;
+Create Variable centralBody pi b1 b2 b3 b4 perturbed;
 Create String filepath fp1 fp2;
 GMAT duration = 0.1;
 GMAT temp = 1;
+GMAT numObsv = 3;
 GMAT numSims = 100;
 GMAT rngSeed = 1;
 GMAT pi = 3.1415927;
-GMAT perturbed = 0;
-GMAT filepath = 'temp\datOrbit.mat';
-GMAT fp1 = 'temp\datOrbit.mat';
-GMAT fp2 = 'temp\datOrbitPerturbed.mat';
+GMAT perturbed = 1;
+GMAT filepath = 'temp\datSpcraft.mat';
+GMAT fp1 = 'temp\datSpcraft.mat';
+GMAT fp2 = 'temp\datSpcraftPerturbed.mat';
+
+
 
 
 %----------------------------------------
@@ -404,9 +426,38 @@ BeginMissionSequence;
 %---- initialize workspace
 GMAT init_gmat;
 
-%---- load orbit cases from MATLAB
-GMAT [smaVect, eccVect, taVect, b1, b2, centralBody, smaLen, eccLen, taLen, noise, numObsv] = ...
-	load_orbit_cases(temp);
+%---- load spacecraft cases from MATLAB
+GMAT [noiseVect, durVect, obsVect, SMA, ECC, TA, centralBody, noiseLen, durLen, obsLen] = ...
+	load_spcraft_cases(temp);
+
+%---- set spacecraft orbit from case file above
+PenUp earthView;
+PenUp sunViewMars;
+PenUp sunViewNeptune;
+If centralBody == 0 % Earth orbit
+   GMAT sc = sc_earth;
+   If perturbed == 0
+      GMAT propagator = prop_earth;
+   Else
+      GMAT propagator = prop_earth_perturbed;
+   EndIf;
+   GMAT sc.Earth.SMA = SMA;
+   GMAT sc.Earth.ECC = ECC;
+   GMAT sc.Earth.TA = TA / pi * 180;
+   GMAT mu = SolarSystem.Earth.Mu;
+EndIf;
+If centralBody == 1 % Solar orbit
+   GMAT sc = sc_sun;
+   If perturbed == 0
+      GMAT propagator = prop_sun;
+   Else
+      GMAT propagator = prop_sun_perturbed;
+   EndIf;
+   GMAT sc.Sun.SMA = SMA;
+   GMAT sc.Sun.ECC = ECC;
+   GMAT sc.Sun.TA = TA / pi * 180;
+   GMAT mu = SolarSystem.Sun.Mu;
+EndIf;
 
 %---- define save file path based on perturbed / non-perturbed
 If perturbed == 0
@@ -415,90 +466,62 @@ Else
    GMAT filepath = fp2;
 EndIf;
 
+GMAT k = 1;
+
 %---- iterate over each case and store velocity data
-% iterate over SMA (semi-major axis)
-For i = 1:1:smaLen;
-   GMAT SMA = smaVect(i);
-   % iterate over ECC (eccentricity)
-   For j = 1:1:eccLen;
-      GMAT ECC = eccVect(j);
-      % iterate over TA (true anomaly)
-      For k = 1:1:taLen;
-         GMAT TA = taVect(k);
-         % draw trajectory
-         PenDown earthView;
-         PenDown sunViewMars;
-         PenDown sunViewNeptune;
-         % switch spacecraft and propagators, set spacecraft Keplerian orbital elements
-         If centralBody(1,i) == 0 % Earth orbit
-            GMAT sc = sc_earth;
-            If perturbed == 0
-               GMAT propagator = prop_earth;
-            Else
-               GMAT propagator = prop_earth_perturbed;
-            EndIf;
-            GMAT sc.Earth.SMA = SMA;
-            GMAT sc.Earth.ECC = ECC;
-            GMAT sc.Earth.TA = TA / pi * 180;
-            GMAT mu = SolarSystem.Earth.Mu;
-            GMAT period = 2 * pi * sqrt(SMA^3/mu) * duration;
-            GMAT dt = period / (numObsv-1);
-            GMAT dtBack = -1 * period;
-            % propagate and collect data
-            For m = 1:1:numObsv;
-               If m == 1
-                  GMAT rData(1,1) = sc.EarthMJ2000Eq.X;
-                  GMAT rData(1,2) = sc.EarthMJ2000Eq.Y;
-                  GMAT rData(1,3) = sc.EarthMJ2000Eq.Z;
-               EndIf;
-               GMAT vData(m,1) = sc.EarthMJ2000Eq.VX;
-               GMAT vData(m,2) = sc.EarthMJ2000Eq.VY;
-               GMAT vData(m,3) = sc.EarthMJ2000Eq.VZ;
-					If m ~= numObsv;
-						Propagate propagator(sc) {sc.ElapsedSecs = dt};
-					EndIf;
-            EndFor; %numObsv
-         EndIf;
-         If centralBody(1,i) == 1 % Solar orbit
-            GMAT sc = sc_sun;
-            If perturbed == 0
-               GMAT propagator = prop_sun;
-            Else
-               GMAT propagator = prop_sun_perturbed;
-            EndIf;
-            GMAT sc.Sun.SMA = SMA;
-            GMAT sc.Sun.ECC = ECC;
-            GMAT sc.Sun.TA = TA / pi * 180;
-            GMAT mu = SolarSystem.Sun.Mu;
-            GMAT period = 2 * pi * sqrt(SMA^3/mu) * duration;
-            GMAT dt = period / (numObsv-1);
-            GMAT dtBack = -1 * period;
-            % propagate and collect data
-            For m = 1:1:numObsv;
-               If m == 1
-                  GMAT rData(1,1) = sc.SunMJ2000Eq.X;
-                  GMAT rData(1,2) = sc.SunMJ2000Eq.Y;
-                  GMAT rData(1,3) = sc.SunMJ2000Eq.Z;
-               EndIf;
-               GMAT vData(m,1) = sc.SunMJ2000Eq.VX;
-               GMAT vData(m,2) = sc.SunMJ2000Eq.VY;
-               GMAT vData(m,3) = sc.SunMJ2000Eq.VZ;
-					If m ~= numObsv;
-						Propagate propagator(sc) {sc.ElapsedSecs = dt};
-					EndIf;
-            EndFor; %numObsv
-         EndIf;
-         % back propagate to reset spacecraft after measurements are collected
-         PenUp earthView;
-         PenUp sunViewMars;
-         PenUp sunViewNeptune;
-         Propagate BackProp propagator(sc) {sc.ElapsedSecs = dtBack};
-         % store collected data in .mat structure
-         GMAT g2mat(rData, vData);
-         GMAT save2mat(filepath, rData, vData, mu, i, j, k);
-      EndFor; %TA
-   EndFor; %ECC
-EndFor; %SMA
+% iterate over measurement duration
+For i = 1:1:durLen;
+   GMAT duration = durVect(i);
+   GMAT period = 2 * pi * sqrt(SMA^3/mu) * duration;
+   % iterate over number of observations
+   For j = 1:1:obsLen;
+      GMAT numObsv = obsVect(j);
+		Report report i j numObsv;
+      GMAT dt = period / (numObsv-1);
+		GMAT dtBack = -1 * period;
+		Report report i j period dt;
+      % draw trajectory
+      PenDown earthView;
+      PenDown sunViewMars;
+      PenDown sunViewNeptune;
+      % propagate and collect data
+      For m = 1:1:numObsv;
+			If centralBody == 0; % Earth orbit
+				If m == 1
+					GMAT rData(1,1) = sc.EarthMJ2000Eq.X;
+					GMAT rData(1,2) = sc.EarthMJ2000Eq.Y;
+					GMAT rData(1,3) = sc.EarthMJ2000Eq.Z;
+				EndIf;
+				GMAT vData(m,1) = sc.EarthMJ2000Eq.VX;
+				GMAT vData(m,2) = sc.EarthMJ2000Eq.VY;
+				GMAT vData(m,3) = sc.EarthMJ2000Eq.VZ;
+			EndIf; %Earth
+			If centralBody == 1; % Solar orbit
+				If m == 1
+					GMAT rData(1,1) = sc.SunMJ2000Eq.X;
+					GMAT rData(1,2) = sc.SunMJ2000Eq.Y;
+					GMAT rData(1,3) = sc.SunMJ2000Eq.Z;
+				EndIf;
+				GMAT vData(m,1) = sc.SunMJ2000Eq.VX;
+				GMAT vData(m,2) = sc.SunMJ2000Eq.VY;
+				GMAT vData(m,3) = sc.SunMJ2000Eq.VZ;
+			EndIf; %Sun
+			If m ~= numObsv;
+				Propagate propagator(sc) {sc.ElapsedSecs = dt};
+			EndIf;
+      EndFor; %numObsv
+      % back propagate to reset spacecraft after measurements are collected
+      PenUp earthView;
+      PenUp sunViewMars;
+      PenUp sunViewNeptune;
+      Propagate BackProp propagator(sc) {sc.ElapsedSecs = dtBack};
+      % store collected data in .mat structure
+      GMAT g2mat(rData, vData);
+      GMAT save2mat(filepath, rData, vData, mu, i, j, k);
+		% clear the velocity variable
+		GMAT vData = vData * 0;
+   EndFor; %observations
+EndFor; %duration
 
 %---- add noise to velocity data in a Monte Carlo sim and plot results
-GMAT plotOrbitPerturbed(numSims, rngSeed, perturbed);
+GMAT plotSpcraftPerturbed(numSims, rngSeed, perturbed);

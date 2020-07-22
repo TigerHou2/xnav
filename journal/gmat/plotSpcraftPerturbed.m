@@ -1,61 +1,52 @@
-%% plotOrbitPerturbed.m
-function plotOrbitPerturbed(numSims,rngSeed,perturbed)
+%% plotSpcraftPerturbed.m
+function plotSpcraftPerturbed(numSims,rngSeed,perturbed)
 %
 % Author:
 %   Tiger Hou
 %
 % Description:
 %   Generates plots for velocity initial orbit determination (VIOD) error
-%   with respect to variations in orbital parameters, including semi-major
-%   axis, eccentricity, and true anomaly. 
+%   with respect to variations in spacecraft parameters, including duration
+%   of measurement, number of measurements, and measurement scheduling.
 %   This version accounts for perturbations from other solar system objects
 %   as well as solar radiation pressure and Earth oblateness. Propagation
 %   is performed in GMAT.
 %
 % Notes:
-%   In the case of varying orbital parameters, we choose to hold spacecraft
+%   In the case of varying spacecraft parameters, we choose to hold orbital
 %   parameters constant. This means all simulations will be conducted with
-%   equal noise, number of measurements, and duration of observation.
+%   the same semi-major axis, eccentricity, and starting true anomaly.
 %   Specifically, we will use the following:
-%       - Noise = 1e-6 DU/TU
-%       - Number of measurements = 3
-%       - Duration of observation = 0.1 orbital period
+%       - SMA = 1.56e5 DU
+%       - ECC = 0.5
+%       - TA  = 0
 
 %% initialization
 
-% load orbital parameter config case studies
-[smaVect,eccVect,taVect,~,~,~,~,~,~,noise,numObsv] = load_orbit_cases(1);
-[~,~,~,~,names,~,~,~,~,~] = load_orbit_cases(0);
+% load spacecraft parameter config case studies
+[noiseVect,durVect,obsVect,SMA] = load_spcraft_cases(1);
 
 %% collect ground truth data from .mat file and generate perturbations
 
 % load cell matrix of position, velocity, and mu data
 if perturbed == 0
-    load('temp\datOrbit.mat','rArray','vArray','muArray');
+    load('temp\datSpcraft.mat','rArray','vArray','muArray');
 else
-    load('temp\datOrbitPerturbed.mat','rArray','vArray','muArray');
+    load('temp\datSpcraftPerturbed.mat','rArray','vArray','muArray');
 end
 
-% initialize cell array of noise values
-nArray = cell(1,numSims);
-% populate noise cell array
 rng(rngSeed);
-for n = 1:numSims
-    noiseVect = randn(numObsv,3);
-    noiseVect = noiseVect ./ vecnorm(noiseVect,2,2) * noise;
-    nArray{n} = noiseVect;
-end %numSims
 
 % data logging
 if perturbed == 0
-    filepath = 'data\orbitParams.mat';
+    filepath = 'data\spcraftParams.mat';
 else
-    filepath = 'data\orbitParamsPerturbed.mat';
+    filepath = 'data\spcraftParamsPerturbed.mat';
 end
-meanOrig = nan(length(eccVect),length(taVect),length(smaVect));
-meanHodo = nan(length(eccVect),length(taVect),length(smaVect));
- stdOrig = nan(length(eccVect),length(taVect),length(smaVect));
- stdHodo = nan(length(eccVect),length(taVect),length(smaVect));
+meanOrig = nan(length(obsVect),length(noiseVect),length(durVect));
+meanHodo = nan(length(obsVect),length(noiseVect),length(durVect));
+ stdOrig = nan(length(obsVect),length(noiseVect),length(durVect));
+ stdHodo = nan(length(obsVect),length(noiseVect),length(durVect));
 
 %% apply perturbations and perform VIOD
 
@@ -66,71 +57,81 @@ origFormat = '-x';
 hodoFormat = '--k';
 
 % color formats
-cmap = hsv(length(smaVect));
+cmap = hsv(length(durVect));
 
 % initialize cell array for custom labeling
-labelArray = cell(length(smaVect),length(eccVect),2);
+labelArray = cell(length(durVect),length(obsVect),2);
 
-for i = 1:length(smaVect)
-    SMA = smaVect(i);
-for j = 1:length(eccVect)
-    ECC = eccVect(j);
+for i = 1:length(durVect)
+    dur = durVect(i);
+for j = 1:length(obsVect)
+    numObsv = obsVect(j);
     
 % initialize position error matrix
-errOrig = nan(numSims,length(taVect));
-errHodo = nan(numSims,length(taVect));
+errOrig = nan(numSims,length(noiseVect));
+errHodo = nan(numSims,length(noiseVect));
+
+% initialize cell array of noise values
+nArray = cell(1,numSims);
+% populate noise cell array
+rng(rngSeed);
+for n = 1:numSims
+    noise_unit = randn(numObsv,3);
+    noise_unit = noise_unit ./ vecnorm(noise_unit,2,2);
+    nArray{n} = noise_unit;
+end %numSims
 
 % perform Monte Carlo sim
 for n = 1:numSims
-for k = 1:length(taVect)
-    rRef = rArray{i,j,k};
-    v = vArray{i,j,k};
-    mu = muArray{i,j,k};
-    noiseVect = nArray{n};
+    noise_vec = nArray{n};
+for k = 1:length(noiseVect)
+    rRef = rArray{i,j,1};
+    v = vArray{i,j,1};
+    mu = muArray{i,j,1};
+    noise = noise_vec * noiseVect(k);
     % do orbit determination
     % --- note the scaling for the original method: this is because
     % --- precision issues arise when using canonical units. 
-    rOrig = viod((v+noiseVect)*1e4,mu*1e12)/1e4;
-    rHodo = hodo(v+noiseVect,mu);
+    rOrig = viod((v+noise)*1e4,mu*1e12)/1e4;
+    rHodo = hodo(v+noise,mu);
     % we choose to compare the position estimate at the first measurement
     rOrig = rOrig(1,:);
     rHodo = rHodo(1,:);
     % store error data
     errOrig(n,k) = norm(rOrig-rRef);
     errHodo(n,k) = norm(rHodo-rRef);
-end %taVect
+end %noiseVect
 end %numSims
 
 % plot results for each case
 color = cmap(i,:);
-taDeg = rad2deg(taVect);
 
 % --- mean error
 figure(1)
 latexify('plotSize',[30 18])
 hold on
-plot(taDeg,mean(errOrig)/SMA,origFormat,'Color',color,'LineWidth',origWidth)
-plot(taDeg,mean(errHodo)/SMA,hodoFormat,'LineWidth',hodoWidth)
+plot(noiseVect,mean(errOrig)/SMA,origFormat,'Color',color,'LineWidth',origWidth)
+plot(noiseVect,mean(errHodo)/SMA,hodoFormat,'LineWidth',hodoWidth)
 hold off
 legend('Energy Method','Hodograph Method','Location','SouthEast')
-xlabel('True Anomaly, deg')
+xlabel('Noise, DU/TU')
 ylabel('Position Error Avg., fraction of SMA')
 % store annotation data point
-labelArray{i,j,1} = [taDeg(end),mean(errOrig(:,end))/SMA];
+labelArray{i,j,1} = [noiseVect(end),mean(errOrig(:,end))/SMA];
 latexify('fontSize',18)
 
 % --- standard deviation
 figure(2)
 latexify('plotSize',[30 18])
 hold on
-plot(taDeg,std(errOrig)/SMA,origFormat,'Color',color,'LineWidth',origWidth)
-plot(taDeg,std(errHodo)/SMA,hodoFormat,'LineWidth',hodoWidth)
+plot(noiseVect,std(errOrig)/SMA,origFormat,'Color',color,'LineWidth',origWidth)
+plot(noiseVect,std(errHodo)/SMA,hodoFormat,'LineWidth',hodoWidth)
 hold off
 legend('Energy Method','Hodograph Method','Location','SouthEast')
-xlabel('True Anomaly, deg')
+xlabel('Noise, DU/TU')
 ylabel('Position Error StDev, fraction of SMA')
 % store annotation data point
-labelArray{i,j,2} = [taDeg(end),std(errOrig(:,end))/SMA];
+labelArray{i,j,2} = [noiseVect(end),std(errOrig(:,end))/SMA];
 latexify('fontSize',18)
 
 % --- log data
@@ -139,12 +140,12 @@ meanHodo(j,:,i) = mean(errHodo)'/SMA;
  stdOrig(j,:,i) =  std(errOrig)'/SMA;
  stdHodo(j,:,i) =  std(errHodo)'/SMA;
 
-end %eccVect
-end %smaVect
+end %obsVect
+end %durVect
 
 % save data to file
 save(filepath,'meanOrig','meanHodo','stdOrig','stdHodo',...
-              'smaVect','eccVect','taVect');
+              'durVect','obsVect','noiseVect');
 
 % print data in latex table formatting
 regexprep(...
@@ -176,16 +177,16 @@ axis tight
 axlim = axis(gca) .* [1 1 0.3 3];
 xlim(axlim(1:2))
 ylim(axlim(3:4))
-for i = 1:length(smaVect)
-    SMA = smaVect(i);
-for j = 1:length(eccVect)
-    ECC = eccVect(j);
+for i = 1:length(durVect)
+    dur = durVect(i);
+for j = 1:length(obsVect)
+    numObsv = obsVect(j);
     p = labelArray{i,j,1};
     % convert from log scale to linear scale
     p(2) = (axlim(4)-axlim(3)) * log(p(2)/axlim(3)) / log(axlim(4)/axlim(3));
     [figx,figy] = ax2fig(p(1),p(2));
     annotation('textbox',[figx figy-0.08 1 .1],...
-               'String',['e = ' num2str(ECC,4)],...
+               'String',['\# = ' num2str(numObsv,4)],...
                'EdgeColor','none',...
                'Interpreter','latex',...
                'FontSize',14)
@@ -200,16 +201,16 @@ axis tight
 axlim = axis(gca) .* [1 1 0.3 3];
 xlim(axlim(1:2))
 ylim(axlim(3:4))
-for i = 1:length(smaVect)
-    SMA = smaVect(i);
-for j = 1:length(eccVect)
-    ECC = eccVect(j);
+for i = 1:length(durVect)
+    dur = durVect(i);
+for j = 1:length(obsVect)
+    numObsv = obsVect(j);
     p = labelArray{i,j,2};
     % convert from log scale to linear scale
     p(2) = (axlim(4)-axlim(3)) * log(p(2)/axlim(3)) / log(axlim(4)/axlim(3));
     [figx,figy] = ax2fig(p(1),p(2));
     annotation('textbox',[figx figy-0.08 1 .1],...
-               'String',['e = ' num2str(ECC,4)],...
+               'String',['\# = ' num2str(numObsv,4)],...
                'EdgeColor','none',...
                'Interpreter','latex',...
                'FontSize',14)
@@ -223,15 +224,15 @@ ax = gca;
 ax2 = copyobj(ax,gcf);
 delete(get(ax2,'Children')) % delete its children
 hold(ax2,'on')
-for i = 1:length(smaVect)
+for i = 1:length(durVect)
     h(i) = plot(sin(1:10),'Parent',ax2,...
                           'Color',cmap(i,:),...
                           'LineWidth',1,...
-                          'DisplayName',names{i});
+                          'DisplayName',['Dur = ' num2str(durVect(i))]);
 end
 hold(ax2,'off')
 legend(ax2, 'Location','NorthWest')
-for i = 1:length(smaVect)
+for i = 1:length(durVect)
     set(h(i),'XData',[],'YData',[]);
 end
 set(ax2,'Color','none',...
@@ -245,15 +246,15 @@ ax = gca;
 ax2 = copyobj(ax,gcf);
 delete(get(ax2,'Children')) % delete its children
 hold(ax2,'on')
-for i = 1:length(smaVect)
+for i = 1:length(durVect)
     h(i) = plot(sin(1:10),'Parent',ax2,...
                           'Color',cmap(i,:),...
                           'LineWidth',1,...
-                          'DisplayName',names{i});
+                          'DisplayName',['Dur = ' num2str(durVect(i))]);
 end
 hold(ax2,'off')
 legend(ax2, 'Location','NorthWest')
-for i = 1:length(smaVect)
+for i = 1:length(durVect)
     set(h(i),'XData',[],'YData',[]);
 end
 set(ax2,'Color','none',...
@@ -261,4 +262,4 @@ set(ax2,'Color','none',...
     'Box','off') % make legend axes transparent
 ax2.XLabel.String = '';
 ax2.YLabel.String = '';
-end % plotOrbitPerturbed.m
+end % plotSpcraftPerturbed.m

@@ -1,6 +1,6 @@
 %% load_cases_orbit.m
 function [smaVect,eccVect,taVect,noise_canon,names,centralBody,...
-          smaLen, eccLen, taLen, noise] = load_orbit_cases(varargin)
+          smaLen, eccLen, taLen, noise, numObsv] = load_orbit_cases(varargin)
 % Author:
 %   Tiger Hou
 %
@@ -70,5 +70,8 @@ centralBody(end+1) = 1;
 smaLen = length(smaVect);
 eccLen = length(eccVect);
 taLen  = length(taVect);
+
+%% number of observations
+numObsv = 3;
 
 end % load_orbit_cases.m

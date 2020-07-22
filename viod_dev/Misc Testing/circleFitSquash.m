@@ -11,7 +11,7 @@ e = 0.9;
 C = e * [1;1] / norm([1;1]) * R;
 
 % define ranges
-range = linspace(5,300,60);
+range = linspace(1,180,150);
 errVect = nan(size(range));
 
 sample_count = 6;
@@ -25,21 +25,21 @@ for j = 1:length(range)
 % take samples
 sample_range = [0 range(j)] + f0;
 
-% f_vect = deg2rad(linspace(sample_range(1),sample_range(2),sample_count));
-
     sample_range = deg2rad(sample_range);
     E_range = 2 * atan(sqrt((1-e)/(1+e))*tan(sample_range/2));
     M_range = E_range - e*sin(E_range);
     M_vect = linspace(M_range(1),M_range(2),sample_count);
     E_vect = kepler(M_vect,e);
     f_vect = 2 * atan(sqrt((1+e)/(1-e))*tan(E_vect/2));
+    
+%     f_vect = linspace(sample_range(1),sample_range(2),sample_count);
 
 points = [cos(f_vect);sin(f_vect)] + C;
 
 err = 0;
 
 % Monte Carlo simulation
-numSims = 300;
+numSims = 200;
 for i = 1:numSims
     
     % apply noise
@@ -84,13 +84,13 @@ ymean = mean(y);
 sstot = sum((y-ymean).^2);
 mb = A\B;
 ssres = sum((A*mb-B).^2);
-% R = 1-ssres/sstot
+R2 = 1-ssres/sstot;
 
 % plot
 xx = range';
 yy = 1./sqrt(errVect');
 h = plot(xx,yy);
-title(['f0 = ' num2str(f0)])
+title(['f0 = ' num2str(f0) ',   R = ' num2str(R2,3)])
 drawnow;
 
 f0 = mod(f0+3,360);

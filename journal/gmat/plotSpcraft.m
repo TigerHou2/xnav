@@ -1,5 +1,5 @@
-%% plotSpcraftPerturbed.m
-function plotSpcraftPerturbed(numSims,rngSeed,perturbed)
+%% plotSpcraft.m
+function plotSpcraft(numSims,rngSeed,perturbed)
 %
 % Author:
 %   Tiger Hou
@@ -262,4 +262,4 @@ set(ax2,'Color','none',...
     'Box','off') % make legend axes transparent
 ax2.XLabel.String = '';
 ax2.YLabel.String = '';
-end % plotSpcraftPerturbed.m
+end %plotSpcraft.m

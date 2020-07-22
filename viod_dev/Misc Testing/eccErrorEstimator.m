@@ -32,6 +32,18 @@ switch f0deg
         error('This f0 value is not catalogued!')
 end
 
+refDat = [7.398e-3 1.042e-3 1.428e-4;
+          7.849e-3 1.287e-3 1.525e-4;
+          8.978e-3 1.935e-3 1.844e-4;
+          1.280e-2 6.463e-3 4.163e-4;
+          1.580e-2 2.024e-2 1.555e-3;
+          1.838e-2 8.070e-2 1.118e-1;
+          1.843e-2 9.488e-2 6.005e-1];
+ref_f0 = [0 20 45 90 120 160 180]';
+
+plot(ref_f0,refDat(:,1)./refDat(:,2));
+plot(ref_f0,refDat(:,2)./refDat(:,3));
+
 for i = 1:length(eccs)
     e = eccs(i);
     E0 = 2 * atan(sqrt((1-e)/(1+e))*tan(f0/2));
@@ -47,6 +59,13 @@ for i = 1:length(eccs)
     df = mod(df,2*pi);
     error = sqrt((1-e^2)/(1+2*e*cos(f0)+e^2));
     disp(['df = ' num2str(rad2deg(df))])
+%     error = error / df^2;
+
+    figure;
+    plot(Mvect,fvect)
+    
+    dfmin = min(fvect(2:end)-fvect(1:end-1));
+    dfmax = max(fvect(2:end)-fvect(1:end-1));
     error = error / df^2;
       
     % measure how even our f distribution

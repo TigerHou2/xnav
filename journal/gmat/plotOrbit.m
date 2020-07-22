@@ -1,5 +1,5 @@
-%% plotOrbitPerturbed.m
-function plotOrbitPerturbed(numSims,rngSeed,perturbed)
+%% plotOrbit.m
+function plotOrbit(numSims,rngSeed,perturbed)
 %
 % Author:
 %   Tiger Hou
@@ -261,4 +261,4 @@ set(ax2,'Color','none',...
     'Box','off') % make legend axes transparent
 ax2.XLabel.String = '';
 ax2.YLabel.String = '';
-end % plotOrbitPerturbed.m
+end %plotOrbit.m

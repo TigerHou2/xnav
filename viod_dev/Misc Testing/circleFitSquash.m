@@ -32,7 +32,7 @@ sample_range = [0 range(j)] + f0;
     E_vect = kepler(M_vect,e);
     f_vect = 2 * atan(sqrt((1+e)/(1-e))*tan(E_vect/2));
     
-%     f_vect = linspace(sample_range(1),sample_range(2),sample_count);
+    f_vect = linspace(sample_range(1),sample_range(2),sample_count);
 
 points = [cos(f_vect);sin(f_vect)] + C;
 
@@ -47,16 +47,16 @@ for i = 1:numSims
     p = points + randn(size(points))*noise;
 
 %     circle fitting
-    [a,b,r] = hyperfit(p);
+%     [a,b,r] = hyperfit(p);
     
         % alternative circle fitting method
-%         A = 2*p'; A(:,3) = -1;
-%         B = p'.^2; B = sum(B,2);
-%         x = A\B;
-%         % find radius of hodograph
-%         r = sqrt(x(1)^2 + x(2)^2 - x(3));
-%         b = x(2);
-%         a = x(1);
+        A = 2*p'; A(:,3) = -1;
+        B = p'.^2; B = sum(B,2);
+        x = A\B;
+        % find radius of hodograph
+        r = sqrt(x(1)^2 + x(2)^2 - x(3));
+        b = x(2);
+        a = x(1);
     
     % calculate error
     err = err + abs(R-r);

@@ -7,7 +7,7 @@ eccs = [0.1 0.5 0.9];
 a = 1;
 mu = 1;
 period = 0.1;
-f0deg = 160;
+f0deg = 0;
 f0 = deg2rad(f0deg);
 
 period = period * 2*pi * sqrt(a^3/mu);
@@ -41,8 +41,8 @@ refDat = [7.398e-3 1.042e-3 1.428e-4;
           1.843e-2 9.488e-2 6.005e-1];
 ref_f0 = [0 20 45 90 120 160 180]';
 
-plot(ref_f0,refDat(:,1)./refDat(:,2));
-plot(ref_f0,refDat(:,2)./refDat(:,3));
+% plot(ref_f0,refDat(:,1)./refDat(:,2));
+% plot(ref_f0,refDat(:,2)./refDat(:,3));
 
 for i = 1:length(eccs)
     e = eccs(i);
@@ -59,14 +59,14 @@ for i = 1:length(eccs)
     df = mod(df,2*pi);
     error = sqrt((1-e^2)/(1+2*e*cos(f0)+e^2));
     disp(['df = ' num2str(rad2deg(df))])
-%     error = error / df^2;
+    error = error / df^2;
 
-    figure;
-    plot(Mvect,fvect)
+%     figure;
+%     plot(Mvect,fvect)
     
     dfmin = min(fvect(2:end)-fvect(1:end-1));
     dfmax = max(fvect(2:end)-fvect(1:end-1));
-    error = error / df^2;
+%     error = error / df^2;
       
     % measure how even our f distribution
 %     ro = 0;

@@ -76,10 +76,21 @@ for k = 1:length(taVect)
     period = 2*pi*sqrt(SMA^3/mu);
     E = 2 * atan(sqrt((1-ECC)/(1+ECC))*tan(TA/2));
     M = E - ECC*sin(E);
+    
     % determine measurement locations
-    Mvect = M + linspace(0,duration,numObsv) * 2*pi;
-    Evect = kepler(Mvect,ECC);
-    fVect = 2 * atan(sqrt((1+ECC)/(1-ECC))*tan(Evect/2));
+    %------ Option 1: uniform TRUE anomaly distribution ------
+        Me = M + duration*2*pi;
+        Ee = kepler(Me,ECC);
+        fe = 2 * atan(sqrt((1+ECC)/(1-ECC))*tan(Ee/2));
+        if fe < TA
+            fe = fe + 2*pi;
+        end
+        fVect = linspace(TA,fe,numObsv);
+    %------ Option 2: uniform MEAN anomaly distribution ------
+%         Mvect = M + linspace(0,duration,numObsv) * 2*pi;
+%         Evect = kepler(Mvect,ECC);
+%         fVect = 2 * atan(sqrt((1+ECC)/(1-ECC))*tan(Evect/2));
+
     % store ground truth position vector at starting true anomaly
     rRef = Get_Orb_Vects(orbitParams,mu);
     % fetch all measurements

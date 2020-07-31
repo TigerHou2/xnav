@@ -20,10 +20,12 @@
 %% initialization
 
 close all hidden
-clear;clc;init
+clear;init
 
 % load orbital parameter config case studies
-[smaVect,eccVect,taVect,noise,names] = load_orbit_cases();
+[smaVect,eccVect,taVect,noise,names] = ...
+    load_orbit_cases('eccVect',linspace(0.1,0.9,17),...
+                     'taVect' ,[0,90,180]);
 
 % define gravitational parameter as 1 in canonical units
 mu = 1; % DU^3/TU^2
@@ -39,13 +41,22 @@ TA   = 0;   % deg
 % convert to radians and combine parameters
 orbitParams = [SMA,ECC,deg2rad([INC,RAAN,AOP,TA])];
 
+% set the index of the measurement at which error will be compared
+compIdx = 1;
+
 % spacecraft parameters (fixed)
 numObsv = 3; % nd, number of measurements
 duration = 0.1; % nd, measurement duration as fraction of the orbit period
 
 % Monte Carlo settings
-numSims = 1000;
-rngSeed = 1;
+numSims = 3000;
+rngSeed = 2;
+
+% sanity checks
+if compIdx > numObsv
+    error(['The comparison index must be less or equal to '...
+           'the number of measurements!'])
+end
 
 % data logging
 filepath = 'data\orbitParams.mat';
@@ -79,24 +90,25 @@ for k = 1:length(taVect)
     
     % determine measurement locations
     %------ Option 1: uniform TRUE anomaly distribution ------
-        Me = M + duration*2*pi;
-        Ee = kepler(Me,ECC);
-        fe = 2 * atan(sqrt((1+ECC)/(1-ECC))*tan(Ee/2));
-        if fe < TA
-            fe = fe + 2*pi;
-        end
-        fVect = linspace(TA,fe,numObsv);
+%         Me = M + duration*2*pi;
+%         Ee = kepler(Me,ECC);
+%         fe = 2 * atan(sqrt((1+ECC)/(1-ECC))*tan(Ee/2));
+%         if fe < TA
+%             fe = fe + 2*pi;
+%         end
+%         fVect = linspace(TA,fe,numObsv);
     %------ Option 2: uniform MEAN anomaly distribution ------
-%         Mvect = M + linspace(0,duration,numObsv) * 2*pi;
-%         Evect = kepler(Mvect,ECC);
-%         fVect = 2 * atan(sqrt((1+ECC)/(1-ECC))*tan(Evect/2));
+        Mvect = M + linspace(0,duration,numObsv) * 2*pi;
+        Evect = kepler(Mvect,ECC);
+        fVect = 2 * atan(sqrt((1+ECC)/(1-ECC))*tan(Evect/2));
 
-    % store ground truth position vector at starting true anomaly
-    rRef = Get_Orb_Vects(orbitParams,mu);
     % fetch all measurements
     for p = 1:numObsv
         orbitParams(6) = fVect(p);
         [~,v(p,:)] = Get_Orb_Vects(orbitParams,mu);
+        if p == compIdx
+            rRef = Get_Orb_Vects(orbitParams,mu);
+        end
     end
     vArray{i,j,k} = v;
     rArray{i,j,k} = rRef;
@@ -147,13 +159,13 @@ for k = 1:length(taVect)
     % --- note the scaling dor the original method: this is because
     % --- precision issues arise when using canonical units. 
     rOrig = viod((v+noiseVect)*1e4,mu*1e12)/1e4;
-    rHodo = hodoHyp(v+noiseVect,mu);
+    rHodo = hodo(v+noiseVect,mu);
     % we choose to compare the position estimate at the first measurement
-    rOrig = rOrig(1,:)';
-    rHodo = rHodo(1,:)';
+    rOrig = rOrig(compIdx,:)';
+    rHodo = rHodo(compIdx,:)';
     % store error data
-    errOrig(n,k) = norm(rOrig-rRef);
-    errHodo(n,k) = norm(rHodo-rRef);
+    errOrig(n,k) = norm(rOrig-rRef) / norm(rRef);
+    errHodo(n,k) = norm(rHodo-rRef) / norm(rRef);
 end %taVect
 end %numSims
 
@@ -190,10 +202,10 @@ labelArray{i,j,2} = [taDeg(end),std(errOrig(:,end))/SMA];
 latexify('fontSize',18)
 
 % --- log data
-meanOrig(j,:,i) = mean(errOrig)'/SMA;
-meanHodo(j,:,i) = mean(errHodo)'/SMA;
- stdOrig(j,:,i) =  std(errOrig)'/SMA;
- stdHodo(j,:,i) =  std(errHodo)'/SMA;
+meanOrig(j,:,i) = mean(errOrig)';
+meanHodo(j,:,i) = mean(errHodo)';
+ stdOrig(j,:,i) =  std(errOrig)';
+ stdHodo(j,:,i) =  std(errHodo)';
 
 end %eccVect
 end %smaVect
@@ -205,19 +217,19 @@ save(filepath,'meanOrig','meanHodo','stdOrig','stdHodo',...
 % print data in latex table formatting
 regexprep(...
 regexprep(...
-regexprep(latex(vpa(sym(meanOrig(:,:,1)),10)),...
+regexprep(latex(vpa(sym(meanHodo(:,:,1)),10)),...
     '([0-9]+\.[0-9]+)','${num2str(str2num($1),''%.3e'')}'),...
     '(e[+-][0-9]+)',' \\times 10^{${strtok($1,''e'')}}'),...
     '((?<=\{[+-])[0-9])','${regexprep($1,''^0*'','''')}')
 regexprep(...
 regexprep(...
-regexprep(latex(vpa(sym(meanOrig(:,:,2)),10)),...
+regexprep(latex(vpa(sym(meanHodo(:,:,2)),10)),...
     '([0-9]+\.[0-9]+)','${num2str(str2num($1),''%.3e'')}'),...
     '(e[+-][0-9]+)',' \\times 10^{${strtok($1,''e'')}}'),...
     '((?<=\{[+-])[0-9])','${regexprep($1,''^0*'','''')}')
 regexprep(...
 regexprep(...
-regexprep(latex(vpa(sym(meanOrig(:,:,3)),10)),...
+regexprep(latex(vpa(sym(meanHodo(:,:,3)),10)),...
     '([0-9]+\.[0-9]+)','${num2str(str2num($1),''%.3e'')}'),...
     '(e[+-][0-9]+)',' \\times 10^{${strtok($1,''e'')}}'),...
     '((?<=\{[+-])[0-9])','${regexprep($1,''^0*'','''')}')

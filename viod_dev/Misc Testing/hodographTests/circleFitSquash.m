@@ -1,21 +1,22 @@
 % compares circle fitting algorithm accuracy w.r.t separation of samples
 
 close all
-clear;clc
+clear;
 
 addpath('functions')
 
 % circle definition
 R = 1;
-e = 0.9;
+e = 0.1;
 C = e * [1;1] / norm([1;1]) * R;
 
 % define ranges
-range = linspace(1,180,150);
+range = logspace(log10(8),log10(180),150);
+% range = linspace(8,180,150);
 errVect = nan(size(range));
 
-sample_count = 6;
-f0 = 0;
+sample_count = 3;
+f0 = 90;
 
 while true
 
@@ -39,7 +40,7 @@ points = [cos(f_vect);sin(f_vect)] + C;
 err = 0;
 
 % Monte Carlo simulation
-numSims = 200;
+numSims = 750;
 for i = 1:numSims
     
     % apply noise
@@ -71,15 +72,13 @@ end
 errVect(j) = err / numSims;
 
 end
-% disp(['Min = ' num2str(min(errVect))])
-% disp(['Max = ' num2str(max(errVect))])
-% disp(['Range = ' num2str(max(errVect)-min(errVect))])
 
 % does the inverse-square model fit?
-x = 1./sqrt(errVect');
+x = 1./(range'.^2);
 A = [x, ones(size(x))];
-y = range';
+y = errVect';
 B = y;
+
 ymean = mean(y);
 sstot = sum((y-ymean).^2);
 mb = A\B;
@@ -87,21 +86,22 @@ ssres = sum((A*mb-B).^2);
 R2 = 1-ssres/sstot;
 
 % plot
-xx = range';
-yy = 1./sqrt(errVect');
-h = plot(xx,yy);
-title(['f0 = ' num2str(f0) ',   R = ' num2str(R2,3)])
+h = plot(x,y);
+xlabel('$1/df^2$');
+ylabel('error');
+title(['f0 = ' num2str(f0) ',   R = ' num2str(R2,4)])
 drawnow;
 
 f0 = mod(f0+3,360);
+break
 if ~isvalid(h)
     break
 end
 
 end
 
-% display error
-A*mb-B
+% display line properties
+
 
 
 

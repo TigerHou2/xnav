@@ -12,6 +12,8 @@ function [smaVect,eccVect,taVect,noise_canon,names,centralBody,...
 %% parse inputs
 p = inputParser;
 addOptional(p,'useGMAT',0);
+addOptional(p,'eccVect',[0.1,0.5,0.9]);
+addOptional(p,'taVect' ,[0, 20, 45, 90, 120, 160, 180]);
 parse(p,varargin{:});
 
 %% define noise, initialize cases
@@ -23,8 +25,8 @@ noise_canon = 1e-6;
 noise = 3; % m/s
 noise = noise / 1000; % km/s
 
-eccVect = [0.1,0.5,0.9];
-taVect  = [0, 20, 45, 90, 120, 160, 180];
+eccVect = p.Results.eccVect;
+taVect = p.Results.taVect;
 taVect  = deg2rad(taVect);
 smaVect = [];
 names = {};

@@ -260,6 +260,6 @@ end
 set(ax2,'Color','none',...
     'XTick',[],'YTick',[],...
     'Box','off') % make legend axes transparent
-ax2.XLabel.String = '';
+ax2.XLabel.String = 5h'';
 ax2.YLabel.String = '';
 end %plotSpcraft.m

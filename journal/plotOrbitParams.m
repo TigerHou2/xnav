@@ -24,8 +24,7 @@ clear;init
 
 % load orbital parameter config case studies
 [smaVect,eccVect,taVect,noise,names] = ...
-    load_orbit_cases('eccVect',linspace(0.1,0.9,17),...
-                     'taVect' ,[0,90,180]);
+    load_orbit_cases('taVect',linspace(0,340,35));
 
 % define gravitational parameter as 1 in canonical units
 mu = 1; % DU^3/TU^2

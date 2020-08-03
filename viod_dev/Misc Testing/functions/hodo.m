@@ -80,6 +80,7 @@ rho = mu * vecnorm(e'+ull,2,2) ./ vecnorm(N,2,2) ./ vecnorm(Npp,2,2);
 r = rho .* ull;
 
 % compute orbital parameters
+e = norm(e);
 vpe = (1+e) * R;
 a = (vpe^2/mu*(1-e)/(1+e)) ^ (-1);
 K = [0;0;1];

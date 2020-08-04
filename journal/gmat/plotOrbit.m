@@ -96,8 +96,8 @@ for k = 1:length(taVect)
     rOrig = rOrig(1,:);
     rHodo = rHodo(1,:);
     % store error data
-    errOrig(n,k) = norm(rOrig-rRef);
-    errHodo(n,k) = norm(rHodo-rRef);
+    errOrig(n,k) = norm(rOrig-rRef) / norm(rRef) * 100;
+    errHodo(n,k) = norm(rHodo-rRef) / norm(rRef) * 100;
 end %taVect
 end %numSims
 
@@ -109,35 +109,35 @@ taDeg = rad2deg(taVect);
 figure(1)
 latexify('plotSize',[30 18])
 hold on
-plot(taDeg,mean(errOrig)/SMA,origFormat,'Color',color,'LineWidth',origWidth)
-plot(taDeg,mean(errHodo)/SMA,hodoFormat,'LineWidth',hodoWidth)
+plot(taDeg,mean(errOrig),origFormat,'Color',color,'LineWidth',origWidth)
+plot(taDeg,mean(errHodo),hodoFormat,'LineWidth',hodoWidth)
 hold off
 legend('Energy Method','Hodograph Method','Location','SouthEast')
 xlabel('True Anomaly, deg')
-ylabel('Position Error Avg., fraction of SMA')
+ylabel('Position Error Avg. \%')
 % store annotation data point
-labelArray{i,j,1} = [taDeg(end),mean(errOrig(:,end))/SMA];
+labelArray{i,j,1} = [taDeg(end),mean(errOrig(:,end))];
 latexify('fontSize',18)
 
 % --- standard deviation
 figure(2)
 latexify('plotSize',[30 18])
 hold on
-plot(taDeg,std(errOrig)/SMA,origFormat,'Color',color,'LineWidth',origWidth)
-plot(taDeg,std(errHodo)/SMA,hodoFormat,'LineWidth',hodoWidth)
+plot(taDeg,std(errOrig),origFormat,'Color',color,'LineWidth',origWidth)
+plot(taDeg,std(errHodo),hodoFormat,'LineWidth',hodoWidth)
 hold off
 legend('Energy Method','Hodograph Method','Location','SouthEast')
 xlabel('True Anomaly, deg')
-ylabel('Position Error StDev, fraction of SMA')
+ylabel('Position Error StDev \%')
 % store annotation data point
-labelArray{i,j,2} = [taDeg(end),std(errOrig(:,end))/SMA];
+labelArray{i,j,2} = [taDeg(end),std(errOrig(:,end))];
 latexify('fontSize',18)
 
 % --- log data
-meanOrig(j,:,i) = mean(errOrig)'/SMA;
-meanHodo(j,:,i) = mean(errHodo)'/SMA;
- stdOrig(j,:,i) =  std(errOrig)'/SMA;
- stdHodo(j,:,i) =  std(errHodo)'/SMA;
+meanOrig(j,:,i) = mean(errOrig)' / 100;
+meanHodo(j,:,i) = mean(errHodo)' / 100;
+ stdOrig(j,:,i) =  std(errOrig)' / 100;
+ stdHodo(j,:,i) =  std(errHodo)' / 100;
 
 end %eccVect
 end %smaVect

@@ -8,7 +8,7 @@ addpath('..\..\..\journal\cases')
 
 mu = 1;
 a  = 1;
-e  = 0.9;
+e  = 0.1;
 
 period = 0.1;
 period = period * 2*pi;
@@ -56,9 +56,9 @@ for i = 1:length(TA)
     df = mod(df,2*pi);
     
     % scale with measurement arc span
-    error = 1 / df^2;
+    error = 1 / df^1.5;
     % scale with position magnitude
-    error = error / sqrt( (1-e^2)/(1+e*cos(fvect(selObsv))) );
+%     error = error / ( (1-e^2)/(1+e*cos(fvect(selObsv))) );
     % scale with measurement magnitude
 %     error = error / sqrt( (1+2*e*cos(fvect(selObsv))+e^2)/(1-e^2) );
     errVect(i) = error;

@@ -38,7 +38,7 @@ for i = 1:length(dfvect)
     end
 end
 hold on
-plot(dfvect,mean(errVect).*dfvect.^0.5)
+plot(dfvect,mean(errVect).*dfvect.^1.5)
 hold off
 xlabel('df')
 ylabel('error metric')

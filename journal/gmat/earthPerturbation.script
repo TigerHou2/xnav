@@ -1,0 +1,468 @@
+%General Mission Analysis Tool(GMAT) Script
+%Created: 2020-07-06 19:58:27
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft sc;
+GMAT sc.DateFormat = TAIModJulian;
+GMAT sc.Epoch = '21545';
+GMAT sc.CoordinateSystem = EarthMJ2000Eq;
+GMAT sc.DisplayStateType = Keplerian;
+GMAT sc.SMA = 7191.938817629056;
+GMAT sc.ECC = 0.02454974900598135;
+GMAT sc.INC = 12.85008005658103;
+GMAT sc.RAAN = 306.6148021947984;
+GMAT sc.AOP = 314.1905515359995;
+GMAT sc.TA = 99.88774933204158;
+GMAT sc.DryMass = 850;
+GMAT sc.Cd = 2.2;
+GMAT sc.Cr = 1.8;
+GMAT sc.DragArea = 15;
+GMAT sc.SRPArea = 1;
+GMAT sc.NAIFId = -10006001;
+GMAT sc.NAIFIdReferenceFrame = -9006001;
+GMAT sc.OrbitColor = Red;
+GMAT sc.TargetColor = Teal;
+GMAT sc.OrbitErrorCovariance = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+GMAT sc.CdSigma = 1e+070;
+GMAT sc.CrSigma = 1e+070;
+GMAT sc.Id = 'SatId';
+GMAT sc.Attitude = CoordinateSystemFixed;
+GMAT sc.SPADSRPScaleFactor = 1;
+GMAT sc.ModelFile = 'aura.3ds';
+GMAT sc.ModelOffsetX = 0;
+GMAT sc.ModelOffsetY = 0;
+GMAT sc.ModelOffsetZ = 0;
+GMAT sc.ModelRotationX = 0;
+GMAT sc.ModelRotationY = 0;
+GMAT sc.ModelRotationZ = 0;
+GMAT sc.ModelScale = 1;
+GMAT sc.AttitudeDisplayStateType = 'Quaternion';
+GMAT sc.AttitudeRateDisplayStateType = 'AngularVelocity';
+GMAT sc.AttitudeCoordinateSystem = EarthMJ2000Eq;
+GMAT sc.EulerAngleSequence = '321';
+
+Create Spacecraft sc_leo;
+GMAT sc_leo.DateFormat = TAIModJulian;
+GMAT sc_leo.Epoch = '21545';
+GMAT sc_leo.CoordinateSystem = EarthMJ2000Eq;
+GMAT sc_leo.DisplayStateType = Keplerian;
+GMAT sc_leo.SMA = 7499.999999999996;
+GMAT sc_leo.ECC = 0.09999999999999955;
+GMAT sc_leo.INC = 24;
+GMAT sc_leo.RAAN = 29.99999999999995;
+GMAT sc_leo.AOP = 359.9999987925818;
+GMAT sc_leo.TA = 60.00000000000002;
+GMAT sc_leo.DryMass = 850;
+GMAT sc_leo.Cd = 2.2;
+GMAT sc_leo.Cr = 1.8;
+GMAT sc_leo.DragArea = 15;
+GMAT sc_leo.SRPArea = 1;
+GMAT sc_leo.NAIFId = -10007001;
+GMAT sc_leo.NAIFIdReferenceFrame = -9007001;
+GMAT sc_leo.OrbitColor = Green;
+GMAT sc_leo.TargetColor = LightGray;
+GMAT sc_leo.OrbitErrorCovariance = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+GMAT sc_leo.CdSigma = 1e+070;
+GMAT sc_leo.CrSigma = 1e+070;
+GMAT sc_leo.Id = 'SatId';
+GMAT sc_leo.Attitude = CoordinateSystemFixed;
+GMAT sc_leo.SPADSRPScaleFactor = 1;
+GMAT sc_leo.ModelFile = 'aura.3ds';
+GMAT sc_leo.ModelOffsetX = 0;
+GMAT sc_leo.ModelOffsetY = 0;
+GMAT sc_leo.ModelOffsetZ = 0;
+GMAT sc_leo.ModelRotationX = 0;
+GMAT sc_leo.ModelRotationY = 0;
+GMAT sc_leo.ModelRotationZ = 0;
+GMAT sc_leo.ModelScale = 1;
+GMAT sc_leo.AttitudeDisplayStateType = 'Quaternion';
+GMAT sc_leo.AttitudeRateDisplayStateType = 'AngularVelocity';
+GMAT sc_leo.AttitudeCoordinateSystem = EarthMJ2000Eq;
+GMAT sc_leo.EulerAngleSequence = '321';
+
+Create Spacecraft sc_geo;
+GMAT sc_geo.DateFormat = TAIModJulian;
+GMAT sc_geo.Epoch = '21545';
+GMAT sc_geo.CoordinateSystem = EarthMJ2000Eq;
+GMAT sc_geo.DisplayStateType = Keplerian;
+GMAT sc_geo.SMA = 42164.00000000008;
+GMAT sc_geo.ECC = 0.1000000000000001;
+GMAT sc_geo.INC = 23.99999999999999;
+GMAT sc_geo.RAAN = 29.99999999999995;
+GMAT sc_geo.AOP = 360;
+GMAT sc_geo.TA = 59.99999999999984;
+GMAT sc_geo.DryMass = 850;
+GMAT sc_geo.Cd = 2.2;
+GMAT sc_geo.Cr = 1.8;
+GMAT sc_geo.DragArea = 15;
+GMAT sc_geo.SRPArea = 1;
+GMAT sc_geo.NAIFId = -10007001;
+GMAT sc_geo.NAIFIdReferenceFrame = -9007001;
+GMAT sc_geo.OrbitColor = Green;
+GMAT sc_geo.TargetColor = LightGray;
+GMAT sc_geo.OrbitErrorCovariance = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
+GMAT sc_geo.CdSigma = 1e+070;
+GMAT sc_geo.CrSigma = 1e+070;
+GMAT sc_geo.Id = 'SatId';
+GMAT sc_geo.Attitude = CoordinateSystemFixed;
+GMAT sc_geo.SPADSRPScaleFactor = 1;
+GMAT sc_geo.ModelFile = 'aura.3ds';
+GMAT sc_geo.ModelOffsetX = 0;
+GMAT sc_geo.ModelOffsetY = 0;
+GMAT sc_geo.ModelOffsetZ = 0;
+GMAT sc_geo.ModelRotationX = 0;
+GMAT sc_geo.ModelRotationY = 0;
+GMAT sc_geo.ModelRotationZ = 0;
+GMAT sc_geo.ModelScale = 1;
+GMAT sc_geo.AttitudeDisplayStateType = 'Quaternion';
+GMAT sc_geo.AttitudeRateDisplayStateType = 'AngularVelocity';
+GMAT sc_geo.AttitudeCoordinateSystem = EarthMJ2000Eq;
+GMAT sc_geo.EulerAngleSequence = '321';
+
+%----------------------------------------
+%---------- ForceModels
+%----------------------------------------
+
+Create ForceModel prop_sun_ForceModel;
+GMAT prop_sun_ForceModel.CentralBody = Sun;
+GMAT prop_sun_ForceModel.PointMasses = {Sun};
+GMAT prop_sun_ForceModel.Drag = None;
+GMAT prop_sun_ForceModel.SRP = Off;
+GMAT prop_sun_ForceModel.RelativisticCorrection = Off;
+GMAT prop_sun_ForceModel.ErrorControl = RSSStep;
+
+Create ForceModel prop_earth_perturbed_ForceModel;
+GMAT prop_earth_perturbed_ForceModel.CentralBody = Earth;
+GMAT prop_earth_perturbed_ForceModel.PrimaryBodies = {Earth};
+GMAT prop_earth_perturbed_ForceModel.PointMasses = {Luna, Sun};
+GMAT prop_earth_perturbed_ForceModel.Drag = None;
+GMAT prop_earth_perturbed_ForceModel.SRP = On;
+GMAT prop_earth_perturbed_ForceModel.RelativisticCorrection = Off;
+GMAT prop_earth_perturbed_ForceModel.ErrorControl = RSSStep;
+GMAT prop_earth_perturbed_ForceModel.GravityField.Earth.Degree = 4;
+GMAT prop_earth_perturbed_ForceModel.GravityField.Earth.Order = 4;
+GMAT prop_earth_perturbed_ForceModel.GravityField.Earth.StmLimit = 100;
+GMAT prop_earth_perturbed_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
+GMAT prop_earth_perturbed_ForceModel.GravityField.Earth.TideModel = 'None';
+GMAT prop_earth_perturbed_ForceModel.SRP.Flux = 1367;
+GMAT prop_earth_perturbed_ForceModel.SRP.SRPModel = Spherical;
+GMAT prop_earth_perturbed_ForceModel.SRP.Nominal_Sun = 149597870.691;
+
+Create ForceModel prop_sun_perturbed_ForceModel;
+GMAT prop_sun_perturbed_ForceModel.CentralBody = Sun;
+GMAT prop_sun_perturbed_ForceModel.PointMasses = {Earth, Jupiter, Mars, Mercury, Neptune, Pluto, Saturn, Sun, Uranus, Venus};
+GMAT prop_sun_perturbed_ForceModel.Drag = None;
+GMAT prop_sun_perturbed_ForceModel.SRP = On;
+GMAT prop_sun_perturbed_ForceModel.RelativisticCorrection = Off;
+GMAT prop_sun_perturbed_ForceModel.ErrorControl = RSSStep;
+GMAT prop_sun_perturbed_ForceModel.SRP.Flux = 1367;
+GMAT prop_sun_perturbed_ForceModel.SRP.SRPModel = Spherical;
+GMAT prop_sun_perturbed_ForceModel.SRP.Nominal_Sun = 149597870.691;
+
+
+
+
+
+
+
+
+
+
+
+%----------------------------------------
+%---------- ForceModels
+%----------------------------------------
+
+Create ForceModel propagator_ForceModel;
+GMAT propagator_ForceModel.CentralBody = Earth;
+GMAT propagator_ForceModel.PointMasses = {Earth};
+GMAT propagator_ForceModel.Drag = None;
+GMAT propagator_ForceModel.SRP = Off;
+GMAT propagator_ForceModel.RelativisticCorrection = Off;
+GMAT propagator_ForceModel.ErrorControl = RSSStep;
+
+Create ForceModel prop_twobody_ForceModel;
+GMAT prop_twobody_ForceModel.CentralBody = Earth;
+GMAT prop_twobody_ForceModel.PointMasses = {Earth};
+GMAT prop_twobody_ForceModel.Drag = None;
+GMAT prop_twobody_ForceModel.SRP = Off;
+GMAT prop_twobody_ForceModel.RelativisticCorrection = Off;
+GMAT prop_twobody_ForceModel.ErrorControl = RSSStep;
+
+Create ForceModel prop_moon_ForceModel;
+GMAT prop_moon_ForceModel.CentralBody = Earth;
+GMAT prop_moon_ForceModel.PointMasses = {Earth, Luna, Sun};
+GMAT prop_moon_ForceModel.Drag = None;
+GMAT prop_moon_ForceModel.SRP = Off;
+GMAT prop_moon_ForceModel.RelativisticCorrection = Off;
+GMAT prop_moon_ForceModel.ErrorControl = RSSStep;
+
+Create ForceModel prop_srp_ForceModel;
+GMAT prop_srp_ForceModel.CentralBody = Earth;
+GMAT prop_srp_ForceModel.PointMasses = {Earth};
+GMAT prop_srp_ForceModel.Drag = None;
+GMAT prop_srp_ForceModel.SRP = On;
+GMAT prop_srp_ForceModel.RelativisticCorrection = Off;
+GMAT prop_srp_ForceModel.ErrorControl = RSSStep;
+GMAT prop_srp_ForceModel.SRP.Flux = 1367;
+GMAT prop_srp_ForceModel.SRP.SRPModel = Spherical;
+GMAT prop_srp_ForceModel.SRP.Nominal_Sun = 149597870.691;
+
+Create ForceModel prop_j2_ForceModel;
+GMAT prop_j2_ForceModel.CentralBody = Earth;
+GMAT prop_j2_ForceModel.PrimaryBodies = {Earth};
+GMAT prop_j2_ForceModel.Drag = None;
+GMAT prop_j2_ForceModel.SRP = Off;
+GMAT prop_j2_ForceModel.RelativisticCorrection = Off;
+GMAT prop_j2_ForceModel.ErrorControl = RSSStep;
+GMAT prop_j2_ForceModel.GravityField.Earth.Degree = 4;
+GMAT prop_j2_ForceModel.GravityField.Earth.Order = 4;
+GMAT prop_j2_ForceModel.GravityField.Earth.StmLimit = 100;
+GMAT prop_j2_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
+GMAT prop_j2_ForceModel.GravityField.Earth.TideModel = 'None';
+
+Create ForceModel prop_allpert_ForceModel;
+GMAT prop_allpert_ForceModel.CentralBody = Earth;
+GMAT prop_allpert_ForceModel.PrimaryBodies = {Earth};
+GMAT prop_allpert_ForceModel.PointMasses = {Luna, Sun};
+GMAT prop_allpert_ForceModel.Drag = None;
+GMAT prop_allpert_ForceModel.SRP = On;
+GMAT prop_allpert_ForceModel.RelativisticCorrection = Off;
+GMAT prop_allpert_ForceModel.ErrorControl = RSSStep;
+GMAT prop_allpert_ForceModel.GravityField.Earth.Degree = 4;
+GMAT prop_allpert_ForceModel.GravityField.Earth.Order = 4;
+GMAT prop_allpert_ForceModel.GravityField.Earth.StmLimit = 100;
+GMAT prop_allpert_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
+GMAT prop_allpert_ForceModel.GravityField.Earth.TideModel = 'None';
+GMAT prop_allpert_ForceModel.SRP.Flux = 1367;
+GMAT prop_allpert_ForceModel.SRP.SRPModel = Spherical;
+GMAT prop_allpert_ForceModel.SRP.Nominal_Sun = 149597870.691;
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator propagator;
+GMAT propagator.FM = propagator_ForceModel;
+GMAT propagator.Type = RungeKutta89;
+GMAT propagator.InitialStepSize = 60;
+GMAT propagator.Accuracy = 9.999999999999999e-012;
+GMAT propagator.MinStep = 0.001;
+GMAT propagator.MaxStep = 2700;
+GMAT propagator.MaxStepAttempts = 50;
+GMAT propagator.StopIfAccuracyIsViolated = true;
+
+Create Propagator prop_twobody;
+GMAT prop_twobody.FM = prop_twobody_ForceModel;
+GMAT prop_twobody.Type = RungeKutta89;
+GMAT prop_twobody.InitialStepSize = 60;
+GMAT prop_twobody.Accuracy = 9.999999999999999e-012;
+GMAT prop_twobody.MinStep = 0.001;
+GMAT prop_twobody.MaxStep = 2700;
+GMAT prop_twobody.MaxStepAttempts = 50;
+GMAT prop_twobody.StopIfAccuracyIsViolated = true;
+
+Create Propagator prop_moon;
+GMAT prop_moon.FM = prop_moon_ForceModel;
+GMAT prop_moon.Type = RungeKutta89;
+GMAT prop_moon.InitialStepSize = 60;
+GMAT prop_moon.Accuracy = 9.999999999999999e-012;
+GMAT prop_moon.MinStep = 0.001;
+GMAT prop_moon.MaxStep = 2700;
+GMAT prop_moon.MaxStepAttempts = 50;
+GMAT prop_moon.StopIfAccuracyIsViolated = true;
+
+Create Propagator prop_srp;
+GMAT prop_srp.FM = prop_srp_ForceModel;
+GMAT prop_srp.Type = RungeKutta89;
+GMAT prop_srp.InitialStepSize = 60;
+GMAT prop_srp.Accuracy = 9.999999999999999e-012;
+GMAT prop_srp.MinStep = 0.001;
+GMAT prop_srp.MaxStep = 2700;
+GMAT prop_srp.MaxStepAttempts = 50;
+GMAT prop_srp.StopIfAccuracyIsViolated = true;
+
+Create Propagator prop_j2;
+GMAT prop_j2.FM = prop_j2_ForceModel;
+GMAT prop_j2.Type = RungeKutta89;
+GMAT prop_j2.InitialStepSize = 60;
+GMAT prop_j2.Accuracy = 9.999999999999999e-012;
+GMAT prop_j2.MinStep = 0.001;
+GMAT prop_j2.MaxStep = 2700;
+GMAT prop_j2.MaxStepAttempts = 50;
+GMAT prop_j2.StopIfAccuracyIsViolated = true;
+
+Create Propagator prop_allpert;
+GMAT prop_allpert.FM = prop_allpert_ForceModel;
+GMAT prop_allpert.Type = RungeKutta89;
+GMAT prop_allpert.InitialStepSize = 60;
+GMAT prop_allpert.Accuracy = 9.999999999999999e-012;
+GMAT prop_allpert.MinStep = 0.001;
+GMAT prop_allpert.MaxStep = 2700;
+GMAT prop_allpert.MaxStepAttempts = 50;
+GMAT prop_allpert.StopIfAccuracyIsViolated = true;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create OrbitView earthView;
+GMAT earthView.SolverIterations = Current;
+GMAT earthView.UpperLeft = [ 0 0 ];
+GMAT earthView.Size = [ 0.6001742160278746 0.7991071428571429 ];
+GMAT earthView.RelativeZOrder = 226;
+GMAT earthView.Maximized = false;
+GMAT earthView.Add = {sc, Earth, Luna};
+GMAT earthView.CoordinateSystem = EarthMJ2000Eq;
+GMAT earthView.DrawObject = [ true true true ];
+GMAT earthView.DataCollectFrequency = 1;
+GMAT earthView.UpdatePlotFrequency = 50;
+GMAT earthView.NumPointsToRedraw = 0;
+GMAT earthView.ShowPlot = true;
+GMAT earthView.MaxPlotPoints = 20000;
+GMAT earthView.ShowLabels = true;
+GMAT earthView.ViewPointReference = Earth;
+GMAT earthView.ViewPointVector = [ 60000 0 60000 ];
+GMAT earthView.ViewDirection = Earth;
+GMAT earthView.ViewScaleFactor = 1;
+GMAT earthView.ViewUpCoordinateSystem = EarthMJ2000Eq;
+GMAT earthView.ViewUpAxis = Z;
+GMAT earthView.EclipticPlane = Off;
+GMAT earthView.XYPlane = On;
+GMAT earthView.WireFrame = Off;
+GMAT earthView.Axes = On;
+GMAT earthView.Grid = Off;
+GMAT earthView.SunLine = Off;
+GMAT earthView.UseInitialView = On;
+GMAT earthView.StarCount = 7000;
+GMAT earthView.EnableStars = On;
+GMAT earthView.EnableConstellations = On;
+
+Create ReportFile reportfile;
+GMAT reportfile.SolverIterations = Current;
+GMAT reportfile.UpperLeft = [ 0 0 ];
+GMAT reportfile.Size = [ 0 0 ];
+GMAT reportfile.RelativeZOrder = 0;
+GMAT reportfile.Maximized = false;
+GMAT reportfile.Filename = 'ReportFile1.txt';
+GMAT reportfile.Precision = 16;
+GMAT reportfile.WriteHeaders = true;
+GMAT reportfile.LeftJustify = On;
+GMAT reportfile.ZeroFill = Off;
+GMAT reportfile.FixedWidth = true;
+GMAT reportfile.Delimiter = ' ';
+GMAT reportfile.ColumnWidth = 23;
+GMAT reportfile.WriteReport = true;
+
+%----------------------------------------
+%---------- Functions
+%----------------------------------------
+
+Create MatlabFunction init_gmat;
+GMAT init_gmat.FunctionPath = 'E:\Research\XNAV\journal\gmat';
+% GMAT init_gmat.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\journal\gmat';
+
+Create MatlabFunction save2mat;
+GMAT save2mat.FunctionPath = 'E:\Research\XNAV\journal\gmat';
+% GMAT save2mat.FunctionPath = 'C:\Users\tigre\Desktop\Directory\Research\xnav\journal\gmat';
+
+Create MatlabFunction g2mat;
+GMAT g2mat.FunctionPath = 'E:\Research\XNAV\journal\gmat';
+
+%----------------------------------------
+%---------- Arrays, Variables, Strings
+%----------------------------------------
+
+Create Array rData[1,3] vData[6,3];
+Create Variable numObsv duration SMA ECC TA mu period dt dtBack pi;
+Create Variable i k m temp;
+Create String filepath;
+GMAT numObsv = 3;
+GMAT duration = 0.7; % fraction of orbital period
+GMAT pi = 3.1415927;
+GMAT temp = 1;
+GMAT filepath = 'temp\datEarth.mat';
+
+
+
+
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+
+BeginMissionSequence;
+
+%---- initialize workspace
+GMAT init_gmat;
+
+%---- get constants
+GMAT mu = SolarSystem.Earth.Mu;
+
+%---- iterate through LEO and GEO cases
+For k = 1:1:2;
+   
+   PenUp earthView;
+   
+   If k == 1 % LEO case
+      GMAT sc = sc_leo;
+      GMAT SMA = sc.Earth.SMA;
+      GMAT period = 2 * pi * sqrt(SMA^3/mu) * duration;
+      GMAT dt = period / (numObsv-1);
+      GMAT dtBack = -1 * period;
+   EndIf;
+   If k == 2 % GEO case
+      PenUp earthView;
+      GMAT sc = sc_geo;
+      GMAT SMA = sc.Earth.SMA;
+      GMAT period = 2 * pi * sqrt(SMA^3/mu) * duration;
+      GMAT dt = period / (numObsv-1);
+      GMAT dtBack = -1 * period;
+   EndIf;
+   
+   PenDown earthView;
+   
+   For i = 1:1:5;
+			If i == 1 % do two-body control group
+				GMAT propagator =  prop_twobody;
+			EndIf;
+			If i == 2 % do moon perturbation
+				GMAT propagator =  prop_moon;
+			EndIf;
+			If i == 3 % do SRP
+				GMAT propagator = prop_srp;
+			EndIf;
+			If i == 4 % do oblateness
+				GMAT propagator =  prop_j2;
+			EndIf;
+			If i == 5 % do all perturbations
+				GMAT propagator = prop_allpert;
+			EndIf;
+      
+      For m = 1:1:numObsv;
+         If m == 1
+            GMAT rData(1,1) = sc.EarthMJ2000Eq.X;
+            GMAT rData(1,2) = sc.EarthMJ2000Eq.Y;
+            GMAT rData(1,3) = sc.EarthMJ2000Eq.Z;
+         EndIf;
+         GMAT vData(m,1) = sc.EarthMJ2000Eq.VX;
+         GMAT vData(m,2) = sc.EarthMJ2000Eq.VY;
+         GMAT vData(m,3) = sc.EarthMJ2000Eq.VZ;
+         If m ~= numObsv
+            Propagate propagator(sc) {sc.ElapsedSecs = dt};
+         EndIf;
+      EndFor; %numObsv
+      
+      PenUp earthView;
+      Propagate BackProp propagator(sc) {sc.ElapsedSecs = dtBack};
+      PenDown earthView;
+      
+      GMAT g2mat(rData, vData);
+      GMAT save2mat(filepath, rData, vData, mu, i, k, temp);
+   
+   EndFor; %i
+EndFor; %k

@@ -31,8 +31,11 @@ function plotSpcraft(numSims,rngSeed,perturbed)
 % load cell matrix of position, velocity, and mu data
 if perturbed == 0
     load('temp\datSpcraft.mat','rArray','vArray','muArray');
-else
+elseif perturbed == 1
     load('temp\datSpcraftPerturbed.mat','rArray','vArray','muArray');
+else
+    load('temp\datSpcraft.mat','rArray','vArray','muArray');
+    warning('Using hypergeometric fit for hodograph method!')
 end
 
 rng(rngSeed);
@@ -40,8 +43,10 @@ rng(rngSeed);
 % data logging
 if perturbed == 0
     filepath = 'data\spcraftParams.mat';
-else
+elseif perturbed == 1
     filepath = 'data\spcraftParamsPerturbed.mat';
+else
+    filepath = 'data\spcraftParams_Hyperfit.mat';
 end
 meanOrig = nan(length(obsVect),length(noiseVect),length(durVect));
 meanHodo = nan(length(obsVect),length(noiseVect),length(durVect));
@@ -93,7 +98,11 @@ for k = 1:length(noiseVect)
     % --- note the scaling for the original method: this is because
     % --- precision issues arise when using canonical units. 
     rOrig = viod((v+noise)*1e4,mu*1e12)/1e4;
-    rHodo = hodo(v+noise,mu);
+    if perturbed == 0 || perturbed == 1
+        rHodo = hodo(v+noise,mu);
+    else
+        rHodo = hodoHyp(v+noise,mu);
+    end
     % we choose to compare the position estimate at the first measurement
     rOrig = rOrig(1,:);
     rHodo = rHodo(1,:);

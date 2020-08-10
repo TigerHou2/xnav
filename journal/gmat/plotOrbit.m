@@ -32,8 +32,11 @@ function plotOrbit(numSims,rngSeed,perturbed)
 % load cell matrix of position, velocity, and mu data
 if perturbed == 0
     load('temp\datOrbit.mat','rArray','vArray','muArray');
-else
+elseif perturbed == 1
     load('temp\datOrbitPerturbed.mat','rArray','vArray','muArray');
+else
+    load('temp\datOrbit.mat','rArray','vArray','muArray');
+    warning('Using hypergeometric fit for hodograph method!')
 end
 
 % initialize cell array of noise values
@@ -49,8 +52,10 @@ end %numSims
 % data logging
 if perturbed == 0
     filepath = 'data\orbitParams.mat';
-else
+elseif perturbed == 1
     filepath = 'data\orbitParamsPerturbed.mat';
+else
+    filepath = 'data\orbitParams_Hyperfit.mat';
 end
 meanOrig = nan(length(eccVect),length(taVect),length(smaVect));
 meanHodo = nan(length(eccVect),length(taVect),length(smaVect));
@@ -91,7 +96,11 @@ for k = 1:length(taVect)
     % --- note the scaling for the original method: this is because
     % --- precision issues arise when using canonical units. 
     rOrig = viod((v+noiseVect)*1e4,mu*1e12)/1e4;
-    rHodo = hodo(v+noiseVect,mu);
+    if perturbed == 0 || perturbed == 1
+        rHodo = hodo(v+noiseVect,mu);
+    else
+        rHodo = hodoHyp(v+noiseVect,mu);
+    end
     % we choose to compare the position estimate at the first measurement
     rOrig = rOrig(1,:);
     rHodo = rHodo(1,:);

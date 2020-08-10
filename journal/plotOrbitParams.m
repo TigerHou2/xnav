@@ -20,11 +20,11 @@
 %% initialization
 
 close all hidden
-clear;init
+clear;clc;init
 
 % load orbital parameter config case studies
 [smaVect,eccVect,taVect,noise,names] = ...
-    load_orbit_cases('taVect',linspace(0,340,35));
+    load_orbit_cases();
 
 % define gravitational parameter as 1 in canonical units
 mu = 1; % DU^3/TU^2
@@ -44,12 +44,12 @@ orbitParams = [SMA,ECC,deg2rad([INC,RAAN,AOP,TA])];
 compIdx = 1;
 
 % spacecraft parameters (fixed)
-numObsv = 3; % nd, number of measurements
+numObsv = 20; % nd, number of measurements
 duration = 0.1; % nd, measurement duration as fraction of the orbit period
 
 % Monte Carlo settings
 numSims = 3000;
-rngSeed = 2;
+rngSeed = 1;
 
 % sanity checks
 if compIdx > numObsv
@@ -157,14 +157,15 @@ for k = 1:length(taVect)
     % do orbit determination
     % --- note the scaling dor the original method: this is because
     % --- precision issues arise when using canonical units. 
-    rOrig = viod((v+noiseVect)*1e4,mu*1e12)/1e4;
-    rHodo = hodo(v+noiseVect,mu);
+%     rOrig = viod((v+noiseVect)*1e4,mu*1e12)/1e4;
+    rOrig = hodo(v+noiseVect,mu);
+    rHodo = hodoHyp(v+noiseVect,mu);
     % we choose to compare the position estimate at the first measurement
     rOrig = rOrig(compIdx,:)';
     rHodo = rHodo(compIdx,:)';
     % store error data
-    errOrig(n,k) = norm(rOrig-rRef) / norm(rRef);
-    errHodo(n,k) = norm(rHodo-rRef) / norm(rRef);
+    errOrig(n,k) = norm(rOrig-rRef) / norm(rRef) * 100;
+    errHodo(n,k) = norm(rHodo-rRef) / norm(rRef) * 100;
 end %taVect
 end %numSims
 
@@ -176,35 +177,35 @@ taDeg = rad2deg(taVect);
 figure(1)
 latexify('plotSize',[30 18])
 hold on
-plot(taDeg,mean(errOrig)/SMA,origFormat,'Color',color,'LineWidth',origWidth)
-plot(taDeg,mean(errHodo)/SMA,hodoFormat,'LineWidth',hodoWidth)
+plot(taDeg,mean(errOrig),origFormat,'Color',color,'LineWidth',origWidth)
+plot(taDeg,mean(errHodo),hodoFormat,'LineWidth',hodoWidth)
 hold off
-legend('Energy Method','Hodograph Method','Location','SouthEast')
+legend('Hodograph Method','Hyperfit Method','Location','SouthEast')
 xlabel('True Anomaly, deg')
-ylabel('Position Error Avg., fraction of SMA')
+ylabel('Position Error Avg. \%')
 % store annotation data point
-labelArray{i,j,1} = [taDeg(end),mean(errOrig(:,end))/SMA];
+labelArray{i,j,1} = [taDeg(end),mean(errOrig(:,end))];
 latexify('fontSize',18)
 
 % --- standard deviation
 figure(2)
 latexify('plotSize',[30 18])
 hold on
-plot(taDeg,std(errOrig)/SMA,origFormat,'Color',color,'LineWidth',origWidth)
-plot(taDeg,std(errHodo)/SMA,hodoFormat,'LineWidth',hodoWidth)
+plot(taDeg,std(errOrig),origFormat,'Color',color,'LineWidth',origWidth)
+plot(taDeg,std(errHodo),hodoFormat,'LineWidth',hodoWidth)
 hold off
-legend('Energy Method','Hodograph Method','Location','SouthEast')
+legend('Hodograph Method','Hyperfit Method','Location','SouthEast')
 xlabel('True Anomaly, deg')
-ylabel('Position Error StDev, fraction of SMA')
+ylabel('Position Error StDev \%')
 % store annotation data point
-labelArray{i,j,2} = [taDeg(end),std(errOrig(:,end))/SMA];
+labelArray{i,j,2} = [taDeg(end),std(errOrig(:,end))];
 latexify('fontSize',18)
 
 % --- log data
-meanOrig(j,:,i) = mean(errOrig)';
-meanHodo(j,:,i) = mean(errHodo)';
- stdOrig(j,:,i) =  std(errOrig)';
- stdHodo(j,:,i) =  std(errHodo)';
+meanOrig(j,:,i) = mean(errOrig)' / 100;
+meanHodo(j,:,i) = mean(errHodo)' / 100;
+ stdOrig(j,:,i) =  std(errOrig)' / 100;
+ stdHodo(j,:,i) =  std(errHodo)' / 100;
 
 end %eccVect
 end %smaVect

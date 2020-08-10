@@ -31,7 +31,7 @@ k = V(:,end);
 % orbit apart from its adjacent measurements.
 kEst = zeros(1,3);
 for i = 1:size(N,1)-1
-    kEst = kEst + cross(N(i,:),N(i+1,:));
+    kEst = kEst + cross(N(i,:),N(i+1,:)) / norm(cross(N(i,:),N(i+1,:)));
 end
 if dot(k,kEst') < 0
     k = -k;

@@ -10,7 +10,7 @@ addpath('..\..\..\journal\cases')
 a = 1;
 mu = 1;
 period = 0.1;
-f0deg = 135;
+f0deg = 0;
 f0 = deg2rad(f0deg);
 
 % select the nth observation's position error for comparison

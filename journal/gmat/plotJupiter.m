@@ -70,15 +70,15 @@ for j = 1:size(vArray,1)+1 % iterate over diff. perturbations
             noiseVect = nArray{s};
             r = hodo(V+noiseVect,mu);
             r = r(1,:);
-            err(s) = norm(R-r)/norm(R)*100;
+            err(s) = norm(R-r)/norm(R);
         end %s
         err = mean(err);
     else
         r = hodo(V,mu);
         r = r(1,:);
-        err = norm(R-r)/norm(R)*100;
+        err = norm(R-r)/norm(R);
     end
-    errVect(i,j) = err;
+    errVect(i,j) = err * 100;
 end %j
 end %i
 
@@ -88,10 +88,12 @@ x = categorical(list,list); % preserve list oder
 for i = 1:size(vArray,2)
     figure(i)
     bar(x,errVect(i,:))
-%     set(gca,'YScale','log')
     grid on
     ylabel('Position Error \%')
     set(gca,'FontSize',16)
+    % fix the distance between the tallest bar and the plot upper bound
+    ax = gca;
+    ax.YLim = [0,max(errVect(i,:))*1.15];
 end
 
 end %plotJupiter.m

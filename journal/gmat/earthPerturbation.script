@@ -377,7 +377,7 @@ GMAT g2mat.FunctionPath = 'E:\Research\XNAV\journal\gmat';
 %---------- Arrays, Variables, Strings
 %----------------------------------------
 
-Create Array rData[1,3] vData[6,3];
+Create Array rData[1,3] vData[3,3];
 Create Variable numObsv duration SMA ECC TA mu period dt dtBack pi;
 Create Variable i k m temp;
 Create String filepath;

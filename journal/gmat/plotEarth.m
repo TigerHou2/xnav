@@ -71,15 +71,15 @@ for j = 1:size(vArray,1)+1 % iterate over diff. perturbations
             noiseVect = nArray{s};
             r = hodo(V+noiseVect,mu);
             r = r(1,:);
-            err(s) = norm(R-r)/norm(R)*100;
+            err(s) = norm(R-r)/norm(R);
         end %s
         err = mean(err);
     else
         r = hodo(V,mu);
         r = r(1,:);
-        err = norm(R-r)/norm(R)*100;
+        err = norm(R-r)/norm(R);
     end
-    errVect(i,j) = err;
+    errVect(i,j) = err * 100;
 end %j
 end %i
 

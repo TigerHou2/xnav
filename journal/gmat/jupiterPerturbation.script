@@ -11,11 +11,11 @@ GMAT sc.DateFormat = TAIModJulian;
 GMAT sc.Epoch = '21545';
 GMAT sc.CoordinateSystem = SunMJ2000Eq;
 GMAT sc.DisplayStateType = Keplerian;
-GMAT sc.SMA = 2299999999.99999;
-GMAT sc.ECC = 0.5999999999999989;
-GMAT sc.INC = 22.99999999999998;
+GMAT sc.SMA = 2299999999.999992;
+GMAT sc.ECC = 0.5999999999999991;
+GMAT sc.INC = 22.99999999999996;
 GMAT sc.RAAN = 5.999999999999965;
-GMAT sc.AOP = 84.99999999999999;
+GMAT sc.AOP = 8.000000000000071;
 GMAT sc.TA = 10.00000000000023;
 GMAT sc.DryMass = 850;
 GMAT sc.Cd = 2.2;
@@ -50,11 +50,11 @@ GMAT sc_near.DateFormat = TAIModJulian;
 GMAT sc_near.Epoch = '21545';
 GMAT sc_near.CoordinateSystem = SunMJ2000Eq;
 GMAT sc_near.DisplayStateType = Keplerian;
-GMAT sc_near.SMA = 2299999999.99997;
-GMAT sc_near.ECC = 0.7499999999999987;
-GMAT sc_near.INC = 23.00000000000001;
+GMAT sc_near.SMA = 2299999999.999954;
+GMAT sc_near.ECC = 0.7499999999999972;
+GMAT sc_near.INC = 22.99999999999999;
 GMAT sc_near.RAAN = 360;
-GMAT sc_near.AOP = 188.0000000000002;
+GMAT sc_near.AOP = 29.99999999999995;
 GMAT sc_near.TA = 10.00000000000005;
 GMAT sc_near.DryMass = 850;
 GMAT sc_near.Cd = 2.2;
@@ -89,11 +89,11 @@ GMAT sc_far.DateFormat = TAIModJulian;
 GMAT sc_far.Epoch = '21545';
 GMAT sc_far.CoordinateSystem = SunMJ2000Eq;
 GMAT sc_far.DisplayStateType = Keplerian;
-GMAT sc_far.SMA = 2299999999.999993;
-GMAT sc_far.ECC = 0.7500000000000004;
+GMAT sc_far.SMA = 2300000000.000004;
+GMAT sc_far.ECC = 0.750000000000002;
 GMAT sc_far.INC = 22.99999999999999;
 GMAT sc_far.RAAN = 360;
-GMAT sc_far.AOP = 30.00000000000003;
+GMAT sc_far.AOP = 210;
 GMAT sc_far.TA = 9.99999999999983;
 GMAT sc_far.DryMass = 850;
 GMAT sc_far.Cd = 2.2;
@@ -122,45 +122,6 @@ GMAT sc_far.AttitudeDisplayStateType = 'Quaternion';
 GMAT sc_far.AttitudeRateDisplayStateType = 'AngularVelocity';
 GMAT sc_far.AttitudeCoordinateSystem = EarthMJ2000Eq;
 GMAT sc_far.EulerAngleSequence = '321';
-
-Create Spacecraft sc_intermediate;
-GMAT sc_intermediate.DateFormat = TAIModJulian;
-GMAT sc_intermediate.Epoch = '21545';
-GMAT sc_intermediate.CoordinateSystem = SunMJ2000Eq;
-GMAT sc_intermediate.DisplayStateType = Keplerian;
-GMAT sc_intermediate.SMA = 2299999999.999977;
-GMAT sc_intermediate.ECC = 0.7499999999999988;
-GMAT sc_intermediate.INC = 22.99999999999998;
-GMAT sc_intermediate.RAAN = 360;
-GMAT sc_intermediate.AOP = 9.999999999999757;
-GMAT sc_intermediate.TA = 10.00000000000012;
-GMAT sc_intermediate.DryMass = 850;
-GMAT sc_intermediate.Cd = 2.2;
-GMAT sc_intermediate.Cr = 1.8;
-GMAT sc_intermediate.DragArea = 15;
-GMAT sc_intermediate.SRPArea = 1;
-GMAT sc_intermediate.NAIFId = -10007001;
-GMAT sc_intermediate.NAIFIdReferenceFrame = -9007001;
-GMAT sc_intermediate.OrbitColor = Green;
-GMAT sc_intermediate.TargetColor = LightGray;
-GMAT sc_intermediate.OrbitErrorCovariance = [ 1e+070 0 0 0 0 0 ; 0 1e+070 0 0 0 0 ; 0 0 1e+070 0 0 0 ; 0 0 0 1e+070 0 0 ; 0 0 0 0 1e+070 0 ; 0 0 0 0 0 1e+070 ];
-GMAT sc_intermediate.CdSigma = 1e+070;
-GMAT sc_intermediate.CrSigma = 1e+070;
-GMAT sc_intermediate.Id = 'SatId';
-GMAT sc_intermediate.Attitude = CoordinateSystemFixed;
-GMAT sc_intermediate.SPADSRPScaleFactor = 1;
-GMAT sc_intermediate.ModelFile = 'aura.3ds';
-GMAT sc_intermediate.ModelOffsetX = 0;
-GMAT sc_intermediate.ModelOffsetY = 0;
-GMAT sc_intermediate.ModelOffsetZ = 0;
-GMAT sc_intermediate.ModelRotationX = 0;
-GMAT sc_intermediate.ModelRotationY = 0;
-GMAT sc_intermediate.ModelRotationZ = 0;
-GMAT sc_intermediate.ModelScale = 1;
-GMAT sc_intermediate.AttitudeDisplayStateType = 'Quaternion';
-GMAT sc_intermediate.AttitudeRateDisplayStateType = 'AngularVelocity';
-GMAT sc_intermediate.AttitudeCoordinateSystem = EarthMJ2000Eq;
-GMAT sc_intermediate.EulerAngleSequence = '321';
 
 %----------------------------------------
 %---------- ForceModels
@@ -214,6 +175,9 @@ GMAT prop_j2_ForceModel.GravityField.Earth.Order = 4;
 GMAT prop_j2_ForceModel.GravityField.Earth.StmLimit = 100;
 GMAT prop_j2_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
 GMAT prop_j2_ForceModel.GravityField.Earth.TideModel = 'None';
+
+
+
 
 
 
@@ -382,8 +346,8 @@ GMAT JupiterFixed.Axes = BodyFixed;
 Create OrbitView sunView;
 GMAT sunView.SolverIterations = Current;
 GMAT sunView.UpperLeft = [ 0 0 ];
-GMAT sunView.Size = [ 0.6 0.7991071428571429 ];
-GMAT sunView.RelativeZOrder = 329;
+GMAT sunView.Size = [ 0.6001742160278746 0.7991071428571429 ];
+GMAT sunView.RelativeZOrder = 87;
 GMAT sunView.Maximized = false;
 GMAT sunView.Add = {sc, Jupiter, Sun, Neptune, Earth};
 GMAT sunView.CoordinateSystem = SunMJ2000Eq;
@@ -414,8 +378,8 @@ GMAT sunView.EnableConstellations = On;
 Create ReportFile reportfile;
 GMAT reportfile.SolverIterations = Current;
 GMAT reportfile.UpperLeft = [ 0 0 ];
-GMAT reportfile.Size = [ 0.5990783410138248 0.7976190476190477 ];
-GMAT reportfile.RelativeZOrder = 67;
+GMAT reportfile.Size = [ 0.5984320557491289 0.7961309523809523 ];
+GMAT reportfile.RelativeZOrder = 90;
 GMAT reportfile.Maximized = false;
 GMAT reportfile.Filename = 'ReportFile1.txt';
 GMAT reportfile.Precision = 16;
@@ -427,6 +391,22 @@ GMAT reportfile.FixedWidth = true;
 GMAT reportfile.Delimiter = ' ';
 GMAT reportfile.ColumnWidth = 23;
 GMAT reportfile.WriteReport = true;
+
+Create ReportFile reportDistance;
+GMAT reportDistance.SolverIterations = Current;
+GMAT reportDistance.UpperLeft = [ 0 0 ];
+GMAT reportDistance.Size = [ 0 0 ];
+GMAT reportDistance.RelativeZOrder = 0;
+GMAT reportDistance.Maximized = false;
+GMAT reportDistance.Filename = 'ReportFile1.txt';
+GMAT reportDistance.Precision = 16;
+GMAT reportDistance.WriteHeaders = true;
+GMAT reportDistance.LeftJustify = On;
+GMAT reportDistance.ZeroFill = Off;
+GMAT reportDistance.FixedWidth = true;
+GMAT reportDistance.Delimiter = ' ';
+GMAT reportDistance.ColumnWidth = 23;
+GMAT reportDistance.WriteReport = true;
 
 %----------------------------------------
 %---------- Functions
@@ -452,13 +432,11 @@ Create Variable numObsv duration SMA mu period dt dtBack waitTime waitPeriod pi;
 Create Variable i k m temp;
 Create String filepath;
 GMAT numObsv = 3;
-GMAT duration = 0.05; % fraction of orbital period
+GMAT duration = 0.01; % fraction of orbital period
 GMAT waitTime = 0; % fraction of orbital period before measurement begins
 GMAT pi = 3.1415927;
 GMAT temp = 1;
 GMAT filepath = 'temp\datJupiter.mat';
-
-
 
 
 
@@ -474,18 +452,18 @@ GMAT init_gmat;
 %---- get constants
 GMAT mu = SolarSystem.Sun.Mu;
 
-%---- iterate through LEO and GEO cases
-For k = 1:1:3;
+%---- clear data file
+GMAT save2mat(filepath);
+
+%---- iterate through near and far cases
+For k = 1:1:2;
    
    PenUp sunView;
    
    If k == 1 % near case
       GMAT sc = sc_near;
    EndIf;
-   If k == 2 % intermediate case
-      GMAT sc = sc_intermediate;
-   EndIf;
-   If k == 3 % far case
+   If k == 2 % far case
       GMAT sc = sc_far;
    EndIf;
    
@@ -516,11 +494,10 @@ For k = 1:1:3;
          GMAT sc = sc_near;
       EndIf;
       If k == 2 % intermediate case
-         GMAT sc = sc_intermediate;
-      EndIf;
-      If k == 3 % far case
          GMAT sc = sc_far;
       EndIf;
+      
+      Toggle reportfile On;
       
       For m = 1:1:numObsv;
          If m == 1
@@ -532,6 +509,7 @@ For k = 1:1:3;
          GMAT vData(m,1) = sc.SunMJ2000Eq.VX;
          GMAT vData(m,2) = sc.SunMJ2000Eq.VY;
          GMAT vData(m,3) = sc.SunMJ2000Eq.VZ;
+			Report reportDistance sc.Jupiter.Altitude;
          If m ~= numObsv
             Propagate propagator(sc) {sc.ElapsedSecs = dt};
          EndIf;
@@ -540,8 +518,9 @@ For k = 1:1:3;
       PenUp sunView;
       Toggle reportfile Off;
       Propagate BackProp bp(sc) {sc.ElapsedSecs = dtBack};
-      Toggle reportfile On;
       PenDown sunView;
+      
+      Report reportfile temp;
       
       GMAT g2mat(rData, vData);
       GMAT save2mat(filepath, rData, vData, mu, i, k, temp);

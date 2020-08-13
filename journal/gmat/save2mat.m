@@ -2,6 +2,14 @@ function save2mat(filepath,rData,vData,mu,i,j,k)
 %SAVE2MAT saves pos/vel/mu data in a 3D cell structure from GMAT
 %   Detailed explanation goes here
 
+%% method 1: clear file
+% used to clear the file specified by filepath when starting a new sim
+if ~exist('rData','var')
+    save(filepath)
+    return
+end
+
+%% method 2: save file
 if ~isfile(filepath)
     temp = matfile(filepath,'Writable',true);
     temp.rArray = {};

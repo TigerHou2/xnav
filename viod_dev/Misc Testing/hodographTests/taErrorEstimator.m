@@ -8,7 +8,7 @@ addpath('..\..\..\journal\cases')
 
 mu = 1;
 a  = 1;
-e  = 0.1;
+e  = 0.9;
 
 period = 0.1;
 period = period * 2*pi;
@@ -56,7 +56,10 @@ for i = 1:length(TA)
     df = mod(df,2*pi);
     
     % scale with measurement arc span
-    error = 1 / df^1.5;
+    error = 1 / df^2;
+    
+%     error = 1 / df^(2-df/pi) / sqrt((1-e)/(1+e)+(1+e)/(1-e));
+    
     % scale with position magnitude
 %     error = error / ( (1-e^2)/(1+e*cos(fvect(selObsv))) );
     % scale with measurement magnitude
@@ -66,6 +69,8 @@ for i = 1:length(TA)
     dfVect(i) = df;
 end
 
+disp(['Scale factor = ' num2str(1/errVect(1)*errDat(1))])
+
 figure;
 plot(TA,errVect/errVect(1)*errDat(1)*100,'LineWidth',1.5)
 hold on
@@ -74,7 +79,7 @@ hold off
 legend('Predicted Error','Simulated Error','Location','Best')
 xlabel('True Anomaly')
 ylabel('Position Error \%')
-set(gca,'FontSize',16)
+set(gca,'FontSize',18)
 if e > 1
     set(gca,'YScale','log')
 end

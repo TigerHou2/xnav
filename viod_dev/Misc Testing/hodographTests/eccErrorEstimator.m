@@ -10,7 +10,7 @@ addpath('..\..\..\journal\cases')
 a = 1;
 mu = 1;
 period = 0.1;
-f0deg = 0;
+f0deg = 180;
 f0 = deg2rad(f0deg);
 
 % select the nth observation's position error for comparison
@@ -68,6 +68,7 @@ for i = 1:length(eccs)
 
     % adj 4: error scales inversely with square of measurement span
     adj = 1 / df^2;
+%     adj = 1 / df^(2-df/pi);
     disp(['Meas Span:   ' num2str(adj)])
     error = error * adj;
     disp(' ')
@@ -84,5 +85,5 @@ hold off
 legend('Predicted Error','Simulated Error','Location','Best')
 xlabel('Eccentricity')
 ylabel('Position Error \%')
-set(gca,'FontSize',16)
+set(gca,'FontSize',18)
 grid on

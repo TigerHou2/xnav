@@ -69,14 +69,23 @@ for i = 1:length(TA)
     dfVect(i) = df;
 end
 
-disp(['Scale factor = ' num2str(1/errVect(1)*errDat(1))])
+xVar = TA;
+yRef = errDat;
+yVar = errVect;
+scaling = 1 / (max(errVect)-min(errVect)) * (max(errDat)-min(errDat));
+yVar = yVar * scaling;
+offset  = - min(yVar) + min(yRef);
+yVar = yVar + offset;
+
+disp(['Scaling = ' num2str(scaling)])
+disp(['Offset  = ' num2str(offset)])
 
 figure;
-plot(TA,errVect/errVect(1)*errDat(1)*100,'LineWidth',1.5)
+plot(TA,yVar*100,'LineWidth',1.5)
 hold on
-plot(TA,errDat*100,'LineWidth',1.5)
+plot(TA,yRef*100,'LineWidth',1.5)
 hold off
-legend('Predicted Error','Simulated Error','Location','Best')
+legend('Prediction','Simulation','Location','Best')
 xlabel('True Anomaly')
 ylabel('Position Error \%')
 set(gca,'FontSize',18)

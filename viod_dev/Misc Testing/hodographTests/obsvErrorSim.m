@@ -5,11 +5,11 @@ addpath('..\functions')
 
 mu = 1;
 a = 1.56e5;
-e = 0.1;
+e = 0.9;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(0);
+f = deg2rad(180);
 
 orbitParams = [a,e,i,o,w,f];
 
@@ -51,7 +51,7 @@ for i = 1:length(obsVect)
     % Monte Carlo
     for s = 1:numSims
         nvect = ncube(:,:,s);
-        r = hodo(v+nvect,mu);
+        r = hodoHyp(v+nvect,mu);
         r = r(selObsv,:)';
         errVect(s,i) = norm(r-rRef) / norm(rRef) * 100;
         

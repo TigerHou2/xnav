@@ -1,6 +1,5 @@
 function [r,v] = Get_Orb_Vects(params,mu)
-%GET_ORB_VECTS Summary of this function goes here
-%   Detailed explanation goes here
+%GET_ORB_VECTS Finds position and velocity vectors from orbital parameters.
 
 a = params(1);
 e = params(2);

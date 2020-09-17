@@ -1,5 +1,5 @@
 %% hodo.m
-function [r,params] = hodo(N,mu)
+function [r,params,R] = hodo(N,mu)
 %HODO Solves the three-velocity initial orbit determination problem.
 %
 % Author:

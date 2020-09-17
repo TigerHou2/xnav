@@ -4,7 +4,7 @@ clear;clc
 % define orbit
 mu = 1;
 a = 1;
-e = 0.9;
+e = 0.7;
 i = 0;
 omg = 0;
 w = 0;
@@ -74,9 +74,8 @@ legend('Location','Best')
 OPT = [e,period,M_offset];
 
 % check if perfect input yields perfect output
-[optDiff,V] = rrFun_sine(OPT,obsv,pulsar,mu,t,'debug');
-optDiff
-
+ref_error = sine_finder(OPT,obsv,pulsar,mu,t,'debug');
+ref_error
 
 %% global search
 
@@ -86,7 +85,7 @@ disp('Searching for initial guess...')
 
 warning('off','all')
 
-res = [10,100,100];
+res = [75,75,50];
 dat = nan(res);
 ee = linspace(0,0.99,res(1));
 pmin = max(t(:))-min(t(:));
@@ -108,7 +107,7 @@ for i = 1:res(1)
 for j = 1:res(2)
 for k = 1:res(3)
     fin = [ee(i),pp(j),tt(k)];
-    out = rrFun_sine(fin,obsv,pulsar,mu,t);
+    out = sine_finder(fin,obsv,pulsar,mu,t);
     dat(i,j,k) = norm(out(:));
     E(i,j,k) = ee(i);
     P(i,j,k) = pp(j);
@@ -116,15 +115,6 @@ for k = 1:res(3)
 end
 end
 end
-
-% use convolution to find element with best neighbors
-% --- version 1: poor man's gaussian blur
-%     neighbors = 2;
-%     edge = 2*neighbors + 1;
-%     filter = ones(edge,edge);
-%     dat = (convn(dat,filter,'same') + dat*edge^2) / edge^2;
-% --- version 2: gaussian blur
-%     dat = imgaussfilt3(dat);
 
 [~,idx] = min(dat(:));
 [i,j,k] = ind2sub(size(dat),idx);
@@ -139,8 +129,8 @@ Emesh = E(:);
 Pmesh = P(:);
 Tmesh = T(:);
 D = dat(:);
-lb = quantile(D,0.00);
-ub = quantile(D,0.005);
+lb = quantile(D,0 * max(D));
+ub = quantile(D,0.0005 * max(D));
 Emesh = Emesh(D>lb&D<ub);
 Pmesh = Pmesh(D>lb&D<ub);
 Tmesh = Tmesh(D>lb&D<ub);
@@ -161,36 +151,11 @@ legend('Location','Best')
 
 f1 = f0;
 
-%% testing section
+%% find the sine wave
 
-% f2 = f0;
-% f2(end) = OPT(end);
-% fJump = nan(1000,3);
-% for i = 1:1000
-%     [fVal,~,f2] = rrFun_sine(f2,obsv,pulsar,mu,t);
-%     disp(num2str(norm(fVal)))
-%     disp(mat2str(f2))
-%     disp(' ')
-%     fJump(i,:) = f2;
-% end
-% 
-% scatter3(fJump(:,1),fJump(:,2),fJump(:,3))
+disp('Using fsolve...')
 
-%% optimization
-
-disp('Searching for solution...')
-
-% fun = @(x) norm(rrFun_sine(x,obsv,pulsar,mu,t));
-% options = optimoptions('fmincon','Display','iter' ...
-%                                 ,'MaxFunctionEvaluations',2000 ...
-%                                 ,'MaxIterations',300);
-% f1 = fmincon(fun,f0,-eye(3),[0;0;0],[],[],[],[],[],options);
-
-% fun = @(x) norm(rrFun_sine(x,obsv,pulsar,mu,t));
-% f1 = fminsearch(fun,f0);
-
-% fun = @(x) norm(rrFun_sine(x,obsv,pulsar,mu,t));
-fun = @(x) rrFun_sine(x,obsv,pulsar,mu,t);
+fun = @(x) sine_finder(x,obsv,pulsar,mu,t);
 options = optimoptions('fsolve','Display','iter' ...
                                ,'MaxFunctionEvaluations',3000 ...
                                ,'StepTolerance', 1e-8 ...
@@ -200,48 +165,8 @@ g_opt = fsolve(fun,f1,options);
 soln_opt = g_opt;
 soln_opt(3) = mod(g_opt(3),g_opt(2));
 
-[optDiff,V,optOut] = rrFun_sine(soln_opt,obsv,pulsar,mu,t,'debug');
-
-disp(['Input:  ' mat2str(soln_opt,4)])
-disp(['Output: ' mat2str(optOut,4)])
-
-toc
-
-warning('on','all')
-
-vDiff = V-v;
-if max(vDiff(:)) > 1e-3
-    warning('Solution does not converge!')
-end
-
-%% refine solution
-% if output is sufficiently close to true solution, 
-% we should be able to iterate a few more times to get the accuracy higher
-
-f3 = soln_opt;
-for i = 1:20
-    [~,~,f3] = rrFun_sine(soln_opt,obsv,pulsar,mu,t);
-end
-f3
-
-%% plot velocities
-
-figure(3)
-t1 = V(:,:,1);
-t2 = V(:,:,2);
-t3 = V(:,:,3);
-scatter3(t1(:),t2(:),t3(:),'DisplayName','Guess Vel')
-hold on
-scatter3(t1(1),t2(1),t3(1),'Filled','DisplayName','Guess Vel Initial')
-t1 = v(:,:,1);
-t2 = v(:,:,2);
-t3 = v(:,:,3);
-scatter3(t1(:),t2(:),t3(:),'DisplayName','True Vel')
-scatter3(t1(1),t2(1),t3(1),'Filled','DisplayName','True Vel Initial')
-hold off
-axis equal
-legend('Location','Best')
-
+error = sine_finder(soln_opt,obsv,pulsar,mu,t,'debug');
+error
 
 %% function definitions
 function Evect = kepler(Mvect,e)

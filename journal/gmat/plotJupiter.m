@@ -10,6 +10,10 @@ function plotJupiter(numSims,rngSeed,noise)
 %   the gravitational pull of Jupiter and the Sun.
 %   Propagation is performed in GMAT.
 %
+% Note:
+%   Solar radiation pressure is now removed because its influence is
+%   negligible in all cases studied.
+%
 % Arguments:
 %   numSims - number of Monte Carlo simulations to run
 %   rngSeed - seed for the randon number generator
@@ -18,9 +22,9 @@ function plotJupiter(numSims,rngSeed,noise)
 %% collect ground truth data from .mat file and generate perturbations
 
 if ~exist('numSims','var')
-    numSims = 500;
+    numSims = 3000;
     rngSeed = 1;
-    noise = 3;
+    noise = 3; % m/s
     disp('Warning: No inputs provided. Using default sim settings.')
 end
 
@@ -82,7 +86,11 @@ for j = 1:size(vArray,1)+1 % iterate over diff. perturbations
 end %j
 end %i
 
-list = {'Noise Only','Jupiter \& Sun','Solar Rad. Pressure',...
+% remove SRP from list
+errVect(:,3) = [];
+% list = {'Noise Only','Jupiter \& Sun','Solar Rad. Pressure',...
+%         'All Perturbations','Perturbations \& Noise'};
+list = {'Noise Only','Jupiter \& Sun',...
         'All Perturbations','Perturbations \& Noise'};
 x = categorical(list,list); % preserve list oder
 for i = 1:size(vArray,2)

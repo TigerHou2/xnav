@@ -14,7 +14,7 @@ f = deg2rad(180);
 orbitParams = [a,e,i,o,w,f];
 
 noise = 1e-6;
-dur = 0.02;
+dur = 0.15;
 dur = dur * 2*pi;
 
 disp(['df span: ' num2str(rad2deg(dm2df(f,dur,e)))])

@@ -1,15 +1,9 @@
-%% hodoHyp.m
-function [r,R] = hodoHyp(N,mu)
-%HODOHYP Solves the three-velocity initial orbit determination problem.
+%% hodoGeo.m
+function [r,params,R] = hodoGeo(N,mu)
+%HODO Solves the three-velocity initial orbit determination problem.
 %
 % Author:
 %   Tiger Hou
-%
-% Note:
-%   This version uses the hyperaccurate algebraic fit described here:
-%   https://people.cas.uab.edu/~mosya/cl/AC1c.pdf
-%   and converted to C++ here:
-%   https://github.com/SohranEliassi/Circle-Fitting-Hyper-Fit
 %
 % Description:
 %   The spacecraft's orbit is calculated using the velocity hodograph from
@@ -27,6 +21,7 @@ function [r,R] = hodoHyp(N,mu)
 % References:
 %   [1] - Geometric Solutions for Problems in Velocity-Based Orbit Determination
 
+%%
 % use singular value decomposition to find orbit plane normal
 [~,~,V] = svd(N,0);
 k = V(:,end);
@@ -36,7 +31,7 @@ k = V(:,end);
 % orbit apart from its adjacent measurements.
 kEst = zeros(1,3);
 for i = 1:size(N,1)-1
-    kEst = kEst + cross(N(i,:),N(i+1,:));
+    kEst = kEst + cross(N(i,:),N(i+1,:)) / norm(cross(N(i,:),N(i+1,:)));
 end
 if dot(k,kEst') < 0
     k = -k;
@@ -50,10 +45,10 @@ T = [ux; uy; k']; % [1] eqn.5
 % transform velocity from inertial frame to orbit frame
 N2d = (T * N')'; % [1] eqn.3
 
-[a,b,R] = hyperfit(N2d(:,1:2)');
+[Z,R] = fitcircle(N2d(:,1:2)');
 
 % find center of hodograph
-c = T' * [a; b; 0]; % [1] eqn.11
+c = T' * [Z;0]; % [1] eqn.11
 
 % find eccentricity vector
 e = cross(c,k) / R; % [1] eqn.18
@@ -76,4 +71,12 @@ rho = mu * vecnorm(e'+ull,2,2) ./ vecnorm(N,2,2) ./ vecnorm(Npp,2,2);
 % compute position vectors [1] eqn.30
 r = rho .* ull;
 
-end %hodoHyp.m
+% compute orbital parameters
+e = norm(e);
+vpe = (1+e) * R;
+a = (vpe^2/mu*(1-e)/(1+e)) ^ (-1);
+K = [0;0;1];
+i = atan2(norm(cross(k,K)),dot(k,K));
+params = [a,e,i];
+
+end %hodoGeo.m

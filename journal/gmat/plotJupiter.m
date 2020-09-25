@@ -92,6 +92,7 @@ errVect(:,3) = [];
 %         'All Perturbations','Perturbations \& Noise'};
 list = {'Noise Only','Jupiter \& Sun',...
         'All Perturbations','Perturbations \& Noise'};
+list = {'(1)','(2)','(3)','(4)'};
 x = categorical(list,list); % preserve list oder
 for i = 1:size(vArray,2)
     figure(i)
@@ -102,6 +103,7 @@ for i = 1:size(vArray,2)
     % fix the distance between the tallest bar and the plot upper bound
     ax = gca;
     ax.YLim = [0,max(errVect(i,:))*1.15];
+    latexify(16,10);
 end
 
 end %plotJupiter.m

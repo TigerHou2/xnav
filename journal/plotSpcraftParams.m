@@ -29,18 +29,18 @@ clear;clc;init
 mu = 1; % DU^3/TU^2
 
 % define orbital parameters
-SMA  = 1e5; % DU
+SMA  = 1.56e5; % DU
 ECC  = 0.5; % nd
-INC  = 45;  % deg
+INC  = 24;  % deg
 RAAN = 30;  % deg
 AOP  = 30;  % deg
-TA   = 20;  % deg
+TA   = 0;  % deg
 
 % convert to radians and combine parameters
 orbitParams = [SMA,ECC,deg2rad([INC,RAAN,AOP,TA])];
 
 % Monte Carlo settings
-numSims = 100;
+numSims = 3000;
 rngSeed = 1;
 
 %% iterate through all cases
@@ -100,14 +100,15 @@ for k = 1:length(noiseVect)
     % do orbit determination
     % --- note the scaling for the original method: this is because
     % --- precision issues arise when using canonical units. 
-    rOrig = viod((v+noise)*1e4,mu*1e12)/1e4;
-    rHodo = hodo(v+noise,mu);
+%     rOrig = viod((v+noise)*1e4,mu*1e12)/1e4;
+    rOrig = hodo(v+noise,mu);
+    rHodo = hodoHyp(v+noise,mu);
     % we choose to compare the position estimate at the first measurement
     rOrig = rOrig(1,:)';
     rHodo = rHodo(1,:)';
     % store error data
-    errOrig(n,k) = norm(rOrig-rRef);
-    errHodo(n,k) = norm(rHodo-rRef);
+    errOrig(n,k) = norm(rOrig-rRef) / norm(rRef);
+    errHodo(n,k) = norm(rHodo-rRef) / norm(rRef);
 end %nVect
 
 end %numSims
@@ -118,35 +119,35 @@ color = cmap(i,:);
 % plot results for each case
 % --- mean error
 figure(1)
-latexify('plotSize',[24 18])
+latexify(24,18)
 noiseScale = 1e-6;
 hold on
 plot(noiseVect/noiseScale,...
-        mean(errOrig)/SMA,origFormat,'LineWidth',origWidth,'Color',color)
+        mean(errOrig),origFormat,'LineWidth',origWidth,'Color',color)
 plot(noiseVect/noiseScale,...
-        mean(errHodo)/SMA,hodoFormat,'LineWidth',hodoWidth)
+        mean(errHodo),hodoFormat,'LineWidth',hodoWidth)
 hold off
 legend('Energy Method','Hodograph Method','Location','SouthEast')
 xlabel(['Noise, ' num2str(noiseScale) ' DU/TU'])
 ylabel('Position Error Avg., fraction of SMA')
-latexify('fontSize',18)
+latexify(18)
 % store annotation data point
 labelArray{i,j,1} = [noiseVect(end)/noiseScale,mean(errOrig(:,end))/SMA];
 
 % --- standard deviation
 figure(2)
-latexify('plotSize',[24 18])
+latexify(24,18)
 noiseScale = 1e-6;
 hold on
 plot(noiseVect/noiseScale,...
-        std(errOrig)/SMA,origFormat,'LineWidth',origWidth,'Color',color)
+        std(errOrig),origFormat,'LineWidth',origWidth,'Color',color)
 plot(noiseVect/noiseScale,...
-        std(errHodo)/SMA,hodoFormat,'LineWidth',hodoWidth)
+        std(errHodo),hodoFormat,'LineWidth',hodoWidth)
 hold off
 legend('Energy Method','Hodograph Method','Location','SouthEast')
 xlabel(['Noise, ' num2str(noiseScale) ' DU/TU'])
 ylabel('Position Error StDev, fraction of SMA')
-latexify('fontSize',18)
+latexify(18)
 % store annotation data point
 labelArray{i,j,2} = [noiseVect(end)/noiseScale,std(errOrig(:,end))/SMA];
 

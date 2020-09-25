@@ -23,6 +23,14 @@ function plotSpcraft(numSims,rngSeed,perturbed)
 
 %% initialization
 
+if nargin == 0
+    close all
+    clear;clc
+    numSims = 3000;
+    rngSeed = 1;
+    perturbed = 0;
+end
+
 % load spacecraft parameter config case studies
 [noiseVect,durVect,obsVect,SMA] = load_spcraft_cases(1);
 
@@ -97,12 +105,10 @@ for k = 1:length(noiseVect)
     % do orbit determination
     % --- note the scaling for the original method: this is because
     % --- precision issues arise when using canonical units. 
-    rOrig = viod((v+noise)*1e4,mu*1e12)/1e4;
-    if perturbed == 0 || perturbed == 1
-        rHodo = hodo(v+noise,mu);
-    else
-        rHodo = hodoHyp(v+noise,mu);
-    end
+%     rOrig = viod((v+noise)*1e4,mu*1e12)/1e4;
+%     rHodo = hodo(v+noise,mu);
+    rOrig = hodo(v+noise,mu);
+    rHodo = hodoHyp(v+noise,mu);
     % we choose to compare the position estimate at the first measurement
     rOrig = rOrig(1,:);
     rHodo = rHodo(1,:);
@@ -117,7 +123,7 @@ color = cmap(i,:);
 
 % --- mean error
 figure(1)
-latexify('plotSize',[30 18])
+latexify(30,18)
 hold on
 plot(noiseVect,mean(errOrig),origFormat,'Color',color,'LineWidth',origWidth)
 plot(noiseVect,mean(errHodo),hodoFormat,'LineWidth',hodoWidth)
@@ -127,11 +133,11 @@ xlabel('Noise, DU/TU')
 ylabel('Position Error Avg. \%')
 % store annotation data point
 labelArray{i,j,1} = [noiseVect(end),mean(errOrig(:,end))];
-latexify('fontSize',18)
+latexify(18)
 
 % --- standard deviation
 figure(2)
-latexify('plotSize',[30 18])
+latexify(30,18)
 hold on
 plot(noiseVect,std(errOrig),origFormat,'Color',color,'LineWidth',origWidth)
 plot(noiseVect,std(errHodo),hodoFormat,'LineWidth',hodoWidth)
@@ -141,7 +147,7 @@ xlabel('Noise, DU/TU')
 ylabel('Position Error StDev \%')
 % store annotation data point
 labelArray{i,j,2} = [noiseVect(end),std(errOrig(:,end))];
-latexify('fontSize',18)
+latexify(18)
 
 % --- log data
 meanOrig(j,:,i) = mean(errOrig)'/100;
@@ -271,4 +277,9 @@ set(ax2,'Color','none',...
     'Box','off') % make legend axes transparent
 ax2.XLabel.String = '';
 ax2.YLabel.String = '';
+
+if nargin == 0
+    keyboard
+end
+
 end %plotSpcraft.m

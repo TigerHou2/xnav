@@ -31,6 +31,8 @@ function fVal = sine_finder(OPT,obsv,pulsar,mu,time,debug)
 g_e = OPT(1); % eccentricity
 g_period = OPT(2); % period
 g_Moffset = OPT(3); % time since periapsis
+g_R = 0.5 * nthroot(2*pi*mu/g_period,3) ...
+          * (sqrt((1+g_e)/(1-g_e)) + sqrt((1-g_e)/(1+g_e)));
 
 % get number of pulsars
 M = size(pulsar,2);
@@ -56,27 +58,26 @@ for i = 1:M
     % --- here we break down [[ y = amp * sin(f-pha) + off ]]
     %     as [[ y = amp * sin(f)cos(pha) - amp * cos(f)sin(pha) + off ]]
     %     where sin(f) and cos(f) are known
-    if g_e ~= 0
-        A = [-sin(g_f(i,:))'/g_e cos(g_f(i,:))'/g_e+1];
-        b = obsv(i,:)';
-        % solve the least squares linear system
-        x = A\b;
-        off = x(2);        % offset
-        pha = atan(off/x(1)); % phase
-        amp = -off/g_e/sin(pha); % amplitude
-        fVal = fVal + abs(A*x-b);
-    else
-        A = [sin(g_f(i,:))' -cos(g_f(i,:))'];
-        b = obsv(i,:)';
-        % solve the least squares linear system
-        x = A\b;
-        pha = atan(x(2)/x(1)); % phase
-        amp = x(2) / sin(pha); % amplitude
-        off = 0;            % offset
-        fVal = fVal + abs(A*x-b);
-    end
+    
+    A = [-sin(g_f(i,:))' cos(g_f(i,:))'+g_e];
+    b = obsv(i,:)';
+    % solve the least squares linear system
+    x = A\b;
+    off = x(2) * g_e;        % offset
+    pha = atan(x(2)/x(1)); % phase
+    amp = -x(2) / sin(pha); % amplitude
+
     % get points on the sine wave to use later to define hodograph
     rrFromSine(i,:) = amp * sin(angles-pha) + off;
+    
+    % sine fitting error
+%     fVal = fVal + abs(A*x-b);
+    fVal = fVal + abs(obsv(i,:)-(amp * sin(g_f(i,:)-pha) + off)).^2*1e9;
+    
+    if abs(amp) > sqrt(2)*g_R
+        fVal = fVal * 1000000;
+    end
+    
     % debugging
     if exist('debug','var')
         colors = ['r','g','b'];
@@ -84,6 +85,8 @@ for i = 1:M
         hold on
         lb = min(min(g_f(:)),0);
         rb = max(max(g_f(:)),2*pi);
+        lb = min(g_f(:));
+        rb = max(g_f(:));
         fplot(@(x) amp * sin(x-pha) + off, [lb,rb], colors(i))
         hold off
     end

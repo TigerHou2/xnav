@@ -116,6 +116,8 @@ end
 end
 end
 
+% mins = islocalmin(dat);
+% [~,idx] = min(dat(:)./(mins(:)+0.01));
 [~,idx] = min(dat(:));
 [i,j,k] = ind2sub(size(dat),idx);
 f0 = [ee(i(1)),pp(j(1)),tt(k(1))];
@@ -129,23 +131,36 @@ Emesh = E(:);
 Pmesh = P(:);
 Tmesh = T(:);
 D = dat(:);
-lb = quantile(D,0 * max(D));
-ub = quantile(D,0.0005 * max(D));
+lb = quantile(D,0);
+ub = quantile(D,0.005);
 Emesh = Emesh(D>lb&D<ub);
 Pmesh = Pmesh(D>lb&D<ub);
 Tmesh = Tmesh(D>lb&D<ub);
 D = D(D>lb&D<ub);
-scatter3(OPT(1),OPT(2),OPT(3),24,'magenta','filled','DisplayName','True Soln')
+mins = islocalmin(dat);
+Eloc = E(mins);
+Ploc = P(mins);
+Tloc = T(mins);
 hold on
-scatter3( f0(1), f0(2), f0(3),24,'red','DisplayName','Init Guess')
-fig = scatter3(Emesh,Pmesh,Tmesh,18,D,'filled','DisplayName','Objective Function');
+scatter3(OPT(1),OPT(2),OPT(3),24,'cyan',...
+        'DisplayName','True Soln',...
+        'LineWidth',1.5)
+scatter3( f0(1), f0(2), f0(3),24,'green',...
+        'DisplayName','Init Guess',...
+        'LineWidth',1.5)
+fig = scatter3(Emesh,Pmesh,Tmesh,18,D,'filled',...
+        'DisplayName','Objective Function');
 fig.MarkerFaceAlpha = 0.6;
+scatter3(Eloc(:),Ploc(:),Tloc(:),10,'red','filled',...
+        'DisplayName','Local Minima')
 hold off
+
 colormap(bone(200))
 xlabel('eccentricity')
 ylabel('period')
 zlabel('time since periapse')
 pbaspect([1 1 1])
+view([1 1 1])
 colorbar
 legend('Location','Best')
 
@@ -157,13 +172,13 @@ disp('Using fsolve...')
 
 fun = @(x) sine_finder(x,obsv,pulsar,mu,t);
 options = optimoptions('fsolve','Display','iter' ...
-                               ,'MaxFunctionEvaluations',3000 ...
-                               ,'StepTolerance', 1e-8 ...
-                               ,'MaxIterations',600);
+                               ,'MaxFunctionEvaluations',10000 ...
+                               ,'StepTolerance', 1e-9 ...
+                               ,'MaxIterations',2500);
 g_opt = fsolve(fun,f1,options);
 
 soln_opt = g_opt;
-soln_opt(3) = mod(g_opt(3),g_opt(2));
+soln_opt(3) = mod(g_opt(3),2*pi);
 
 error = sine_finder(soln_opt,obsv,pulsar,mu,t,'debug');
 error

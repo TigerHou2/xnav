@@ -25,7 +25,7 @@ e = 0;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(0);
+f = deg2rad(90);
 
 orbitParams = [a,e,i,o,w,f];
 
@@ -35,7 +35,7 @@ period = period * 2*pi;
 % select the nth observation's position error for comparison
 selObsv = 1;
 % number of measurements
-numObsv = 3;
+numObsv = 20;
 % measurement noise
 noise = 1e-6;
 % Monte Carlo simulation size

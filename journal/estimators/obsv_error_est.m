@@ -17,20 +17,20 @@ addpath('..\fcns_vis')
 latexify
 
 %% setup
-obsvVect = 3:2:35;
+obsvVect = 3:5:100;
 
 mu = 1;
 a = 1.56e5;
-e = 0.9;
+e = 0.5;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(180);
+f = deg2rad(0);
 
 orbitParams = [a,e,i,o,w,f];
 
 % total duration spanned by all measurements, as fraction of orbit period
-period = 0.15;
+period = 0.05;
 period = period * 2*pi;
 % select the nth observation's position error for comparison
 selObsv = 1;
@@ -78,7 +78,7 @@ for i = 1:length(obsvVect)
     % Monte Carlo
     for s = 1:numSims
         nvect = ncube(1:numObsv,:,s);
-        r = hodoHyp(v+nvect,mu);
+        r = hodo(v+nvect,mu);
         r = r(selObsv,:)';
         errDat(s,i) = norm(r-rRef) / norm(rRef) * 100;
         
@@ -124,4 +124,5 @@ xlabel('Number of Observations')
 ylabel('Error Avg. \%')
 set(gca,'FontSize',18)
 grid on
-latexify(16)
+latexify(10,13,18)
+setgrid

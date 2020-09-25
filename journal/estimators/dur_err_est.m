@@ -26,17 +26,14 @@ e = 0.9;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(0);
-
-a = 1.29e4;
-e = 0.1;
+f = deg2rad(90);
     
 orbitParams = [a,e,i,o,w,f];
 
 % measurement noise
 noise = 1e-6;
 % number of measurements
-numObsv = 3;
+numObsv = 10;
 % Monte Carlo simulation size
 numSims = 3000;
 % select the nth observation's position error for comparison
@@ -126,8 +123,9 @@ hold on
 plot(xVar,yRef,'LineWidth',1.5)
 hold off
 legend('Prediction','Simulation','Location','Best')
-xlabel('Measurement Duration, \% of Orbit Period')
+xlabel('\% of Orbit Period')
 ylabel('Error Avg. \%')
 set(gca,'FontSize',18)
 grid on
-latexify(16)
+latexify(10,15,18)
+setgrid

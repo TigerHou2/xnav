@@ -175,7 +175,7 @@ taDeg = rad2deg(taVect);
 
 % --- mean error
 figure(1)
-latexify('plotSize',[30 18])
+latexify(30,18)
 hold on
 plot(taDeg,mean(errOrig),origFormat,'Color',color,'LineWidth',origWidth)
 plot(taDeg,mean(errHodo),hodoFormat,'LineWidth',hodoWidth)
@@ -185,11 +185,11 @@ xlabel('True Anomaly, deg')
 ylabel('Position Error Avg. \%')
 % store annotation data point
 labelArray{i,j,1} = [taDeg(end),mean(errOrig(:,end))];
-latexify('fontSize',18)
+latexify(18)
 
 % --- standard deviation
 figure(2)
-latexify('plotSize',[30 18])
+latexify(30,18)
 hold on
 plot(taDeg,std(errOrig),origFormat,'Color',color,'LineWidth',origWidth)
 plot(taDeg,std(errHodo),hodoFormat,'LineWidth',hodoWidth)
@@ -199,7 +199,7 @@ xlabel('True Anomaly, deg')
 ylabel('Position Error StDev \%')
 % store annotation data point
 labelArray{i,j,2} = [taDeg(end),std(errOrig(:,end))];
-latexify('fontSize',18)
+latexify(18)
 
 % --- log data
 meanOrig(j,:,i) = mean(errOrig)' / 100;

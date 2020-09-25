@@ -93,6 +93,7 @@ errVect(:,3) = [];
 %         'All Perturbations','Perturbations \& Noise'};
 list = {'Noise Only','Moon \& Sun','JGM-2 4$\times$4',...
         'All Perturbations','Perturbations \& Noise'};
+list= {'(1)','(2)','(3)','(4)','(5)'};
 x = categorical(list,list); % preserve list oder
 for i = 1:size(vArray,2)
     figure(i)
@@ -101,6 +102,7 @@ for i = 1:size(vArray,2)
     grid on
     ylabel('Position Error \%')
     set(gca,'FontSize',16)
+    latexify(16,10);
 end
 
 end %plotEarth.m

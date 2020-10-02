@@ -14,18 +14,19 @@ clear;clc
 addpath('..\fcns_od')
 addpath('..\fcns_orb')
 addpath('..\fcns_vis')
+savePath = 'plots\';
 latexify
 
 %% setup
 eccVect = linspace(0.1,0.9,23);
 
 mu = 1;
-a = 1.56e5;
+a = 1e6;
 e = 0;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(90);
+f = deg2rad(135);
 
 orbitParams = [a,e,i,o,w,f];
 
@@ -37,9 +38,13 @@ selObsv = 1;
 % number of measurements
 numObsv = 20;
 % measurement noise
-noise = 1e-6;
+noise = 3e-6;
 % Monte Carlo simulation size
 numSims = 3000;
+
+% line styles
+MOD = 'rx:'; % model
+SIM = 'ko-.'; % simulation
     
 % prepare measurement noise
 ncube = randn(numObsv,3,numSims);
@@ -82,7 +87,7 @@ for i = 1:length(eccVect)
     % Monte Carlo
     for s = 1:numSims
         nvect = ncube(:,:,s);
-        r = hodo(v+nvect,mu);
+        r = hodoHyp(v+nvect,mu);
         r = r(selObsv,:)';
         errDat(s,i) = norm(r-rRef) / norm(rRef) * 100;
         
@@ -107,7 +112,7 @@ for i = 1:length(eccVect)
         adj2 = 1 / df^2;
     
         % adj 3: error scales with orbit normal error
-        adj3 = mean(svdErrVect);
+        adj3 = sqrt(mean(svdErrVect.^2));
         adj3 = 1;
         
     errEst(i) = adj1 * adj2 * adj3;
@@ -115,7 +120,7 @@ end
 
 %% data processing & plotting
 xVar = eccVect;
-yRef = mean(errDat);
+yRef = sqrt(mean(errDat.^2));
 yVar = errEst;
 scaling = 1 / (max(yVar)-min(yVar)) * (max(yRef)-min(yRef));
 yVar = yVar * scaling;
@@ -126,13 +131,15 @@ disp(['Scaling = ' num2str(scaling)])
 disp(['Offset  = ' num2str(offset)])
 
 figure;
-plot(xVar,yVar,'LineWidth',1.5)
+plot(xVar,yRef,SIM,'LineWidth',1,'MarkerSize',5)
 hold on
-plot(xVar,yRef,'LineWidth',1.5)
+plot(xVar,yVar,MOD,'LineWidth',1,'MarkerSize',5)
 hold off
-legend('Prediction','Simulation','Location','Best')
+% legend('Simulation','Prediction','Location','Best')
 xlabel('Eccentricity')
-ylabel('Position Error \%')
-set(gca,'FontSize',18)
-grid on
-latexify(16)
+ylabel('Position MSE, \%')
+latexify(10,10,16)
+setgrid
+expand
+svnm = [savePath 'eccErr_f=' num2str(rad2deg(f))];
+print(svnm,'-dpdf','-bestfit')

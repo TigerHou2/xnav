@@ -14,30 +14,35 @@ clear;clc
 addpath('..\fcns_od')
 addpath('..\fcns_orb')
 addpath('..\fcns_vis')
+savePath = 'plots\';
 latexify
 
 %% setup
 obsvVect = 3:5:100;
 
 mu = 1;
-a = 1.56e5;
+a = 1e5;
 e = 0.5;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(0);
+f = deg2rad(90);
 
 orbitParams = [a,e,i,o,w,f];
 
 % total duration spanned by all measurements, as fraction of orbit period
-period = 0.05;
+period = 0.8;
 period = period * 2*pi;
 % select the nth observation's position error for comparison
 selObsv = 1;
 % measurement noise
-noise = 1e-6;
+noise = 3e-6;
 % Monte Carlo simulation size
-numSims = 5000;
+numSims = 3000;
+
+% line styles
+MOD = 'rx:'; % model
+SIM = 'ko-.'; % simulation
 
 % prepare measurement noise
 ncube = randn(max(obsvVect),3,numSims);
@@ -78,7 +83,7 @@ for i = 1:length(obsvVect)
     % Monte Carlo
     for s = 1:numSims
         nvect = ncube(1:numObsv,:,s);
-        r = hodo(v+nvect,mu);
+        r = hodoHyp(v+nvect,mu);
         r = r(selObsv,:)';
         errDat(s,i) = norm(r-rRef) / norm(rRef) * 100;
         
@@ -96,7 +101,7 @@ for i = 1:length(obsvVect)
     df = mod(df,2*pi);
     
         % adj 1: error scales with orbit normal error
-        adj1 = mean(svdErrVect);
+        adj1 = sqrt(mean(svdErrVect.^2));
     
     errEst(i) = adj1;
     
@@ -104,7 +109,7 @@ end
 
 %% data processing & plotting
 xVar = obsvVect;
-yRef = mean(errDat);
+yRef = sqrt(mean(errDat.^2));
 yVar = errEst;
 scaling = 1 / (max(yVar)-min(yVar)) * (max(yRef)-min(yRef));
 yVar = yVar * scaling;
@@ -115,14 +120,15 @@ disp(['Scaling = ' num2str(scaling)])
 disp(['Offset  = ' num2str(offset)])
 
 figure;
-plot(xVar,yVar,'LineWidth',1.5)
+plot(xVar,yRef,SIM,'LineWidth',1,'MarkerSize',5)
 hold on
-plot(xVar,yRef,'LineWidth',1.5)
+plot(xVar,yVar,MOD,'LineWidth',1,'MarkerSize',5)
 hold off
-legend('Prediction','Simulation','Location','Best')
+% legend('Simulation','Prediction','Location','Best')
 xlabel('Number of Observations')
-ylabel('Error Avg. \%')
-set(gca,'FontSize',18)
-grid on
-latexify(10,13,18)
+ylabel('Position MSE, \%')
+latexify(10,10,16)
 setgrid
+expand
+svnm = [savePath 'obsvErr_dur=' num2str(period/2/pi*100)];
+print(svnm,'-dpdf','-bestfit')

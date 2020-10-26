@@ -28,8 +28,11 @@ f0 = OPT(1);
 e = OPT(2);
 dM = OPT(3);
 
-E0 = 2*atan(sqrt((1-e)/(1+e))*tan(f0/2));
-M0 = E0 - e*sin(E0);
+if e < 1, E0 = 2* atan(sqrt((1-e)/(1+e))*tan(f0/2));
+else,     E0 = 2*atanh(sqrt((e-1)/(e+1))*tan(f0/2)); end
+
+if e < 1, M0 = E0 - e*sin(E0);
+else,     M0 = e*sinh(E0) - E0; end
 
 dt = max(time(:))-min(time(:));
 period = dt*2*pi/dM;
@@ -70,24 +73,27 @@ for i = 1:p
     
     % sine fitting error
     fVal = fVal + abs(A*x-b);
-%     fVal = fVal + abs(obsv(i,:)-(amp * sin(f_obsv(i,:)-pha) + off)).^2*1e9;
-%     
-%     if abs(amp) > sqrt(2)*g_R
-%         fVal = fVal * 1000000;
-%     end
     
     % debugging
     if exist('debug','var')
-        colors = ['r','g','b'];
+        if strcmp(debug,'Debug')
+            colors = {'--r','--g','--b'};
+        else
+            colors = {'r','g','b'};
+        end
         figure(1)
         hold on
         lb = min(min(f_obsv(:)),0);
         rb = max(max(f_obsv(:)),2*pi);
         lb = min(f_obsv(:));
         rb = max(f_obsv(:));
-        fplot(@(x) amp * sin(x-pha) + off, [lb,rb], colors(i))
+        fplot(@(x) amp * sin(x-pha) + off, [lb,rb], colors{i})
         hold off
     end
+end
+
+if exist('debug','var')
+    figure(1)
 end
 
 end

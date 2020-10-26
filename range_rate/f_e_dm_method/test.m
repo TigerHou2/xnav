@@ -8,13 +8,13 @@ addpath('../fcns_orb')
 mu = 1;
 a = 1;
 i = deg2rad(23);
-omg = deg2rad(10);
-w = 0;
+omg = deg2rad(25);
+w = deg2rad(90);
 
 % define true solution
-e = 0.95;
-f0 = deg2rad(13);
-dM = deg2rad(59);
+e = 0.27;
+f0 = deg2rad(70);
+dM = deg2rad(37);
 
 OPT = [f0,e,dM];
 
@@ -26,16 +26,30 @@ P = [0 -1 1;... % pulsar 1
      -1 0 3]';  % pulsar 3
 P = P ./ vecnorm(P,2,1);
 
+% number of measurements
+numObsv = 3;
+
+% clumped observations?
+% ** clumped = 1 means the first 'numObsv' observations are all performed
+%    on the first pulsar before moving on to the next. 
+%    Conversely, clumped = 0 means for each observation we switch to the
+%    next pulsar.
+clumped = 1;
+
 % calculate mean and true anomalies of measurements
 E0 = 2*atan(sqrt((1-e)/(1+e))*tan(f0/2));
 M0 = E0 - e*sin(E0);
-M = M0 + linspace(0,dM,length(P(:)));
-M = reshape(M,size(P'));
+M = M0 + linspace(0,dM,size(P,2)*numObsv);
+if clumped == 1
+    M = reshape(M,numObsv,size(P,2))';
+else
+    M = reshape(M,size(P,2),numObsv);
+end
 E = kepler(M,e);
 f = 2*atan(sqrt((1+e)/(1-e))*tan(E/2));
 
 % calculate time of measurements
-t_true = (M-M0)/2/pi*sqrt(a^3/mu);
+t_true = (M-M0)*sqrt(a^3/mu);
 
 % set random epoch
 t_offset = 3.5; % just has to be a number unrelated to anything else
@@ -52,10 +66,11 @@ for i = 1:size(f,1)
     for j = 1:size(f,2)
         params(6) = f(i,j);
         [r(i,j,:),v(i,j,:)] = Get_Orb_Vects(params,mu);
-%         noise = randn(1,1,3);
-%         noise = noise ./ vecnorm(noise,2,3) * 0.0005;
-%         vtemp = v(i,j,:) + noise;
-        vtemp = v(i,j,:);
+        noise = 0;
+            % add noise
+%             noise = randn(1,1,3);
+%             noise = noise ./ vecnorm(noise,2,3) * 0.0005;
+        vtemp = v(i,j,:) + noise;
         obsv(i,j) = P(:,i)'*vtemp(:);
     end
 end
@@ -75,22 +90,17 @@ hold on
 quiver3(0,0,0,P(1,2),P(2,2),P(3,2),'DisplayName','Pulsar 2')
 quiver3(0,0,0,P(1,3),P(2,3),P(3,3),'DisplayName','Pulsar 3')
 hold off
+axis equal
+pbaspect([1 1 1])
 legend('Location','Best')
 
 % check if perfect input yields perfect output
-ref_error = guess(OPT,obsv,pulsar,mu,t_meas,'debug');
-ref_error
+ref_error = guess(OPT,obsv,pulsar,mu,t_meas,'Debug');
+disp(['Error of true soln.: ' num2str(max(ref_error))])
 
 %% global search
 
-tic
-
-disp('Searching for initial guess...')
-
-warning('off','all')
-
-res = [50,50,150];
-dat = nan(res);
+res = [50,50,50];
 range_f0 = linspace(0,2*pi,res(1)+1);
 range_f0(end) = [];
 range_e = linspace(0,1,res(2)+1);
@@ -98,72 +108,7 @@ range_e(end) = [];
 range_dM = linspace(0,2*pi,res(3)+1);
 range_dM(1) = [];
 
-F = nan(res(1),res(2),res(3));
-E = nan(res(1),res(2),res(3));
-M = nan(res(1),res(2),res(3));
-
-for i = 1:res(1)
-for j = 1:res(2)
-for k = 1:res(3)
-    fin = [range_f0(i),range_e(j),range_dM(k)];
-    out = guess(fin,obsv,pulsar,mu,t_meas);
-    dat(i,j,k) = norm(out(:));
-    F(i,j,k) = range_f0(i);
-    E(i,j,k) = range_e(j);
-    M(i,j,k) = range_dM(k);
-end
-end
-end
-
-% mins = islocalmin(dat);
-% [~,idx] = min(dat(:)./(mins(:)+0.01));
-[~,idx] = min(dat(:));
-[i,j,k] = ind2sub(size(dat),idx);
-fun0 = [range_f0(i(1)),range_e(j(1)),range_dM(k(1))];
-
-
-%% scatter global research results
-
-% scatter to see solution space
-figure(2)
-Fmesh = F(:);
-Emesh = E(:);
-Mmesh = M(:);
-D = dat(:);
-lb = quantile(D,0);
-ub = quantile(D,0.001);
-Fmesh = Fmesh(D>lb&D<ub);
-Emesh = Emesh(D>lb&D<ub);
-Mmesh = Mmesh(D>lb&D<ub);
-D = D(D>lb&D<ub);
-mins = islocalmin(dat);
-Floc = F(mins);
-Eloc = E(mins);
-Mloc = M(mins);
-hold on
-scatter3(OPT(1),OPT(2),OPT(3),24,'cyan',...
-        'DisplayName','True Soln',...
-        'LineWidth',1.5)
-scatter3( fun0(1), fun0(2), fun0(3),24,'green',...
-        'DisplayName','Init Guess',...
-        'LineWidth',1.5)
-fig = scatter3(Fmesh,Emesh,Mmesh,18,D,'filled',...
-        'DisplayName','Objective Function');
-fig.MarkerFaceAlpha = 0.6;
-% scatter3(Floc(:),Eloc(:),Mloc(:),10,'red','filled',...
-%         'DisplayName','Local Minima')
-hold off
-
-colormap(bone(200))
-xlabel('f0')
-ylabel('e')
-zlabel('dM')
-pbaspect([1 1 1])
-view([1 1 1])
-colorbar
-legend('Location','Best')
-
-fun1 = fun0;
+fun1 = search_global(range_f0,range_e,range_dM,res,obsv,pulsar,mu,t_meas,OPT,'plot');
 
 %% find the sine wave
 
@@ -171,18 +116,84 @@ disp('Using fsolve...')
 
 fun = @(x) guess(x,obsv,pulsar,mu,t_meas);
 options = optimoptions('fsolve','Display','iter' ...
-                               ,'MaxFunctionEvaluations',16000 ...
+                               ,'MaxFunctionEvaluations',12000 ...
                                ,'StepTolerance', 1e-9 ...
                                ,'FunctionTolerance', 1e-8 ...
-                               ,'MaxIterations',4000);
-g_opt = fsolve(fun,fun1,options);
+                               ,'MaxIterations',3000 ...
+                               ,'Algorithm','levenberg-marquardt');
+% g_opt = fsolve(fun,fun1,options);
+g_opt = lsqnonlin(fun,fun1,[0,0,0],[2*pi,1,2*pi],options);
+
+disp('Solve complete!')
 
 soln_opt = g_opt;
 soln_opt(1) = mod(g_opt(1),2*pi);
 soln_opt(3) = mod(g_opt(3),2*pi);
 
 error = guess(soln_opt,obsv,pulsar,mu,t_meas,'debug');
-error
+
+disp(['Max error term: ' num2str(max(error))])
+disp(['Soln. difference: ' num2str(soln_opt-OPT)])
+
+fun1 = [0 0 0];
+
+%% refined search
+
+res = [50,50,50];
+
+delta_min = [2*pi,1,2*pi] * 0.005;
+
+fun2 = soln_opt;
+delta = 3*abs(fun2-fun1)+delta_min;
+fun1 = fun2;
+
+lb = max(0,soln_opt(1)-delta(1));
+rb = min(2*pi,soln_opt(1)+delta(1));
+range_f0 = linspace(lb,rb,res(1)+1);
+range_f0(end) = [];
+
+lb = max(0,soln_opt(2)-delta(2));
+rb = min(1,soln_opt(2)+delta(2));
+range_e = linspace(lb,rb,res(2)+1);
+range_e(end) = [];
+
+lb = max(0,soln_opt(3)-delta(3));
+rb = min(2*pi,soln_opt(3)+delta(3));
+range_dM = linspace(lb,rb,res(3)+1);
+range_dM(1) = [];
+
+fun2 = search_global(range_f0,range_e,range_dM,res,obsv,pulsar,mu,t_meas,OPT,'plot');
+
+fun = @(x) guess(x,obsv,pulsar,mu,t_meas);
+options = optimoptions('fsolve','Display','iter' ...
+                               ,'MaxFunctionEvaluations',12000 ...
+                               ,'StepTolerance', 1e-9 ...
+                               ,'FunctionTolerance', 1e-8 ...
+                               ,'MaxIterations',3000 ...
+                               ,'Algorithm','levenberg-marquardt');
+% g_opt = fsolve(fun,fun1,options);
+g_opt = lsqnonlin(fun,fun2,[0,0,0],[2*pi,1,2*pi],options);
+
+soln_opt = g_opt;
+soln_opt(1) = mod(g_opt(1),2*pi);
+soln_opt(3) = mod(g_opt(3),2*pi);
+
+error = guess(soln_opt,obsv,pulsar,mu,t_meas,'debug');
+
+disp(['Max error term: ' num2str(max(error))])
+disp(['Soln. difference: ' num2str(soln_opt-OPT)])
+
+%% output initial orbit
+
+orb = get_io(soln_opt,t_meas,mu);
+
+disp([newline '----------'])
+disp(['Guess SMA = ' num2str(orb.a) newline...
+      ' True SMA = ' num2str(a) newline])
+disp(['Guess ECC = ' num2str(orb.e) newline...
+      ' True ECC = ' num2str(e) newline])
+disp(['Guess TA = ' num2str(orb.f0) newline...
+      ' True TA = ' num2str(f0) newline])
 
 %% function definitions
 function Evect = kepler(Mvect,e)

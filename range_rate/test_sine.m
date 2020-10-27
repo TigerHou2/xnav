@@ -27,7 +27,7 @@ P = P ./ vecnorm(P,2,1);
 f = [ 0  20  40;... % pulsar 1
       5  25  45;... % pulsar 2
      10  30  50]; % pulsar 3
-f = f + 0;
+f = f*2;
 f = deg2rad(f);
 E = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
 M = E - e*sin(E);

@@ -7,14 +7,14 @@ addpath('../fcns_orb')
 % define orbit
 mu = 1;
 a = 1;
-i = deg2rad(23);
+i = deg2rad(13);
 omg = deg2rad(25);
 w = deg2rad(90);
 
 % define true solution
-e = 0.27;
-f0 = deg2rad(70);
-dM = deg2rad(37);
+e = 0.9;
+f0 = deg2rad(131);
+dM = deg2rad(31);
 
 OPT = [f0,e,dM];
 
@@ -27,14 +27,14 @@ P = [0 -1 1;... % pulsar 1
 P = P ./ vecnorm(P,2,1);
 
 % number of measurements
-numObsv = 3;
+numObsv = 10;
 
 % clumped observations?
 % ** clumped = 1 means the first 'numObsv' observations are all performed
 %    on the first pulsar before moving on to the next. 
 %    Conversely, clumped = 0 means for each observation we switch to the
 %    next pulsar.
-clumped = 1;
+clumped = 0;
 
 % calculate mean and true anomalies of measurements
 E0 = 2*atan(sqrt((1-e)/(1+e))*tan(f0/2));
@@ -68,8 +68,7 @@ for i = 1:size(f,1)
         [r(i,j,:),v(i,j,:)] = Get_Orb_Vects(params,mu);
         noise = 0;
             % add noise
-%             noise = randn(1,1,3);
-%             noise = noise ./ vecnorm(noise,2,3) * 0.0005;
+%             noise = v(i,j,:) / norm(reshape(v(i,j,:),3,1)) * randn * 0.0001;
         vtemp = v(i,j,:) + noise;
         obsv(i,j) = P(:,i)'*vtemp(:);
     end
@@ -119,8 +118,7 @@ options = optimoptions('fsolve','Display','iter' ...
                                ,'MaxFunctionEvaluations',12000 ...
                                ,'StepTolerance', 1e-9 ...
                                ,'FunctionTolerance', 1e-8 ...
-                               ,'MaxIterations',3000 ...
-                               ,'Algorithm','levenberg-marquardt');
+                               ,'MaxIterations',3000);
 % g_opt = fsolve(fun,fun1,options);
 g_opt = lsqnonlin(fun,fun1,[0,0,0],[2*pi,1,2*pi],options);
 
@@ -141,7 +139,7 @@ fun1 = [0 0 0];
 
 res = [50,50,50];
 
-delta_min = [2*pi,1,2*pi] * 0.005;
+delta_min = [2*pi,1,2*pi] * 0.01;
 
 fun2 = soln_opt;
 delta = 3*abs(fun2-fun1)+delta_min;
@@ -169,8 +167,7 @@ options = optimoptions('fsolve','Display','iter' ...
                                ,'MaxFunctionEvaluations',12000 ...
                                ,'StepTolerance', 1e-9 ...
                                ,'FunctionTolerance', 1e-8 ...
-                               ,'MaxIterations',3000 ...
-                               ,'Algorithm','levenberg-marquardt');
+                               ,'MaxIterations',3000);
 % g_opt = fsolve(fun,fun1,options);
 g_opt = lsqnonlin(fun,fun2,[0,0,0],[2*pi,1,2*pi],options);
 

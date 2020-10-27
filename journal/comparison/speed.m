@@ -13,6 +13,7 @@ clear;clc
 addpath('..\fcns_od')
 addpath('..\fcns_orb')
 addpath('..\fcns_vis')
+addpath('..\fcns_misc')
 latexify
 
 %% setup

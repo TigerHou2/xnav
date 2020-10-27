@@ -13,8 +13,8 @@ w = deg2rad(90);
 
 % define true solution
 e = 0.9;
-f0 = deg2rad(131);
-dM = deg2rad(31);
+f0 = deg2rad(0);
+dM = deg2rad(2);
 
 OPT = [f0,e,dM];
 
@@ -68,7 +68,7 @@ for i = 1:size(f,1)
         [r(i,j,:),v(i,j,:)] = Get_Orb_Vects(params,mu);
         noise = 0;
             % add noise
-%             noise = v(i,j,:) / norm(reshape(v(i,j,:),3,1)) * randn * 0.0001;
+            noise = v(i,j,:) / norm(reshape(v(i,j,:),3,1)) * randn * 0.0001;
         vtemp = v(i,j,:) + noise;
         obsv(i,j) = P(:,i)'*vtemp(:);
     end
@@ -99,7 +99,7 @@ disp(['Error of true soln.: ' num2str(max(ref_error))])
 
 %% global search
 
-res = [50,50,50];
+res = [25,26,27];
 range_f0 = linspace(0,2*pi,res(1)+1);
 range_f0(end) = [];
 range_e = linspace(0,1,res(2)+1);
@@ -107,7 +107,7 @@ range_e(end) = [];
 range_dM = linspace(0,2*pi,res(3)+1);
 range_dM(1) = [];
 
-fun1 = search_global(range_f0,range_e,range_dM,res,obsv,pulsar,mu,t_meas,OPT,'plot');
+fun1 = search_adv(range_f0,range_e,range_dM,res,obsv,pulsar,mu,t_meas,OPT,'plot');
 
 %% find the sine wave
 
@@ -137,30 +137,34 @@ fun1 = [0 0 0];
 
 %% refined search
 
-res = [50,50,50];
+res = [30,30,30];
+res = res + mod(res,2); % preserves the current best point
 
 delta_min = [2*pi,1,2*pi] * 0.01;
 
 fun2 = soln_opt;
 delta = 3*abs(fun2-fun1)+delta_min;
+delta(1) = min([fun2(1),2*pi-fun2(1),delta(1)]);
+delta(2) = min([fun2(2),   1-fun2(2),delta(2)]);
+delta(3) = min([fun2(3),2*pi-fun2(3),delta(3)]);
 fun1 = fun2;
 
-lb = max(0,soln_opt(1)-delta(1));
-rb = min(2*pi,soln_opt(1)+delta(1));
+lb = soln_opt(1)-delta(1);
+rb = soln_opt(1)+delta(1);
 range_f0 = linspace(lb,rb,res(1)+1);
 range_f0(end) = [];
 
-lb = max(0,soln_opt(2)-delta(2));
-rb = min(1,soln_opt(2)+delta(2));
+lb = soln_opt(2)-delta(2);
+rb = soln_opt(2)+delta(2);
 range_e = linspace(lb,rb,res(2)+1);
 range_e(end) = [];
 
-lb = max(0,soln_opt(3)-delta(3));
-rb = min(2*pi,soln_opt(3)+delta(3));
+lb = soln_opt(3)-delta(3);
+rb = soln_opt(3)+delta(3);
 range_dM = linspace(lb,rb,res(3)+1);
 range_dM(1) = [];
 
-fun2 = search_global(range_f0,range_e,range_dM,res,obsv,pulsar,mu,t_meas,OPT,'plot');
+fun2 = search_adv(range_f0,range_e,range_dM,res,obsv,pulsar,mu,t_meas,OPT,'plot');
 
 fun = @(x) guess(x,obsv,pulsar,mu,t_meas);
 options = optimoptions('fsolve','Display','iter' ...

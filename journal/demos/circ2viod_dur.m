@@ -1,12 +1,13 @@
-%% noise_error_est.m
+%% circ2viod_dur.m
 %
 % Author:
 %   Tiger Hou
 %
 % Description:
-%   Estimates the error in VIOD position w.r.t sensor noise. 
-%   Estimated errors are generated using analytical equations and compared
-%   against Monte Carlo simulations. 
+%   Compares VIOD error trend with the error in the estimate of the
+%   hodograph radius. This is the key assumption upon which the entire
+%   paper is built. We should see matching trends between VIOD error and
+%   hodograph radius error w.r.t. the total measurement time interval.
 
 %% initialization
 close all
@@ -19,49 +20,46 @@ savePath = 'plots\';
 latexify
 
 %% setup
-noiseVect = linspace(5e-7,1e-5,10);
+durVect = linspace(0.05,0.5,20);
+durVect = durVect * 2*pi;
 
 mu = 1;
 a = 1e5;
-e = 0.5;
+e = 0.9;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(90);
+f = deg2rad(0);
     
 orbitParams = [a,e,i,o,w,f];
 
-% total duration spanned by all measurements, as fraction of orbit period
-period = 0.1;
-period = period * 2*pi;
+% measurement noise
+noise = 3e-6;
 % number of measurements
 numObsv = 10;
 % Monte Carlo simulation size
 numSims = 3000;
 % select the nth observation's position error for comparison
 selObsv = 1;
-% resolution for the error model
-model_res = 1000;
 
 % line styles
-MOD = 'r:'; % model
+MOD = 'rx:'; % model
 SIM = 'ko-.'; % simulation
 
 % prepare measurement noise
+nGauss = normrnd(0,noise,numObsv,1,numSims);
+nGauss = repmat(nGauss,1,3,1);
 ncube = randn(numObsv,3,numSims);
-ncube = ncube ./ vecnorm(ncube,2,2);
+ncube = ncube ./ vecnorm(ncube,2,2) .* nGauss;
 
-errDat = nan(numSims,length(noiseVect));
-errEst = nan(1,length(noiseVect));
+errDat = nan(numSims,length(durVect));
+errCirc = nan(numSims,length(durVect));
 v = nan(numObsv,3);
 
-%% Reference Simulation
-for i = 1:length(noiseVect)
-    % vary noise
-    noise = noiseVect(i);
-    nGauss = normrnd(0,noise,numObsv,1,numSims);
-    nGauss = repmat(nGauss,1,3,1);
-    ncube_loc = ncube .* nGauss;
+%% simulation
+for i = 1:length(durVect)
+    % vary measurement duration
+    period = durVect(i);
     
     % find measurement positions by true anomaly
     E0 = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
@@ -78,6 +76,7 @@ for i = 1:length(noiseVect)
         orbitParams(6) = fvect(j);
         [~,v(j,:)] = Get_Orb_Vects(orbitParams,mu);
     end
+    [~,R] = hodoHyp_debug(v,mu);
     
     % get position reference
     orbitParams(6) = fvect(selObsv);
@@ -85,29 +84,28 @@ for i = 1:length(noiseVect)
     
     % Monte Carlo
     for s = 1:numSims
-        nvect = ncube_loc(:,:,s);
-        r = hodoHyp(v+nvect,mu);
+        nvect = ncube(:,:,s);
+        [r,Rest] = hodoHyp_debug(v+nvect,mu);
         r = r(selObsv,:)';
-        errDat(s,i) = norm(r-rRef) / norm(rRef) * 100;
-    end    
+        errDat(s,i)  = norm(r-rRef) / norm(rRef) * 100;
+        errCirc(s,i) = abs(R-Rest) / abs(R) * 100;
+        
+        % test svd
+        [~,~,V] = svd(v+nvect,0);
+        k = V(:,end);
+        if k'*[0;0;1]<0
+            k = -k;
+        end
+        
+        errCirc(s,i) = errCirc(s,i) * norm(k-[0;0;1])^2;
+    end
 end
 
-% create reference simulation x,y vectors
-xRef = noiseVect;
+xRef = durVect / (2*pi) * 100;
 yRef = sqrt(mean(errDat.^2));
 
-%% Error Model
-
-xVar = linspace(min(noiseVect),max(noiseVect),model_res);
-
-for i = 1:model_res
-    
-    adj1 = xVar(i);
-    errEst(i) = adj1;
-    
-end
-
-yVar = errEst;
+xVar = durVect / (2*pi) * 100;
+yVar = sqrt(mean(errCirc.^2));
 
 %% data processing & plotting
 scaling = 1 / (max(yVar)-min(yVar)) * (max(yRef)-min(yRef));
@@ -119,15 +117,15 @@ disp(['Scaling = ' num2str(scaling)])
 disp(['Offset  = ' num2str(offset)])
 
 figure;
-plot(xRef,yRef,SIM,'LineWidth',1.5,'MarkerSize',7)
+plot(xRef,yRef,SIM,'LineWidth',1,'MarkerSize',5)
 hold on
-plot(xVar,yVar,MOD,'LineWidth',1.5,'MarkerSize',7)
+plot(xVar,yVar,MOD,'LineWidth',1,'MarkerSize',5)
 hold off
-legend('Simulation','Prediction','Location','Best')
-xlabel('Sensor Noise, DU/TU')
-ylabel('Position MSE, \%')
-latexify(20,13,18)
+% legend('VIOD','Hodograph','Location','Best')
+xlabel('\% of Orbit Period')
+ylabel('Mean Squared Error, \%')
+latexify(10,8,16)
 setgrid
 expand
-svnm = [savePath 'noiseErr'];
-print(svnm,'-dpdf','-bestfit')
+svnm = [savePath 'durProof'];
+% print(svnm,'-dpdf','-bestfit')

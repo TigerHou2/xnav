@@ -1,6 +1,9 @@
 close all
 clear;clc
 
+addpath('fcns_circ')
+addpath('fcns_orb')
+
 % define orbit
 mu = 1;
 a = 1;

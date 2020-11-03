@@ -14,6 +14,7 @@ clear;clc
 addpath('..\fcns_od')
 addpath('..\fcns_orb')
 addpath('..\fcns_vis')
+addpath('..\fcns_misc')
 savePath = 'plots\';
 latexify
 
@@ -21,12 +22,12 @@ latexify
 eccVect = linspace(0.1,0.9,23);
 
 mu = 1;
-a = 1e6;
+a = 1e5;
 e = 0;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(135);
+f = deg2rad(180);
 
 orbitParams = [a,e,i,o,w,f];
 
@@ -36,14 +37,16 @@ period = period * 2*pi;
 % select the nth observation's position error for comparison
 selObsv = 1;
 % number of measurements
-numObsv = 20;
+numObsv = 10;
 % measurement noise
 noise = 3e-6;
 % Monte Carlo simulation size
 numSims = 3000;
+% resolution for the error model
+model_res = 1000;
 
 % line styles
-MOD = 'rx:'; % model
+MOD = 'r:'; % model
 SIM = 'ko-.'; % simulation
     
 % prepare measurement noise
@@ -51,10 +54,10 @@ ncube = randn(numObsv,3,numSims);
 ncube = ncube ./ vecnorm(ncube,2,2) * noise;
 
 errDat = nan(numSims,length(eccVect));
-errEst = nan(1,length(eccVect));
+errEst = nan(1,model_res);
 v = nan(numObsv,3);
 
-%% simulation
+%% Reference Simulation
 for i = 1:length(eccVect)
     % vary eccentricity
     e = eccVect(i);
@@ -81,47 +84,53 @@ for i = 1:length(eccVect)
     orbitParams(6) = fvect(selObsv);
     rRef = Get_Orb_Vects(orbitParams,mu);
     
-    % prepare SVD error estimator
-    svdErrVect = nan(numSims,1);
-    
     % Monte Carlo
     for s = 1:numSims
         nvect = ncube(:,:,s);
         r = hodoHyp(v+nvect,mu);
         r = r(selObsv,:)';
         errDat(s,i) = norm(r-rRef) / norm(rRef) * 100;
-        
-        % test svd
-        [~,~,V] = svd(v+nvect,0);
-        k = V(:,end);
-        if k'*[0;0;1]<0
-            k = -k;
-        end
-        svdErrVect(s) = norm(k-[0;0;1]);
     end
-    
-    % estimate error
-    df = fend-f;
-    df = mod(df,2*pi);
-    
-        % adj 1: error scales inversely with hodograph radius
-        adj1 = sqrt((1-e)/(1+e)) + sqrt((1+e)/(1-e));
-        adj1 = 1 / adj1;
-
-        % adj 2: error scales inversely with square of measurement span
-        adj2 = 1 / df^2;
-    
-        % adj 3: error scales with orbit normal error
-        adj3 = sqrt(mean(svdErrVect.^2));
-        adj3 = 1;
-        
-    errEst(i) = adj1 * adj2 * adj3;
 end
 
-%% data processing & plotting
-xVar = eccVect;
+% create reference simulation x,y vectors
+xRef = eccVect;
 yRef = sqrt(mean(errDat.^2));
+
+%% Error Model
+
+xVar = linspace(min(eccVect),max(eccVect),model_res);
+
+for i = 1:model_res
+    
+    e = xVar(i);
+    
+    % adj 1: error scales inversely with hodograph radius
+    adj1 = sqrt((1-e)/(1+e)) + sqrt((1+e)/(1-e));
+    adj1 = 1 / adj1;
+    
+    % adj 2: error scales inversely with square of measurement span
+    E0 = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
+    M0 = E0 - e*sin(E0);
+    M = M0 + period;
+    E = kepler(M,e);
+    Mvect = linspace(M0,M,numObsv);
+    Evect = kepler(Mvect,e);
+    fvect = 2 * atan(sqrt((1+e)/(1-e))*tan(Evect/2));
+    fvect = mod(fvect,2*pi);
+    fend = fvect(end);
+    df = fend-f;
+    df = mod(df,2*pi);
+    adj2 = 1 / df^2;
+    
+    errEst(i) = adj1 * adj2;
+    
+end
+
+% create error model x,y vectors
 yVar = errEst;
+
+%% data processing & plotting
 scaling = 1 / (max(yVar)-min(yVar)) * (max(yRef)-min(yRef));
 yVar = yVar * scaling;
 offset = - min(yVar) + min(yRef);
@@ -131,9 +140,9 @@ disp(['Scaling = ' num2str(scaling)])
 disp(['Offset  = ' num2str(offset)])
 
 figure;
-plot(xVar,yRef,SIM,'LineWidth',1,'MarkerSize',5)
+plot(xRef,yRef,SIM,'LineWidth',1,'MarkerSize',5)
 hold on
-plot(xVar,yVar,MOD,'LineWidth',1,'MarkerSize',5)
+plot(xVar,yVar,MOD,'LineWidth',1.5,'MarkerSize',5)
 hold off
 % legend('Simulation','Prediction','Location','Best')
 xlabel('Eccentricity')

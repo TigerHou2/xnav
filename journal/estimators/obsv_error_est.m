@@ -14,6 +14,7 @@ clear;clc
 addpath('..\fcns_od')
 addpath('..\fcns_orb')
 addpath('..\fcns_vis')
+addpath('..\fcns_misc')
 savePath = 'plots\';
 latexify
 
@@ -39,6 +40,8 @@ selObsv = 1;
 noise = 3e-6;
 % Monte Carlo simulation size
 numSims = 3000;
+% resolution for the error model
+model_res = 1000;
 
 % line styles
 MOD = 'rx:'; % model

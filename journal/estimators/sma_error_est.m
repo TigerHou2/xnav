@@ -14,6 +14,7 @@ clear;clc
 addpath('..\fcns_od')
 addpath('..\fcns_orb')
 addpath('..\fcns_vis')
+addpath('..\fcns_misc')
 savePath = 'plots\';
 latexify
 
@@ -41,9 +42,11 @@ numObsv = 10;
 numSims = 3000;
 % select the nth observation's position error for comparison
 selObsv = 1;
+% resolution for the error model
+model_res = 1000;
 
 % line styles
-MOD = 'rx:'; % model
+MOD = 'r:'; % model
 SIM = 'ko-.'; % simulation
 
 % prepare measurement noise
@@ -53,10 +56,10 @@ ncube = randn(numObsv,3,numSims);
 ncube = ncube ./ vecnorm(ncube,2,2) .* nGauss;
 
 errDat = nan(numSims,length(smaVect));
-errEst = nan(1,length(smaVect));
+errEst = nan(1,model_res);
 v = nan(numObsv,3);
 
-%% simulation
+%% Reference Simulation
 for i = 1:length(smaVect)
     % vary semi-major axis length
     sma = smaVect(i);
@@ -90,29 +93,39 @@ for i = 1:length(smaVect)
         errDat(s,i) = norm(r-rRef) / norm(rRef) * 100;
     end
     
-    % estimate error
+end
 
-        % adj 1: error scales with sqrt(sma)
-        adj1 = sqrt(sma);
+% create reference sim x,y vectors
+xRef = smaVect;
+yRef = sqrt(mean(errDat.^2));
+
+%% Error Model
+
+xVar = linspace(min(smaVect),max(smaVect),model_res);
+
+for i = 1:model_res
     
+    a = xVar(i);
+    adj1 = sqrt(a);
     errEst(i) = adj1;
     
 end
 
-%% data processing & plotting
-xVar = smaVect;
-yRef = sqrt(mean(errDat.^2));
+% create error model x,y vectors
 yVar = errEst;
+
+%% data processing & plotting
 scaling = 1 / (max(yVar)-min(yVar)) * (max(yRef)-min(yRef));
 yVar = yVar * scaling;
 offset = - min(yVar) + min(yRef);
+offset = 0;
 yVar = yVar + offset;
 
 disp(['Scaling = ' num2str(scaling)])
 disp(['Offset  = ' num2str(offset)])
 
 figure;
-plot(xVar,yRef,SIM,'LineWidth',1.5,'MarkerSize',7)
+plot(xRef,yRef,SIM,'LineWidth',1.5,'MarkerSize',7)
 hold on
 plot(xVar,yVar,MOD,'LineWidth',1.5,'MarkerSize',7)
 hold off

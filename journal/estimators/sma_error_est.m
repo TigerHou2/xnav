@@ -27,9 +27,19 @@ e = 0.5;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(90);
+f = deg2rad(89);
     
 orbitParams = [a,e,i,o,w,f];
+
+% check if e = 0.5 and f0 = 90. If not, the figure is not saved.
+save_plot = true;
+ecc_accept = 0.5;
+ta_accept = deg2rad(90);
+if abs(e-ecc_accept)>1e-8 || abs(f-ta_accept)>1e-8
+    save_plot = false;
+    warning(['The ecc or f0 provided is not required for the ' ...
+             'manuscript, therefore it will not be saved.'])
+end
 
 % total duration spanned by all measurements, as fraction of orbit period
 period = 0.1;
@@ -135,5 +145,8 @@ ylabel('Position MSE, \%')
 latexify(20,13,18)
 setgrid
 expand
-svnm = [savePath 'smaErr'];
-print(svnm,'-dpdf','-bestfit')
+
+if save_plot
+    svnm = [savePath 'smaErr'];
+    print(svnm,'-dpdf','-bestfit')
+end

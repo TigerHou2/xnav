@@ -32,7 +32,7 @@ f = deg2rad(90);
 orbitParams = [a,e,i,o,w,f];
 
 % total duration spanned by all measurements, as fraction of orbit period
-period = 0.8;
+period = 0.31;
 period = period * 2*pi;
 % select the nth observation's position error for comparison
 selObsv = 1;
@@ -42,6 +42,16 @@ noise = 3e-6;
 numSims = 3000;
 % resolution for the error model
 model_res = 1000;
+
+% check if the measurement duration is 0.05, 0.3, or 0.8.
+% If it is none of the above, the figure is not saved.
+save_plot = true;
+dur_accept = [0.05,0.3,0.8] * (2*pi);
+if min(abs(period-dur_accept))>1e-8
+    save_plot = false;
+    warning(['The measurement duration provided is not required for ' ...
+             'the manuscript, therefore it will not be saved.'])
+end
 
 % line styles
 MOD = 'rx:'; % model
@@ -105,6 +115,9 @@ for i = 1:length(obsvVect)
     
         % adj 1: error scales with orbit normal error
         adj1 = sqrt(mean(svdErrVect.^2));
+        
+        % adj 1: error scales with noise vs avg. velocity?
+        adj1 = 1/(norm(vecnorm(v+nvect,2,2)))^4;
     
     errEst(i) = adj1;
     
@@ -133,5 +146,8 @@ ylabel('Position MSE, \%')
 latexify(10,10,16)
 setgrid
 expand
-svnm = [savePath 'obsvErr_dur=' num2str(period/2/pi*100)];
-print(svnm,'-dpdf','-bestfit')
+
+if save_plot
+    svnm = [savePath 'obsvErr_dur=' num2str(period/2/pi*100)];
+    print(svnm,'-dpdf','-bestfit')
+end

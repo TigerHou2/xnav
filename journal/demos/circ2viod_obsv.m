@@ -28,12 +28,12 @@ e = 0.5;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(90);
+f = deg2rad(0);
 
 orbitParams = [a,e,i,o,w,f];
 
 % total duration spanned by all measurements, as fraction of orbit period
-period = 0.1;
+period = 0.6;
 period = period * 2*pi;
 % select the nth observation's position error for comparison
 selObsv = 1;
@@ -87,7 +87,8 @@ for i = 1:length(obsvVect)
         [r,Rest,Aest,Best] = hodoHyp_debug(v+nvect,mu);
         r = r(selObsv,:)';
         errDat(s,i)  = norm(r-rRef) / norm(rRef) * 100;
-        errCirc(s,i) = abs(R-Rest) / abs(R) * 100;
+        errCirc(s,i) = 1/(numObsv)^(period/(2*pi));
+%         errCirc(s,i) = abs(R-Rest) / abs(R) * 100;
 %         errCirc(s,i) = norm([A-Aest,B-Best]) / abs(R) * 100;
         
         % test svd
@@ -111,6 +112,7 @@ yVar = sqrt(mean(errCirc.^2));
 scaling = 1 / (max(yVar)-min(yVar)) * (max(yRef)-min(yRef));
 yVar = yVar * scaling;
 offset = - min(yVar) + min(yRef);
+offset = 0;
 yVar = yVar + offset;
 
 disp(['Scaling = ' num2str(scaling)])
@@ -127,5 +129,5 @@ ylabel('Mean Squared Error, \%')
 latexify(10,8,16)
 setgrid
 expand
-svnm = [savePath 'obsvProof'];
-print(svnm,'-dpdf','-bestfit')
+% svnm = [savePath 'obsvProof'];
+% print(svnm,'-dpdf','-bestfit')

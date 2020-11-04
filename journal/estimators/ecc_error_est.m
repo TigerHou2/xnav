@@ -27,9 +27,19 @@ e = 0;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(180);
+f = deg2rad(134);
 
 orbitParams = [a,e,i,o,w,f];
+
+% check if initial true anomaly is 0, 135, or 180. 
+% If it is none of the above, the figure is not saved.
+save_plot = true;
+ta_accept = deg2rad([0,135,180]);
+if min(abs(f-ta_accept))>1e-8
+    save_plot = false;
+    warning(['The initial true anomaly provided is not required for ' ...
+             'the manuscript, therefore it will not be saved.'])
+end
 
 % total duration spanned by all measurements, as fraction of orbit period
 period = 0.1;
@@ -134,6 +144,7 @@ yVar = errEst;
 scaling = 1 / (max(yVar)-min(yVar)) * (max(yRef)-min(yRef));
 yVar = yVar * scaling;
 offset = - min(yVar) + min(yRef);
+offset = 0;
 yVar = yVar + offset;
 
 disp(['Scaling = ' num2str(scaling)])
@@ -150,5 +161,8 @@ ylabel('Position MSE, \%')
 latexify(10,10,16)
 setgrid
 expand
-svnm = [savePath 'eccErr_f=' num2str(rad2deg(f))];
-print(svnm,'-dpdf','-bestfit')
+
+if save_plot
+    svnm = [savePath 'eccErr_f=' num2str(rad2deg(f))];
+    print(svnm,'-dpdf','-bestfit')
+end

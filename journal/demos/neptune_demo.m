@@ -87,7 +87,7 @@ mu = 1.327e20; % m^3/s^2
 a = (1+30.06)/2 * AU; % Earth-Neptune transfer orbit
 e = 30.06*2/(1+30.06)-1;
 
-    a_tgt = 10; % Mars
+    a_tgt = 30; % Mars
     a = (1+a_tgt)/2 * AU;
     e = a_tgt*2/(1+a_tgt)-1;
 
@@ -96,8 +96,8 @@ o = deg2rad(0);
 w = deg2rad(0);
 f = deg2rad(170);
 
-noise = 3; % m/s
-dM = 0.1 * (2*pi);
+noise = 5; % m/s
+dM = 0.05 * (2*pi);
 numObsv = 10;
 numSims = 3000;
 selObsv = 1;
@@ -108,6 +108,8 @@ TU = sqrt(DU^3/mu);
 mu = 1;
 a = a / DU;
 noise = noise / DU * TU;
+
+orbitParams = [a,e,i,o,w,f];
 
 %% Monte Carlo Simulation for Earth-Neptune Case
 nGauss = normrnd(0,noise,numObsv,1,numSims);

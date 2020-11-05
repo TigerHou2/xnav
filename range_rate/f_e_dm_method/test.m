@@ -99,7 +99,7 @@ disp(['Error of true soln.: ' num2str(max(ref_error))])
 
 %% global search
 
-res = [25,26,27];
+res = [30,30,50];
 range_f0 = linspace(0,2*pi,res(1)+1);
 range_f0(end) = [];
 range_e = linspace(0,1,res(2)+1);

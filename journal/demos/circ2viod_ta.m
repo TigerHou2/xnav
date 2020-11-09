@@ -104,6 +104,7 @@ yVar = sqrt(mean(errCirc.^2));
 scaling = 1 / (max(yVar)-min(yVar)) * (max(yRef)-min(yRef));
 yVar = yVar * scaling;
 offset = - min(yVar) + min(yRef);
+offset = 0;
 yVar = yVar + offset;
 
 disp(['Scaling = ' num2str(scaling)])
@@ -115,8 +116,8 @@ hold on
 plot(xVar,yVar,MOD,'LineWidth',1.5,'MarkerSize',5)
 hold off
 % legend('VIOD','Hodograph','Location','Best')
-xlabel('True Anomaly')
-ylabel('Mean Squared Error, \%')
+xlabel('Initial True Anomaly, $^o$')
+ylabel('RMSE, \%')
 latexify(10,8,16)
 setgrid
 expand

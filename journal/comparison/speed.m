@@ -30,7 +30,7 @@ orbitParams = [a,e,i,o,w,f];
 
 % observations
 dM = 0.1*2*pi;
-obsVect = ceil(linspace(3,50,8));
+obsVect = ceil(linspace(3,55,8));
 
 % simulation
 numSims = 1000;
@@ -38,7 +38,7 @@ selObsv = 1;
 timeDat = nan(3,length(obsVect));
 
 % noise
-noise = 1e-6;
+noise = 3e-6;
 
 % line styles
 EN = 'rs:'; % energy method
@@ -118,8 +118,8 @@ for i = 1:3
 end
 hold off
 set(gca,'YScale','log')
-xlabel('Number of Observations')
-ylabel('Run Time, s')
+xlabel('Number of Measurements')
+ylabel('Computation Time, s')
 legend('Energy','Hodograph','Improved','Location','Best')
 latexify(15,15,24)
 setgrid

@@ -84,12 +84,10 @@ disp(['Baseline Error: ' num2str(baseline.MSE*100) '%'])
 AU = 1.495978e11; % m
 
 mu = 1.327e20; % m^3/s^2
-a = (1+30.06)/2 * AU; % Earth-Neptune transfer orbit
-e = 30.06*2/(1+30.06)-1;
 
-    a_tgt = 30; % Mars
-    a = (1+a_tgt)/2 * AU;
-    e = a_tgt*2/(1+a_tgt)-1;
+a_tgt = 30.06; % Neptune
+a = (1+a_tgt)/2 * AU;
+e = a_tgt*2/(1+a_tgt)-1;
 
 i = deg2rad(0);
 o = deg2rad(0);
@@ -97,9 +95,11 @@ w = deg2rad(0);
 f = deg2rad(170);
 
 noise = 5; % m/s
-dM = 0.05 * (2*pi);
-numObsv = 10;
-numSims = 3000;
+    % currently we can;t predict changes in these two variables,
+    %   so they are held constant
+    % dM = 0.1 * (2*pi);
+    % numObsv = 10;
+    % numSims = 3000;
 selObsv = 1;
 
 DU = a / 1e5;

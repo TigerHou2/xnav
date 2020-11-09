@@ -15,6 +15,7 @@ clear;clc
 addpath('..\fcns_od')
 addpath('..\fcns_orb')
 addpath('..\fcns_vis')
+addpath('..\fcns_misc')
 savePath = 'plots\';
 latexify
 
@@ -115,9 +116,9 @@ plot(xRef,yRef,SIM,'LineWidth',1,'MarkerSize',5)
 hold on
 plot(xVar,yVar,MOD,'LineWidth',1,'MarkerSize',5)
 hold off
-legend('VIOD','Hodograph','Location','Best')
-xlabel('SMA Length, DU')
-ylabel('Mean Squared Error, \%')
+legend('RMSE$(\tilde{\mathbf{r}})$','RMSE$(\tilde{R})$','Location','Best')
+xlabel('Semi-Major Axis, DU')
+ylabel('RMSE, \%')
 latexify(10,8,15)
 setgrid
 expand

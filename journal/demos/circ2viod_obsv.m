@@ -28,19 +28,19 @@ e = 0.9;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(160);
+f = deg2rad(90);
 
 orbitParams = [a,e,i,o,w,f];
 
 % total duration spanned by all measurements, as fraction of orbit period
-period = 0.8;
+period = 0.9;
 period = period * 2*pi;
 % select the nth observation's position error for comparison
 selObsv = 1;
 % measurement noise
 noise = 3e-5;
 % Monte Carlo simulation size
-numSims = 10000;
+numSims = 5000;
 
 % line styles
 MOD = 'rx:'; % model
@@ -48,7 +48,7 @@ SIM = 'ko-.'; % simulation
 
 % prepare measurement noise
 ncube = randn(max(obsvVect),3,numSims);
-ncube = ncube ./ vecnorm(ncube,2,2) * noise;
+ncube = ncube ./ vecnorm(ncube,2,2) .* normrnd(0,noise,1,1,numSims);
 
 errDat = nan(numSims,length(obsvVect));
 errCirc = nan(numSims,length(obsvVect));
@@ -80,6 +80,9 @@ for i = 1:length(obsvVect)
     orbitParams(6) = fvect(selObsv);
     rRef = Get_Orb_Vects(orbitParams,mu);
     
+ncube = randn(numObsv,3,numSims);
+ncube = ncube ./ vecnorm(ncube,2,2) .* normrnd(0,noise,1,1,numSims);
+    
     % Monte Carlo
     for s = 1:numSims
         nvect = ncube(1:numObsv,:,s);
@@ -87,10 +90,6 @@ for i = 1:length(obsvVect)
         [r,Rest,Aest,Best] = hodoHyp_debug(v+nvect,mu);
         r = r(selObsv,:)';
         errDat(s,i)  = norm(r-rRef) / norm(rRef) * 100;
-%         errCirc(s,i) = 1;
-%         errCirc(s,i) = 1/(numObsv)^(period/(2*pi));
-%         errCirc(s,i) = abs(R-Rest) / abs(R) * 100;
-        errCirc(s,i) = norm([A-Aest,B-Best]) / abs(R) * 100;
         
         % test svd
         [~,~,V] = svd(v+nvect,0);
@@ -99,7 +98,16 @@ for i = 1:length(obsvVect)
             k = -k;
         end
         
-        errCirc(s,i) = errCirc(s,i) * norm(k-[0;0;1]);
+        errCirc(s,i) = 1;
+%         errCirc(s,i) = errCirc(s,i) * ( 1/(numObsv)^(period/(2*pi)) );
+%         errCirc(s,i) = errCirc(s,i) * ( abs(R-Rest) / abs(R) * 100 );
+        errCirc(s,i) = errCirc(s,i) * ( norm([A-Aest,B-Best]) / abs(R) * 100 );
+%         errCirc(s,i) = errCirc(s,i) * ( 1/mean(vecnorm(v+nvect,2,2)) );
+%         errCirc(s,i) = errCirc(s,i) * ( 1/min(vecnorm(v+nvect,2,2)) );
+%         errCirc(s,i) = errCirc(s,i) * ( norm(k-[0;0;1]) );
+        
+%         errDat(s,i)  = abs(R-Rest) / abs(R) * 100;
+        
     end
 end
 
@@ -113,7 +121,7 @@ yVar = sqrt(mean(errCirc.^2));
 scaling = 1 / (max(yVar)-min(yVar)) * (max(yRef)-min(yRef));
 yVar = yVar * scaling;
 offset = - min(yVar) + min(yRef);
-% offset = 0;
+offset = 0;
 yVar = yVar + offset;
 
 disp(['Scaling = ' num2str(scaling)])
@@ -124,7 +132,7 @@ plot(xRef,yRef,SIM,'LineWidth',1,'MarkerSize',5)
 hold on
 plot(xVar,yVar,MOD,'LineWidth',1,'MarkerSize',5)
 hold off
-% legend('VIOD','Hodograph','Location','Best')
+legend('VIOD','Hodograph','Location','Best')
 xlabel('Number of Observations')
 ylabel('Mean Squared Error, \%')
 latexify(10,8,16)

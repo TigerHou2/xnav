@@ -25,12 +25,12 @@ e = 0.5;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(160);
+f = deg2rad(90);
 orbitParams = [a,e,i,o,w,f];
 
 % observations
 numObsv = 20;
-dM = 0.1*2*pi;
+dM = 0.5*2*pi;
 
 % simulation
 numSims = 3000;
@@ -84,7 +84,7 @@ for i = 1:length(nVect)
     % Monte Carlo
     for s = 1:numSims
         n = ncube_loc(:,:,s);
-        r_EN = viod((v+n)*1e4,mu*1e12)/1e4;
+        r_EN = hodoSuper(v+n,mu);
         r_EN = r_EN(selObsv,:)';
         r_HD = hodo(v+n,mu);
         r_HD = r_HD(selObsv,:)';
@@ -107,11 +107,11 @@ end
 hold off
 xlabel('1-$\sigma$ Noise, $\frac{DU}{TU}$')
 ylabel('RMSE$(\tilde{\mathbf{r}})$, \%')
-legend('Energy','Hodograph','Improved','Location','NorthWest')
+legend('Super','Hodograph','Improved','Location','NorthWest')
 latexify(12,12,22)
 setgrid
 expand
-print('accuracy_noise','-dpdf','-bestfit')
+% print('accuracy_noise','-dpdf','-bestfit')
 
 % restore orbit
 orbitParams = [a,e,i,o,w,f];
@@ -155,7 +155,7 @@ for i = 1:length(eccVect)
     % Monte Carlo
     for s = 1:numSims
         n = ncube_loc(:,:,s);
-        r_EN = viod((v+n)*1e4,mu*1e12)/1e4;
+        r_EN = hodoSuper(v+n,mu);
         r_EN = r_EN(selObsv,:)';
         r_HD = hodo(v+n,mu);
         r_HD = r_HD(selObsv,:)';
@@ -182,7 +182,7 @@ ylabel('RMSE$(\tilde{\mathbf{r}})$, \%')
 latexify(12,12,22)
 setgrid
 expand
-print('accuracy_ecc','-dpdf','-bestfit')
+% print('accuracy_ecc','-dpdf','-bestfit')
 
 % restore orbit
 orbitParams = [a,e,i,o,w,f];
@@ -226,7 +226,7 @@ for i = 1:length(taVect)
     % Monte Carlo
     for s = 1:numSims
         n = ncube_loc(:,:,s);
-        r_EN = viod((v+n)*1e4,mu*1e12)/1e4;
+        r_EN = hodoSuper(v+n,mu);
         r_EN = r_EN(selObsv,:)';
         r_HD = hodo(v+n,mu);
         r_HD = r_HD(selObsv,:)';
@@ -253,7 +253,7 @@ ylabel('RMSE$(\tilde{\mathbf{r}})$, \%')
 latexify(12,12,22)
 setgrid
 expand
-print('accuracy_ta','-dpdf','-bestfit')
+% print('accuracy_ta','-dpdf','-bestfit')
 
 % restore orbit
 orbitParams = [a,e,i,o,w,f];

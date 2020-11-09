@@ -20,7 +20,7 @@ savePath = 'plots\';
 latexify
 
 %% setup
-durVect = linspace(0.05,0.5,20);
+durVect = linspace(0.1,0.9,25);
 durVect = durVect * 2*pi;
 
 mu = 1;
@@ -34,7 +34,7 @@ f = deg2rad(0);
 orbitParams = [a,e,i,o,w,f];
 
 % measurement noise
-noise = 3e-6;
+noise = 3e-5;
 % number of measurements
 numObsv = 10;
 % Monte Carlo simulation size
@@ -76,7 +76,7 @@ for i = 1:length(durVect)
         orbitParams(6) = fvect(j);
         [~,v(j,:)] = Get_Orb_Vects(orbitParams,mu);
     end
-    [~,R] = hodoHyp_debug(v,mu);
+    [~,R,A,B] = hodoSuper_debug(v,mu);
     
     % get position reference
     orbitParams(6) = fvect(selObsv);
@@ -85,10 +85,9 @@ for i = 1:length(durVect)
     % Monte Carlo
     for s = 1:numSims
         nvect = ncube(:,:,s);
-        [r,Rest] = hodoHyp_debug(v+nvect,mu);
+        [r,Rest,Aest,Best] = hodoSuper_debug(v+nvect,mu);
         r = r(selObsv,:)';
         errDat(s,i)  = norm(r-rRef) / norm(rRef) * 100;
-        errCirc(s,i) = abs(R-Rest) / abs(R) * 100;
         
         % test svd
         [~,~,V] = svd(v+nvect,0);
@@ -97,7 +96,28 @@ for i = 1:length(durVect)
             k = -k;
         end
         
-        errCirc(s,i) = errCirc(s,i) * norm(k-[0;0;1])^2;
+        % test svd with centroid subtracted
+        v_temp = v+nvect;
+        [~,~,V] = svd(v_temp-mean(v),0);
+        kc = V(:,end);
+        if kc'*[0;0;1]<0
+            kc = -kc;
+        end
+        
+        errCirc(s,i) = 1;
+%         errCirc(s,i) = errCirc(s,i) * abs(R-Rest) / abs(R) * 100;
+        errCirc(s,i) = errCirc(s,i) * ( norm([A-Aest,B-Best]) / abs(R) * 100 );
+        errCirc(s,i) = errCirc(s,i) * norm(kc-[0;0;1])^(1/2);
+%         errCirc(s,i) = errCirc(s,i) * (period)^(1/6);
+%         errCirc(s,i) = ( abs(R-Rest) / abs(R) * 100 ) + ( norm([A-Aest,B-Best]) / abs(R) * 100 );
+%         errCirc(s,i) = errCirc(s,i) / mean(vecnorm(v,2,2));
+
+%         errDat(s,i)  = abs(R-Rest) / abs(R) * 100;
+%         errDat(s,i)  = norm(k-[0;0;1]);
+
+        errDat(s,i)  = norm(k-[0;0;1]);
+        errCirc(s,i) = norm(kc-[0;0;1]);
+        
     end
 end
 
@@ -111,6 +131,7 @@ yVar = sqrt(mean(errCirc.^2));
 scaling = 1 / (max(yVar)-min(yVar)) * (max(yRef)-min(yRef));
 yVar = yVar * scaling;
 offset = - min(yVar) + min(yRef);
+offset = 0;
 yVar = yVar + offset;
 
 disp(['Scaling = ' num2str(scaling)])
@@ -123,7 +144,7 @@ plot(xVar,yVar,MOD,'LineWidth',1,'MarkerSize',5)
 hold off
 % legend('VIOD','Hodograph','Location','Best')
 xlabel('\% of Orbit Period')
-ylabel('Mean Squared Error, \%')
+ylabel('RMSE, \%')
 latexify(10,8,16)
 setgrid
 expand

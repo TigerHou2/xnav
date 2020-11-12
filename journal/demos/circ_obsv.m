@@ -18,11 +18,11 @@ addpath('..\fcns_misc')
 
 R = 1;
 C = [0,0];
-df = deg2rad(60);
+df = deg2rad(90);
 numSims = 1500;
 noise = 5e-4;
 
-obsvVect = 3:2:40;
+obsvVect = 3:5:80;
 
 err_R_mat = nan(numSims,length(obsvVect));
 err_C_mat = nan(numSims,length(obsvVect));
@@ -47,7 +47,7 @@ for i = 1:length(obsvVect)
 end
 
 figure(1)
+hold on
 plot(obsvVect, 1./sqrt(mean(err_R_mat)))
-
-figure(2)
 plot(obsvVect, 1./sqrt(mean(err_C_mat)))
+legend('R','C','Location','Best')

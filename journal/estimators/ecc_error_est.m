@@ -27,7 +27,7 @@ e = 0;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(134);
+f = deg2rad(0);
 
 orbitParams = [a,e,i,o,w,f];
 
@@ -116,8 +116,7 @@ for i = 1:model_res
     e = xVar(i);
     
     % adj 1: error scales inversely with hodograph radius
-    adj1 = sqrt((1-e)/(1+e)) + sqrt((1+e)/(1-e));
-    adj1 = 1 / adj1;
+    adj1 = sqrt(1-e^2);
     
     % adj 2: error scales inversely with square of measurement span
     E0 = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
@@ -155,14 +154,14 @@ plot(xRef,yRef,SIM,'LineWidth',1,'MarkerSize',5)
 hold on
 plot(xVar,yVar,MOD,'LineWidth',1.5,'MarkerSize',5)
 hold off
-% legend('Simulation','Prediction','Location','Best')
+legend('Monte Carlo','Error Model','Location','Best')
 xlabel('Eccentricity')
-ylabel('Position MSE, \%')
+ylabel('RMSE($\tilde{\mathbf{r}}$), \%')
 latexify(10,10,16)
 setgrid
 expand
 
 if save_plot
     svnm = [savePath 'eccErr_f=' num2str(rad2deg(f))];
-    print(svnm,'-dpdf','-bestfit')
+    print(svnm,'-depsc')
 end

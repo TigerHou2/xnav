@@ -24,19 +24,19 @@ smaVect = linspace(1e4,1e6,15);
 
 mu = 1;
 a = 0;
-e = 0.5;
+e = 0.9;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(90);
+f = deg2rad(0);
     
 orbitParams = [a,e,i,o,w,f];
 
 % total duration spanned by all measurements, as fraction of orbit period
-period = 0.1;
+period = 0.5;
 period = period * 2*pi;
 % measurement noise
-noise = 3e-6;
+noise = 3e-5;
 % number of measurements
 numObsv = 10;
 % Monte Carlo simulation size
@@ -49,10 +49,8 @@ MOD = 'rx:'; % model
 SIM = 'ko-.'; % simulation
 
 % prepare measurement noise
-nGauss = normrnd(0,noise,numObsv,1,numSims);
-nGauss = repmat(nGauss,1,3,1);
 ncube = randn(numObsv,3,numSims);
-ncube = ncube ./ vecnorm(ncube,2,2) .* nGauss;
+ncube = ncube ./ vecnorm(ncube,2,2) .* normrnd(0,noise,1,1,numSims);
 
 errDat = nan(numSims,length(smaVect));
 errCirc = nan(numSims,length(smaVect));
@@ -106,6 +104,7 @@ yVar = sqrt(mean(errCirc.^2));
 scaling = 1 / (max(yVar)-min(yVar)) * (max(yRef)-min(yRef));
 yVar = yVar * scaling;
 offset = - min(yVar) + min(yRef);
+offset = 0;
 yVar = yVar + offset;
 
 disp(['Scaling = ' num2str(scaling)])
@@ -122,5 +121,5 @@ ylabel('RMSE, \%')
 latexify(10,8,15)
 setgrid
 expand
-svnm = [savePath 'smaProof'];
-print(svnm,'-dpdf','-bestfit')
+% svnm = [savePath 'smaProof'];
+% print(svnm,'-depsc')

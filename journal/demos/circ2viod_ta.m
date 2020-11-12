@@ -25,23 +25,23 @@ taVect(end) = [];
 
 mu = 1;
 a = 1e5;
-e = 0.5;
+e = 0.9;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(90);
+f = deg2rad(0);
 
 orbitParams = [a,e,i,o,w,f];
 
 % total duration spanned by all measurements, as fraction of orbit period
-period = 0.1;
+period = 0.5;
 period = period * 2*pi;
 % select the nth observation's position error for comparison
 selObsv = 1;
 % number of measurements
 numObsv = 10;
 % measurement noise
-noise = 3e-6;
+noise = 3e-5;
 % Monte Carlo simulation size
 numSims = 3000;
 
@@ -51,7 +51,7 @@ SIM = 'ko-.'; % simulation
     
 % prepare measurement noise
 ncube = randn(numObsv,3,numSims);
-ncube = ncube ./ vecnorm(ncube,2,2) * noise;
+ncube = ncube ./ vecnorm(ncube,2,2) .* normrnd(0,noise,1,1,numSims);
 
 errDat = nan(numSims,length(taVect));
 errCirc = nan(numSims,length(taVect));
@@ -121,5 +121,5 @@ ylabel('RMSE, \%')
 latexify(10,8,16)
 setgrid
 expand
-svnm = [savePath 'taProof'];
-print(svnm,'-dpdf','-bestfit')
+% svnm = [savePath 'taProof'];
+% print(svnm,'-depsc')

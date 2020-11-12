@@ -111,7 +111,7 @@ legend('Energy','Hodograph','Improved','Location','NorthWest')
 latexify(12,12,22)
 setgrid
 expand
-print('accuracy_noise','-dpdf','-bestfit')
+print('accuracy_noise','-depsc')
 
 % restore orbit
 orbitParams = [a,e,i,o,w,f];
@@ -182,7 +182,7 @@ ylabel('RMSE$(\tilde{\mathbf{r}})$, \%')
 latexify(12,12,22)
 setgrid
 expand
-print('accuracy_ecc','-dpdf','-bestfit')
+print('accuracy_ecc','-depsc')
 
 % restore orbit
 orbitParams = [a,e,i,o,w,f];
@@ -253,7 +253,7 @@ ylabel('RMSE$(\tilde{\mathbf{r}})$, \%')
 latexify(12,12,22)
 setgrid
 expand
-print('accuracy_ta','-dpdf','-bestfit')
+print('accuracy_ta','-depsc')
 
 % restore orbit
 orbitParams = [a,e,i,o,w,f];

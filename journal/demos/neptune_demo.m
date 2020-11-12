@@ -27,16 +27,14 @@ w = deg2rad(0);
 f = deg2rad(90);
 orbitParams = [a,e,i,o,w,f];
 
-noise = 3e-6;
+noise = 3e-5;
 dM = 0.1 * (2*pi);
 numObsv = 10;
 numSims = 3000;
 selObsv = 1;
 
-nGauss = normrnd(0,noise,numObsv,1,numSims);
-nGauss = repmat(nGauss,1,3,1);
 ncube = randn(numObsv,3,numSims);
-ncube = ncube ./ vecnorm(ncube,2,2) .* nGauss;
+ncube = ncube ./ vecnorm(ncube,2,2) .* normrnd(0,noise,1,1,numSims);
 
 errDat = nan(numSims,1);
 v = nan(numObsv,3);
@@ -67,7 +65,7 @@ for s = 1:numSims
     nvect = ncube(:,:,s);
     r = hodoHyp(v+nvect,mu);
     r = r(selObsv,:)';
-    errDat(s)  = norm(r-rRef) / norm(rRef);
+    errDat(s)  = norm(r-rRef) / norm(rRef) * 100;
 end
 
 baseline.MSE = sqrt(mean(errDat.^2));
@@ -78,7 +76,20 @@ baseline.dM = dM;
 baseline.numObsv = numObsv;
 baseline.df = df;
 
-disp(['Baseline Error: ' num2str(baseline.MSE*100) '%'])
+figure(1)
+histogram(errDat,'Normalization','probability',...
+                 'FaceColor',[0.4,0.4,0.4],...
+                 'FaceAlpha',1)
+xlabel('RMSE($\tilde{\mathbf{r}}^*$), \%')
+ylabel('Sample Frequency, \%')
+yticklabels(yticks*100)
+latexify(20,13,18)
+setgrid
+expand
+svnm = [savePath 'example_reference'];
+print(svnm,'-depsc')
+
+disp(['Baseline Error: ' num2str(baseline.MSE) '%'])
 
 %% Convert Earth-Neptune Case to Canonical Units
 AU = 1.495978e11; % m
@@ -95,11 +106,11 @@ w = deg2rad(0);
 f = deg2rad(170);
 
 noise = 5; % m/s
-    % currently we can;t predict changes in these two variables,
+    % currently we can't predict error change w.r.t. numObsv or dM,
     %   so they are held constant
-    % dM = 0.1 * (2*pi);
-    % numObsv = 10;
-    % numSims = 3000;
+%     dM = 0.1 * (2*pi);
+%     numObsv = 10;
+%     numSims = 3000;
 selObsv = 1;
 
 DU = a / 1e5;
@@ -146,12 +157,24 @@ for s = 1:numSims
     nvect = ncube(:,:,s);
     r = hodoHyp(v+nvect,mu);
     r = r(selObsv,:)';
-    errDat(s)  = norm(r-rRef) / norm(rRef);
+    errDat(s)  = norm(r-rRef) / norm(rRef) * 100;
 end
 
 MSE = sqrt(mean(errDat.^2));
 
-disp(['True Error: ' num2str(MSE*100) '%'])
+figure(2)
+histogram(errDat,'Normalization','probability',...
+                 'FaceColor',[0.4,0.4,0.4],...
+                 'FaceAlpha',1)
+xlabel('RMSE($\tilde{\mathbf{r}}$), \%')
+ylabel('Sample Frequency, \%')
+yticklabels(yticks*100)
+latexify(20,13,18)
+setgrid
+expand
+% we will save this after adding the RMSE prediction lines
+
+disp(['True Error: ' num2str(MSE) '%'])
 
 %% Predict Earth-Neptune Case Error using VIOD Trends
 R_baseline = 1/2 * sqrt(baseline.mu/baseline.orbitParams(1)) ...
@@ -169,4 +192,14 @@ delta_df = (1/df_neptune^2) / (1/df_baseline^2);
 
 MSE_predicted = baseline.MSE * delta_R * delta_noise * delta_df;
 
-disp(['Predicted Error: ' num2str(MSE_predicted*100) '%'])
+disp(['Predicted Error: ' num2str(MSE_predicted) '%'])
+
+%% Add RMSE indication lines
+hold on
+L1 = xline(MSE,'k-.','LineWidth',1.25,'DisplayName','Monte Carlo');
+L2 = xline(MSE_predicted,'r:','LineWidth',1.25,'DisplayName','Error Model');
+hold off
+legend([L1,L2],'Location','Best')
+
+svnm = [savePath 'example_neptune'];
+print(svnm,'-depsc')

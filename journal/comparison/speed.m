@@ -124,7 +124,7 @@ legend('Energy','Hodograph','Improved','Location','Best')
 latexify(15,15,24)
 setgrid
 expand
-print('speed','-dpdf','-bestfit')
+print('speed','-depsc')
 
 %% tabulate data
 tab = latex(vpa(sym([obsVect',timeDat']),3)); % 3 sig-figs

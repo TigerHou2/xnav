@@ -19,8 +19,6 @@ savePath = 'plots\';
 latexify
 
 %% setup
-durVect = linspace(0.05,0.9,20);
-durVect = durVect * 2*pi;
 
 mu = 1;
 a = 1e5;
@@ -28,9 +26,23 @@ e = 0.9;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(90);
+f = deg2rad(0);
     
 orbitParams = [a,e,i,o,w,f];
+
+% the measurement duration must be capped at df < 180 deg
+% because beyond 180 deg the circle fitting error model fails.
+% so we need to dynamically calculate the maximum duration allowed
+% according to the eccentricity and initial true anomaly.
+f0 = f;
+E0 = 2 * atan(sqrt((1-e)/(1+e))*tan(f0/2));
+M0 = E0 - e*sin(E0);
+fmax = f0 + pi;
+Emax = 2 * atan(sqrt((1-e)/(1+e))*tan(fmax/2));
+Mmax = Emax - e*sin(Emax);
+
+dM = mod(Mmax-M0,2*pi);
+durVect = linspace(dM/20,dM,20);
 
 % measurement noise
 noise = 3e-6;
@@ -82,36 +94,22 @@ for i = 1:length(durVect)
     orbitParams(6) = fvect(selObsv);
     rRef = Get_Orb_Vects(orbitParams,mu);
     
-    % prepare SVD error estimator
-    svdErrVect = nan(numSims,1);
-    
     % Monte Carlo
     for s = 1:numSims
         nvect = ncube(:,:,s);
         r = hodoHyp(v+nvect,mu);
         r = r(selObsv,:)';
         errDat(s,i) = norm(r-rRef) / norm(rRef) * 100;
-        
-        % test svd
-        [~,~,V] = svd(v+nvect,0);
-        k = V(:,end);
-        if k'*[0;0;1]<0
-            k = -k;
-        end
-        svdErrVect(s) = norm(k-[0;0;1]);
     end
     
     % estimate error
     df = fend-f;
     df = mod(df,2*pi);
-    
-        % adj 1: error scales with orbit normal error
-        adj1 = sqrt(mean(svdErrVect.^2));
         
-        % adj 2: error scales inversely with square of measurement span
-        adj2 = 1 / df^2;
+        % adj 1: error scales inversely with square of measurement span
+        adj1 = 1 / df^2;
     
-    errEst(i) = adj1 * adj2;
+    errEst(i) = adj1;
     
 end
 
@@ -122,6 +120,7 @@ yVar = errEst;
 scaling = 1 / (max(yVar)-min(yVar)) * (max(yRef)-min(yRef));
 yVar = yVar * scaling;
 offset = - min(yVar) + min(yRef);
+offset = 0;
 yVar = yVar + offset;
 
 disp(['Scaling = ' num2str(scaling)])
@@ -132,11 +131,11 @@ plot(xVar,yRef,SIM,'LineWidth',1,'MarkerSize',5)
 hold on
 plot(xVar,yVar,MOD,'LineWidth',1,'MarkerSize',5)
 hold off
-% legend('Simulation','Prediction','Location','Best')
+legend('Monte Carlo','Error Model','Location','Best')
 xlabel('\% of Orbit Period')
-ylabel('Position MSE, \%')
+ylabel('RMSE($\tilde{\mathbf{r}}$), \%')
 latexify(10,13,18)
 setgrid
 expand
 svnm = [savePath 'durErr_e=' num2str(e*10) '_f=' num2str(rad2deg(f))];
-print(svnm,'-dpdf','-bestfit')
+print(svnm,'-depsc')

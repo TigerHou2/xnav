@@ -27,7 +27,7 @@ e = 0.5;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(91);
+f = deg2rad(90);
     
 orbitParams = [a,e,i,o,w,f];
 
@@ -134,14 +134,14 @@ plot(xRef,yRef,SIM,'LineWidth',1.5,'MarkerSize',7)
 hold on
 plot(xVar,yVar,MOD,'LineWidth',1.5,'MarkerSize',7)
 hold off
-legend('Simulation','Prediction','Location','Best')
+legend('Monte Carlo','Error Model','Location','Best')
 xlabel('Sensor Noise, DU/TU')
-ylabel('Position MSE, \%')
+ylabel('RMSE($\tilde{\mathbf{r}}$), \%')
 latexify(20,13,18)
 setgrid
 expand
 
 if save_plot
     svnm = [savePath 'noiseErr'];
-    print(svnm,'-dpdf','-bestfit')
+    print(svnm,'-depsc')
 end

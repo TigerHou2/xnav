@@ -24,7 +24,7 @@ taVect(end) = [];
 
 mu = 1;
 a = 1e5;
-e = 0.91;
+e = 0.9;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
@@ -143,18 +143,19 @@ disp(['Scaling = ' num2str(scaling)])
 disp(['Offset  = ' num2str(offset)])
 
 figure;
-plot(xRef,yRef,SIM,'LineWidth',1,'MarkerSize',5)
+plot(rad2deg(xRef),yRef,SIM,'LineWidth',1,'MarkerSize',5)
 hold on
-plot(xVar,yVar,MOD,'LineWidth',1.5,'MarkerSize',5)
+plot(rad2deg(xVar),yVar,MOD,'LineWidth',1.5,'MarkerSize',5)
 hold off
-% legend('Simulation','Prediction','Location','Best')
-xlabel('True Anomaly')
-ylabel('Position MSE, \%')
+xlim([0,360])
+% legend('Monte Carlo','Error Model','Location','Best')
+xlabel('Initial True Anomaly, $^o$')
+ylabel('RMSE($\tilde{\mathbf{r}}$), \%')
 latexify(10,10,16)
 setgrid
 expand
 
 if save_plot
     svnm = [savePath 'taErr_e=' num2str(e*10)];
-    print(svnm,'-dpdf','-bestfit')
+    print(svnm,'-depsc')
 end

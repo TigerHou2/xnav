@@ -44,7 +44,7 @@ for i = 1:length(df_range)
 end
 
 figure(1)
+hold on
 plot(rad2deg(df_range),1./sqrt(mean(err_R_mat)))
-
-figure(2)
 plot(rad2deg(df_range),1./sqrt(mean(err_C_mat)))
+legend('R','C','Location','Best')

@@ -58,9 +58,7 @@ v = nan(numObsv,3);
 for i = 1:length(noiseVect)
     % vary noise
     noise = noiseVect(i);
-    nGauss = normrnd(0,noise,numObsv,1,numSims);
-    nGauss = repmat(nGauss,1,3,1);
-    ncube_loc = ncube .* nGauss;
+    ncube_loc = ncube .* normrnd(0,noise,1,1,numSims);
     
     % find measurement positions by true anomaly
     E0 = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
@@ -130,4 +128,4 @@ latexify(10,8,16)
 setgrid
 expand
 svnm = [savePath 'noiseProof'];
-print(svnm,'-dpdf','-bestfit')
+print(svnm,'-depsc')

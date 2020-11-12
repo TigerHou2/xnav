@@ -20,7 +20,7 @@ savePath = 'plots\';
 latexify
 
 %% setup
-obsvVect = 4:2:40;
+obsvVect = 4:5:100;
 
 mu = 1;
 a = 1e5;
@@ -28,7 +28,7 @@ e = 0.9;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(90);
+f = deg2rad(0);
 
 orbitParams = [a,e,i,o,w,f];
 
@@ -38,9 +38,9 @@ period = period * 2*pi;
 % select the nth observation's position error for comparison
 selObsv = 1;
 % measurement noise
-noise = 3e-5;
+noise = 3e-4;
 % Monte Carlo simulation size
-numSims = 5000;
+numSims = 3000;
 
 % line styles
 MOD = 'rx:'; % model
@@ -86,7 +86,6 @@ ncube = ncube ./ vecnorm(ncube,2,2) .* normrnd(0,noise,1,1,numSims);
     % Monte Carlo
     for s = 1:numSims
         nvect = ncube(1:numObsv,:,s);
-%         nvect(:,3) = 0;
         [r,Rest,Aest,Best] = hodoHyp_debug(v+nvect,mu);
         r = r(selObsv,:)';
         errDat(s,i)  = norm(r-rRef) / norm(rRef) * 100;
@@ -99,9 +98,8 @@ ncube = ncube ./ vecnorm(ncube,2,2) .* normrnd(0,noise,1,1,numSims);
         end
         
         errCirc(s,i) = 1;
-%         errCirc(s,i) = errCirc(s,i) * ( 1/(numObsv)^(period/(2*pi)) );
-%         errCirc(s,i) = errCirc(s,i) * ( abs(R-Rest) / abs(R) * 100 );
-        errCirc(s,i) = errCirc(s,i) * ( norm([A-Aest,B-Best]) / abs(R) * 100 );
+        errCirc(s,i) = errCirc(s,i) * ( abs(R-Rest) / abs(R) * 100 );
+%         errCirc(s,i) = errCirc(s,i) * ( norm([A-Aest,B-Best]) / abs(R) * 100 );
 %         errCirc(s,i) = errCirc(s,i) * ( 1/mean(vecnorm(v+nvect,2,2)) );
 %         errCirc(s,i) = errCirc(s,i) * ( 1/min(vecnorm(v+nvect,2,2)) );
 %         errCirc(s,i) = errCirc(s,i) * ( norm(k-[0;0;1]) );
@@ -126,17 +124,21 @@ yVar = yVar + offset;
 
 disp(['Scaling = ' num2str(scaling)])
 disp(['Offset  = ' num2str(offset)])
+% disp(['ErrSpan = ' num2str(max(yRef)-min(yRef))])
+% disp(['offset / errspan = ' num2str(offset/(max(yRef)-min(yRef)))])
 
 figure;
 plot(xRef,yRef,SIM,'LineWidth',1,'MarkerSize',5)
 hold on
 plot(xVar,yVar,MOD,'LineWidth',1,'MarkerSize',5)
 hold off
-legend('VIOD','Hodograph','Location','Best')
-xlabel('Number of Observations')
-ylabel('Mean Squared Error, \%')
+y_lim = ylim .* [0.9, 1.05]; % the plot was being cut off slightly
+ylim(y_lim)
+% legend('RMSE$(\tilde{\mathbf{r}})$','RMSE$(\tilde{R})$','Location','Best')
+xlabel('Number of Measurements')
+ylabel('RMSE, \%')
 latexify(10,8,16)
 setgrid
 expand
 % svnm = [savePath 'obsvProof'];
-% print(svnm,'-dpdf','-bestfit')
+% print(svnm,'-depsc')

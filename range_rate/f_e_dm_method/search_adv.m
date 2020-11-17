@@ -1,4 +1,4 @@
-function init_guess = search_adv(r_f0,r_e,r_dM,res,obsv,pulsar,mu,t_meas,OPT,plot)
+function init_guess = search_adv(r_f0,r_e,r_dM,res,obsv,pulsar,t_meas,OPT,plot)
 %SEARCH_ADV searches a given space for fmin at a fixed resolution.
 
 disp('Searching for initial guess...')
@@ -17,7 +17,7 @@ for i = 1:res(1)
 for j = 1:res(2)
 for k = 1:res(3)
     fin = [r_f0(i),r_e(j),r_dM(k)];
-    out = guess(fin,obsv,pulsar,mu,t_meas);
+    out = guess(fin,obsv,pulsar,t_meas);
     dat(i,j,k) = norm(out(:));
     F(i,j,k) = r_f0(i);
     E(i,j,k) = r_e(j);
@@ -77,7 +77,7 @@ for j = 1:adv_res(2)
 for k = 1:adv_res(3)
 if in(i,j,k)
     fin = [adv_r_f0(i),adv_r_e(j),adv_r_dM(k)];
-    out = guess(fin,obsv,pulsar,mu,t_meas);
+    out = guess(fin,obsv,pulsar,t_meas);
     adv_dat(i,j,k) = norm(out(:));
     aF(i,j,k) = adv_r_f0(i);
     aE(i,j,k) = adv_r_e(j);

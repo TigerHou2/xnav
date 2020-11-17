@@ -1,4 +1,4 @@
-function fVal = guess(OPT,obsv,pulsar,mu,time,debug)
+function fVal = guess(OPT,obsv,pulsar,time,debug)
 %GUESS returns the sine wave fitting result for RROD.
 %
 % Author:
@@ -18,7 +18,6 @@ function fVal = guess(OPT,obsv,pulsar,mu,time,debug)
 %            |- q is the number of measurements per pulsar (>=3)
 %   pulsar - 3xp matrix of pulsar directions
 %            |- p is the number of pulsars
-%   mu     - gravitational parameter of central body
 %   time   - MxN array of observation time stamps since first obsv
 %            |- p is the number of pulsars
 %            |- q is the number of measurements per pulsar
@@ -60,8 +59,8 @@ for i = 1:p
     %     as [[ y = amp * sin(f)cos(pha) - amp * cos(f)sin(pha) + off ]]
     %     where sin(f) and cos(f) are known
     
-    A = [-sin(f_obsv(i,:))' cos(f_obsv(i,:))'+e];
-    b = obsv(i,:)';
+    A = [-sin(f_obsv(i,1:q))' cos(f_obsv(i,1:q))'+e];
+    b = obsv(i,1:q)';
     % solve the least squares linear system
     x = A\b;
     off = x(2) * e;        % offset
@@ -85,8 +84,8 @@ for i = 1:p
         hold on
         lb = min(min(f_obsv(:)),0);
         rb = max(max(f_obsv(:)),2*pi);
-        lb = min(f_obsv(:));
-        rb = max(f_obsv(:));
+%         lb = min(f_obsv(:));
+%         rb = max(f_obsv(:));
         fplot(@(x) amp * sin(x-pha) + off, [lb,rb], colors{i})
         hold off
     end

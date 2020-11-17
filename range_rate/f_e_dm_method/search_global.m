@@ -1,4 +1,4 @@
-function init_guess = search_global(r_f0,r_e,r_dM,res,obsv,pulsar,mu,t_meas,OPT,plot)
+function init_guess = search_global(r_f0,r_e,r_dM,res,obsv,pulsar,t_meas,OPT,plot)
 %SEARCH_GLOBAL searches a given space for fmin at a fixed resolution.
 
 disp('Searching for initial guess...')
@@ -13,7 +13,7 @@ for i = 1:res(1)
 for j = 1:res(2)
 for k = 1:res(3)
     fin = [r_f0(i),r_e(j),r_dM(k)];
-    out = guess(fin,obsv,pulsar,mu,t_meas);
+    out = guess(fin,obsv,pulsar,t_meas);
     dat(i,j,k) = norm(out(:));
     F(i,j,k) = r_f0(i);
     E(i,j,k) = r_e(j);

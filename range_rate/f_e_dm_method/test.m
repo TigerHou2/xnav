@@ -6,7 +6,7 @@ addpath('../fcns_orb')
 
 % define orbit
 mu = 1;
-a = 1;
+a = 1e5;
 i = deg2rad(13);
 omg = deg2rad(25);
 w = deg2rad(90);
@@ -14,7 +14,7 @@ w = deg2rad(90);
 % define true solution
 e = 0.9;
 f0 = deg2rad(0);
-dM = deg2rad(2);
+dM = deg2rad(10);
 
 OPT = [f0,e,dM];
 
@@ -68,7 +68,9 @@ for i = 1:size(f,1)
         [r(i,j,:),v(i,j,:)] = Get_Orb_Vects(params,mu);
         noise = 0;
             % add noise
-            noise = v(i,j,:) / norm(reshape(v(i,j,:),3,1)) * randn * 0.0001;
+            noise = randn(1,1,3);
+            noise = noise / norm(reshape(noise,3,1)) ...
+                         .* normrnd(0,3e-6,1,1,3);
         vtemp = v(i,j,:) + noise;
         obsv(i,j) = P(:,i)'*vtemp(:);
     end
@@ -94,12 +96,12 @@ pbaspect([1 1 1])
 legend('Location','Best')
 
 % check if perfect input yields perfect output
-ref_error = guess(OPT,obsv,pulsar,mu,t_meas,'Debug');
+ref_error = guess(OPT,obsv,pulsar,t_meas,'Debug');
 disp(['Error of true soln.: ' num2str(max(ref_error))])
 
 %% global search
 
-res = [30,30,50];
+res = [25,25,25];
 range_f0 = linspace(0,2*pi,res(1)+1);
 range_f0(end) = [];
 range_e = linspace(0,1,res(2)+1);
@@ -107,13 +109,13 @@ range_e(end) = [];
 range_dM = linspace(0,2*pi,res(3)+1);
 range_dM(1) = [];
 
-fun1 = search_adv(range_f0,range_e,range_dM,res,obsv,pulsar,mu,t_meas,OPT,'plot');
+fun1 = search_adv(range_f0,range_e,range_dM,res,obsv,pulsar,t_meas,OPT,'plot');
 
 %% find the sine wave
 
 disp('Using fsolve...')
 
-fun = @(x) guess(x,obsv,pulsar,mu,t_meas);
+fun = @(x) guess(x,obsv,pulsar,t_meas);
 options = optimoptions('fsolve','Display','iter' ...
                                ,'MaxFunctionEvaluations',12000 ...
                                ,'StepTolerance', 1e-9 ...
@@ -128,7 +130,7 @@ soln_opt = g_opt;
 soln_opt(1) = mod(g_opt(1),2*pi);
 soln_opt(3) = mod(g_opt(3),2*pi);
 
-error = guess(soln_opt,obsv,pulsar,mu,t_meas,'debug');
+error = guess(soln_opt,obsv,pulsar,t_meas,'debug');
 
 disp(['Max error term: ' num2str(max(error))])
 disp(['Soln. difference: ' num2str(soln_opt-OPT)])
@@ -164,9 +166,9 @@ rb = soln_opt(3)+delta(3);
 range_dM = linspace(lb,rb,res(3)+1);
 range_dM(1) = [];
 
-fun2 = search_adv(range_f0,range_e,range_dM,res,obsv,pulsar,mu,t_meas,OPT,'plot');
+fun2 = search_adv(range_f0,range_e,range_dM,res,obsv,pulsar,t_meas,OPT,'plot');
 
-fun = @(x) guess(x,obsv,pulsar,mu,t_meas);
+fun = @(x) guess(x,obsv,pulsar,t_meas);
 options = optimoptions('fsolve','Display','iter' ...
                                ,'MaxFunctionEvaluations',12000 ...
                                ,'StepTolerance', 1e-9 ...
@@ -179,7 +181,7 @@ soln_opt = g_opt;
 soln_opt(1) = mod(g_opt(1),2*pi);
 soln_opt(3) = mod(g_opt(3),2*pi);
 
-error = guess(soln_opt,obsv,pulsar,mu,t_meas,'debug');
+error = guess(soln_opt,obsv,pulsar,t_meas,'debug');
 
 disp(['Max error term: ' num2str(max(error))])
 disp(['Soln. difference: ' num2str(soln_opt-OPT)])

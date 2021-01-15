@@ -17,7 +17,7 @@ for i = 1:res(1)
 for j = 1:res(2)
 for k = 1:res(3)
     fin = [r_f0(i),r_e(j),r_dM(k)];
-    out = guess(fin,obsv,pulsar,t_meas);
+    out = guess(fin,obsv,pulsar,t_meas,0);
     dat(i,j,k) = norm(out(:));
     F(i,j,k) = r_f0(i);
     E(i,j,k) = r_e(j);
@@ -38,7 +38,7 @@ Emesh = E(:);
 Mmesh = M(:);
 D = dat(:);
 lb = quantile(D,0);
-ub = quantile(D,0.02); % find the lowest 2% of values
+ub = quantile(D,0.01); % find the lowest 2% of values
 Fmesh = Fmesh(D>lb&D<ub);
 Emesh = Emesh(D>lb&D<ub);
 Mmesh = Mmesh(D>lb&D<ub);
@@ -48,7 +48,7 @@ ndPoints = [Fmesh,Emesh,Mmesh];
 k = convhulln(ndPoints);
 
 % create refined mesh
-adv_res = res * 5; % refine the mesh by 5 times in each dimension
+adv_res = res * 7; % refine the mesh by 7 times in each dimension
 adv_r_f0 = linspace(r_f0(1),r_f0(end),adv_res(1));
 adv_r_e  = linspace( r_e(1), r_e(end),adv_res(2));
 adv_r_dM = linspace(r_dM(1),r_dM(end),adv_res(3));
@@ -56,7 +56,8 @@ adv_r_dM = linspace(r_dM(1),r_dM(end),adv_res(3));
 adv_grid = [aFF(:),aEE(:),aMM(:)];
 
 % check for points in convex hull
-tol = 1.e-6*mean(abs(ndPoints(:)));
+% tol = 1.e-6*mean(abs(ndPoints(:)));
+tol = 0;
 in = inhull(adv_grid,ndPoints,k,tol);
 in = reshape(in,adv_res(1),adv_res(2),adv_res(3));
 
@@ -77,7 +78,7 @@ for j = 1:adv_res(2)
 for k = 1:adv_res(3)
 if in(i,j,k)
     fin = [adv_r_f0(i),adv_r_e(j),adv_r_dM(k)];
-    out = guess(fin,obsv,pulsar,t_meas);
+    out = guess(fin,obsv,pulsar,t_meas,0);
     adv_dat(i,j,k) = norm(out(:));
     aF(i,j,k) = adv_r_f0(i);
     aE(i,j,k) = adv_r_e(j);
@@ -107,7 +108,7 @@ Emesh = aE(:);
 Mmesh = aM(:);
 D = adv_dat(:);
 lb = quantile(D,0);
-ub = quantile(D,0.00005);
+ub = quantile(D,0.0001);
 Fmesh = Fmesh(D>lb&D<ub);
 Emesh = Emesh(D>lb&D<ub);
 Mmesh = Mmesh(D>lb&D<ub);
@@ -117,7 +118,7 @@ scatter3(OPT(1),OPT(2),OPT(3),24,'cyan',...
         'DisplayName','True Soln',...
         'LineWidth',1.5)
 scatter3( init_guess(1), init_guess(2), init_guess(3),24,'green',...
-        'DisplayName','Init Guess',...
+        'DisplayName','Guess',...
         'LineWidth',1.5)
 fig = scatter3(Fmesh,Emesh,Mmesh,18,D,'filled',...
         'DisplayName','Objective Function');

@@ -241,19 +241,20 @@ end
 figure(3)
 hold on
 for i = 1:3
-    xVar = rad2deg(taVect);
+    xVar = (taVect);
     yVar = mean(errDat(:,:,i));
     yStd =  std(errDat(:,:,i));
     plot(xVar,yVar,format{i},'MarkerFaceColor','none','LineWidth',1.25);
 end
 hold off
-xlabel('Initial True Anomaly, $^o$')
+xlabel('Initial True Anomaly, rad')
 ylabel('RMSE$(\tilde{\mathbf{r}})$, \%')
 % legend('Energy','Hodograph','Improved','Location','NorthWest')
 latexify(12,12,22)
 setgrid
 expand
 print('accuracy_ta','-depsc')
+print('..\editions\space_flight_mechanics\figures_svg\accuracy_ta','-dsvg')
 
 % restore orbit
 orbitParams = [a,e,i,o,w,f];

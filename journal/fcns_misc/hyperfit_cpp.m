@@ -1,6 +1,6 @@
 function [x,y,R] = hyperfit_cpp(dat)
 %HYPERFIT_CPP Fits a circle to data using the hyperaccurate circle fit.
-%   dat is a Nx2 matrix of measurements along the circle.
+%   dat is an Nx2 matrix of measurements along the circle.
 
 dat = dat';
 

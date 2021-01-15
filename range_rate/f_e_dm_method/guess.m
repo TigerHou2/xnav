@@ -74,8 +74,8 @@ for i = 1:p
     fVal = fVal + abs(A*x-b);
     
     % debugging
-    if exist('debug','var')
-        if strcmp(debug,'Debug')
+    if debug > 0
+        if debug > 1
             colors = {'--r','--g','--b'};
         else
             colors = {'r','g','b'};
@@ -84,15 +84,9 @@ for i = 1:p
         hold on
         lb = min(min(f_obsv(:)),0);
         rb = max(max(f_obsv(:)),2*pi);
-%         lb = min(f_obsv(:));
-%         rb = max(f_obsv(:));
         fplot(@(x) amp * sin(x-pha) + off, [lb,rb], colors{i})
         hold off
     end
-end
-
-if exist('debug','var')
-    figure(1)
 end
 
 end

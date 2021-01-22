@@ -26,6 +26,9 @@ c = [0,0];
 plot_angs = deg2rad(1:360);
 rng(1)
 
+LW = 1.5;
+SW = 1.2;
+
 %% large arc span case
 min = 0;
 max = 90;
@@ -36,23 +39,23 @@ n = n ./ vecnorm(n,2,2) .* normrnd(0,noise,n_samps,1);
 points = points + n;
 
 figure(1)
-plot(R*cos(plot_angs)+c(1),R*sin(plot_angs)+c(2),'r--','LineWidth',1.5);
+plot(R*cos(plot_angs)+c(1),R*sin(plot_angs)+c(2),'r--','LineWidth',LW);
 hold on
 [x,y,r] = kasa(points);
-plot(r*cos(plot_angs)+x,r*sin(plot_angs)+y,'b-.','LineWidth',1.5);
+plot(r*cos(plot_angs)+x,r*sin(plot_angs)+y,'b-.','LineWidth',LW);
 [x,y,r] = hyperfit_cpp(points);
-plot(r*cos(plot_angs)+x,r*sin(plot_angs)+y,'k','LineWidth',1.5);
-scatter(points(:,1),points(:,2),18,'r','LineWidth',1.2);
+plot(r*cos(plot_angs)+x,r*sin(plot_angs)+y,'k','LineWidth',LW);
+scatter(points(:,1),points(:,2),18,'r','LineWidth',SW);
 hold off
-% legend('Reference','Kasa','Hyperfit','Samples',...
-%        'Location','NorthEastOutside')
+legend('Reference','Kasa','Hyperfit','Samples',...
+       'Location','Best')
 xlabel('x')
 ylabel('y')
 axis equal
 setgrid
 latexify(14)
 
-svnm = [savePath 'circfitCompare_long'];
+svnm = [savePath 'circfitCompare_long_captioned'];
 svnm_ppt = [savePath_ppt 'circfitCompare_long'];
 print(svnm,'-depsc')
 print(svnm_ppt,'-dsvg')
@@ -67,13 +70,13 @@ n = n ./ vecnorm(n,2,2) .* normrnd(0,noise,n_samps,1);
 points = points + n;
 
 figure(2)
-plot(R*cos(plot_angs)+c(1),R*sin(plot_angs)+c(2),'r--','LineWidth',1.5);
+plot(R*cos(plot_angs)+c(1),R*sin(plot_angs)+c(2),'r--','LineWidth',LW);
 hold on
 [x,y,r] = kasa(points);
-plot(r*cos(plot_angs)+x,r*sin(plot_angs)+y,'b-.','LineWidth',1.5);
+plot(r*cos(plot_angs)+x,r*sin(plot_angs)+y,'b-.','LineWidth',LW);
 [x,y,r] = hyperfit_cpp(points);
-plot(r*cos(plot_angs)+x,r*sin(plot_angs)+y,'k','LineWidth',1.5);
-scatter(points(:,1),points(:,2),18,'r','LineWidth',1.2);
+plot(r*cos(plot_angs)+x,r*sin(plot_angs)+y,'k','LineWidth',LW);
+scatter(points(:,1),points(:,2),18,'r','LineWidth',SW);
 hold off
 % legend('Reference','Kasa','Hyperfit','Samples',...
 %        'Location','NorthEastOutside')

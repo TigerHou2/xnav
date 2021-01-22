@@ -16,6 +16,7 @@ addpath('..\fcns_orb')
 addpath('..\fcns_vis')
 addpath('..\fcns_misc')
 savePath = 'plots\';
+savePath_ppt = '..\editions\space_flight_mechanics\figures_svg\';
 latexify
 
 %% setup
@@ -34,7 +35,7 @@ orbitParams = [a,e,i,o,w,f];
 
 % check if eccentricity is 0.1, 0.5, or 0.9. If it is none of the above,
 % the figure is not saved.
-save_plot = true;
+save_plot = false;
 ecc_accept = [0.1,0.5,0.9];
 if min(abs(e-ecc_accept))>1e-8
     save_plot = false;
@@ -110,7 +111,10 @@ yRef = sqrt(mean(errDat.^2));
 model_resolution = 1000;
 xVar = linspace(min(taVect),max(taVect),model_resolution);
 
-for i = 1:model_resolution
+xVar = taVect;
+errEst = nan(1,length(xVar));
+
+for i = 1:length(xVar)
     
     f0 = xVar(i);
     
@@ -157,5 +161,7 @@ expand
 
 if save_plot
     svnm = [savePath 'taErr_e=' num2str(e*10)];
+    svnm_ppt = [savePath_ppt 'taErr_e=' num2str(e*10)];
     print(svnm,'-depsc')
+    print(svnm_ppt,'-dsvg')
 end

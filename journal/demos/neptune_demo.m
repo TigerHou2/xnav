@@ -15,9 +15,13 @@ addpath('..\fcns_orb')
 addpath('..\fcns_vis')
 addpath('..\fcns_misc')
 savePath = 'plots\';
+savePath_ppt = '..\editions\space_flight_mechanics\figures_svg\';
 latexify
 
 %% Monte Carlo Simulation for Baseline Case
+
+rng(5)
+
 mu = 1;
 a = 1e5;
 e = 0.5;
@@ -80,14 +84,23 @@ figure(1)
 histogram(errDat,'Normalization','probability',...
                  'FaceColor',[0.4,0.4,0.4],...
                  'FaceAlpha',1)
-xlabel('RMSE($\tilde{\mathbf{r}}^*$), \%')
-ylabel('Sample Frequency, \%')
+hold on
+L0 = xline(baseline.MSE,'k-.','LineWidth',2,...
+            'DisplayName','Reference RMSE($\tilde{\mathbf{r}}$)');
+hold off
+% xlabel('RMSE($\tilde{\mathbf{r}}^*$), \%')
+xlabel(['Position error ' ...
+        '$\frac{||\tilde{\mathbf{r}}-\mathbf{r}||}{||\mathbf{r}||}$, \%'])
+ylabel('\% of Samples')
 yticklabels(yticks*100)
-latexify(20,13,18)
+legend(L0,'Location','Best')
+latexify(20,13,22)
 setgrid
 expand
 svnm = [savePath 'example_reference'];
+svnm_ppt = [savePath_ppt 'example_reference'];
 print(svnm,'-depsc')
+print(svnm_ppt,'-dsvg')
 
 disp(['Baseline Error: ' num2str(baseline.MSE) '%'])
 
@@ -166,10 +179,12 @@ figure(2)
 histogram(errDat,'Normalization','probability',...
                  'FaceColor',[0.4,0.4,0.4],...
                  'FaceAlpha',1)
-xlabel('RMSE($\tilde{\mathbf{r}}$), \%')
-ylabel('Sample Frequency, \%')
+% xlabel('RMSE($\tilde{\mathbf{r}}$), \%')
+xlabel(['Position error ' ...
+        '$\frac{||\tilde{\mathbf{r}}-\mathbf{r}||}{||\mathbf{r}||}$, \%'])
+ylabel('\% of Samples')
 yticklabels(yticks*100)
-latexify(20,13,18)
+latexify(20,13,22)
 setgrid
 expand
 % we will save this after adding the RMSE prediction lines
@@ -196,10 +211,14 @@ disp(['Predicted Error: ' num2str(MSE_predicted) '%'])
 
 %% Add RMSE indication lines
 hold on
-L1 = xline(MSE,'k-.','LineWidth',1.25,'DisplayName','Monte Carlo');
-L2 = xline(MSE_predicted,'r:','LineWidth',1.25,'DisplayName','Error Model');
+L1 = xline(MSE,'k-.','LineWidth',2,...
+            'DisplayName','Monte Carlo RMSE($\tilde{\mathbf{r}}$)');
+L2 = xline(MSE_predicted,'r-','LineWidth',2,...
+            'DisplayName','Error Model RMSE($\tilde{\mathbf{r}}$)');
 hold off
 legend([L1,L2],'Location','Best')
 
 svnm = [savePath 'example_neptune'];
+svmn_ppt = [savePath_ppt 'example_neptune'];
 print(svnm,'-depsc')
+print(svnm_ppt,'-dsvg')

@@ -16,6 +16,7 @@ addpath('..\fcns_orb')
 addpath('..\fcns_vis')
 addpath('..\fcns_misc')
 savePath = 'plots\';
+savePath_ppt = '..\editions\space_flight_mechanics\figures_svg\';
 latexify
 
 %% setup
@@ -23,19 +24,25 @@ noiseVect = linspace(5e-7,1e-5,10);
 
 mu = 1;
 a = 1e5;
-e = 0.5;
+e = 0.1;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(90);
+f = deg2rad(0);
     
 orbitParams = [a,e,i,o,w,f];
 
-% check if e = 0.5 and f0 = 90. If not, the figure is not saved.
 save_plot = true;
-ecc_accept = 0.5;
-ta_accept = deg2rad(90);
-if abs(e-ecc_accept)>1e-8 || abs(f-ta_accept)>1e-8
+% check if e and f0 satisfy conditions. If not, the figure is not saved.
+accept(1).e = 0.1;
+accept(1).ta = deg2rad(0);
+accept(2).e = 0.5;
+accept(2).ta = deg2rad(135);
+accept(3).e = 0.9;
+accept(3).ta = deg2rad(180);
+if not( ( abs(accept(1).e-e) < 1e-8 && abs(accept(1).ta-f) < 1e-8 ) ...
+      ||( abs(accept(2).e-e) < 1e-8 && abs(accept(2).ta-f) < 1e-8 ) ...
+      ||( abs(accept(3).e-e) < 1e-8 && abs(accept(3).ta-f) < 1e-8 ) )
     save_plot = false;
     warning(['The ecc or f0 provided is not required for the ' ...
              'manuscript, therefore it will not be saved.'])
@@ -110,7 +117,10 @@ yRef = sqrt(mean(errDat.^2));
 
 xVar = linspace(min(noiseVect),max(noiseVect),model_res);
 
-for i = 1:model_res
+% xVar = noiseVect;
+% errEst = nan(1,length(xVar));
+
+for i = 1:length(xVar)
     
     adj1 = xVar(i);
     errEst(i) = adj1;
@@ -135,13 +145,17 @@ hold on
 plot(xVar,yVar,MOD,'LineWidth',1.5,'MarkerSize',7)
 hold off
 legend('Monte Carlo','Error Model','Location','Best')
-xlabel('Sensor Noise, DU/TU')
+xlabel('Noise, DU/TU')
 ylabel('RMSE($\tilde{\mathbf{r}}$), \%')
-latexify(20,13,18)
+latexify(10,10,16)
 setgrid
 expand
 
+filename = ['noiseErr_e=' num2str(e*10) '_f=' num2str(rad2deg(f))];
+
 if save_plot
-    svnm = [savePath 'noiseErr'];
+    svnm = [savePath filename];
+    svnm_ppt = [savePath_ppt filename];
     print(svnm,'-depsc')
+    print(svnm_ppt,'-dsvg')
 end

@@ -16,6 +16,7 @@ addpath('..\fcns_orb')
 addpath('..\fcns_vis')
 addpath('..\fcns_misc')
 savePath = 'plots\';
+savePath_ppt = '..\editions\space_flight_mechanics\figures_svg\';
 latexify
 
 %% setup
@@ -27,13 +28,13 @@ e = 0;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(0);
+f = deg2rad(135);
 
 orbitParams = [a,e,i,o,w,f];
 
 % check if initial true anomaly is 0, 135, or 180. 
 % If it is none of the above, the figure is not saved.
-save_plot = true;
+save_plot = false;
 ta_accept = deg2rad([0,135,180]);
 if min(abs(f-ta_accept))>1e-8
     save_plot = false;
@@ -106,12 +107,17 @@ end
 % create reference simulation x,y vectors
 xRef = eccVect;
 yRef = sqrt(mean(errDat.^2));
+y3sigma = std(errDat) * 3;
+yUB = yRef + y3sigma;
+yLB = yRef - y3sigma;
 
 %% Error Model
 
 xVar = linspace(min(eccVect),max(eccVect),model_res);
+xVar = eccVect;
+errEst = nan(1,length(xVar));
 
-for i = 1:model_res
+for i = 1:length(xVar)
     
     e = xVar(i);
     
@@ -146,12 +152,18 @@ offset = - min(yVar) + min(yRef);
 offset = 0;
 yVar = yVar + offset;
 
+c = 0.9 * [1,1,1];
+
 disp(['Scaling = ' num2str(scaling)])
 disp(['Offset  = ' num2str(offset)])
 
 figure;
-plot(xRef,yRef,SIM,'LineWidth',1,'MarkerSize',5)
+% patch([xRef, fliplr(xRef)], [yLB, fliplr(yUB)], c, ...
+%         'EdgeColor', 'w', 'DisplayName','MC 3-$\sigma$ Bound');
 hold on
+% plot(xRef,yLB,'k-','DisplayName','None');
+% plot(xRef,yUB,'k-','DisplayName','None');
+plot(xRef,yRef,SIM,'LineWidth',1,'MarkerSize',5)
 plot(xVar,yVar,MOD,'LineWidth',1.5,'MarkerSize',5)
 hold off
 legend('Monte Carlo','Error Model','Location','Best')
@@ -163,5 +175,7 @@ expand
 
 if save_plot
     svnm = [savePath 'eccErr_f=' num2str(rad2deg(f))];
+    svnm_ppt = [savePath_ppt 'eccErr_f=' num2str(rad2deg(f))];
     print(svnm,'-depsc')
+    print(svnm_ppt,'-dsvg')
 end

@@ -16,7 +16,7 @@ w = deg2rad(90);
 % define true solution
 e = 0.5;
 f0 = deg2rad(90);
-dM = deg2rad(30);
+dM = deg2rad(60);
 
 OPT = [f0,e,dM];
 
@@ -29,14 +29,14 @@ P = [0 -1 1;... % pulsar 1
 P = P ./ vecnorm(P,2,1);
 
 % number of measurements
-numObsv = 10;
+numObsv = 40;
 
 % clumped observations?
 % ** clumped = 1 means the first 'numObsv' observations are all performed
 %    on the first pulsar before moving on to the next. 
 %    Conversely, clumped = 0 means for each observation we switch to the
 %    next pulsar.
-clumped = 1;
+clumped = 0;
 
 % calculate mean and true anomalies of measurements
 E0 = 2*atan(sqrt((1-e)/(1+e))*tan(f0/2));

@@ -219,6 +219,6 @@ hold off
 legend([L1,L2],'Location','Best')
 
 svnm = [savePath 'example_neptune'];
-svmn_ppt = [savePath_ppt 'example_neptune'];
+svnm_ppt = [savePath_ppt 'example_neptune'];
 print(svnm,'-depsc')
 print(svnm_ppt,'-dsvg')

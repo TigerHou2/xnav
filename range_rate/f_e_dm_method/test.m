@@ -16,7 +16,7 @@ w = deg2rad(90);
 % define true solution
 e = 0.5;
 f0 = deg2rad(90);
-dM = deg2rad(60);
+dM = deg2rad(280);
 
 OPT = [f0,e,dM];
 

@@ -20,7 +20,7 @@ savePath = 'plots\';
 latexify
 
 %% setup
-durVect = linspace(0.05,0.5,25);
+durVect = linspace(0.05,0.9,25);
 durVect = durVect * 2*pi;
 
 mu = 1;
@@ -29,16 +29,16 @@ e = 0.5;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(0);
+f = deg2rad(90);
     
 orbitParams = [a,e,i,o,w,f];
 
 % measurement noise
-noise = 3e-4;
+noise = 3e-5;
 % number of measurements
 numObsv = 10;
 % Monte Carlo simulation size
-numSims = 3000;
+numSims = 1000;
 % select the nth observation's position error for comparison
 selObsv = 1;
 

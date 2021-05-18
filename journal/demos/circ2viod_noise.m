@@ -28,17 +28,17 @@ e = 0.5;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(90);
+f = deg2rad(170);
     
 orbitParams = [a,e,i,o,w,f];
 
 % total duration spanned by all measurements, as fraction of orbit period
-period = 0.1;
+period = 0.5;
 period = period * 2*pi;
 % number of measurements
 numObsv = 10;
 % Monte Carlo simulation size
-numSims = 3000;
+numSims = 1000;
 % select the nth observation's position error for comparison
 selObsv = 1;
 
@@ -121,11 +121,11 @@ plot(xRef,yRef,SIM,'LineWidth',1,'MarkerSize',5)
 hold on
 plot(xVar,yVar,MOD,'LineWidth',1,'MarkerSize',5)
 hold off
-% legend('VIOD','Hodograph','Location','Best')
+legend('RMSE$(\tilde{\mathbf{r}})$','RMSE$(\tilde{R})$','Location','Best')
 xlabel('1-$\sigma$ Noise, $\frac{DU}{TU}$')
 ylabel('RMSE, \%')
 latexify(10,8,16)
 setgrid
 expand
-svnm = [savePath 'noiseProof'];
-print(svnm,'-depsc')
+% svnm = [savePath 'noiseProof'];
+% print(svnm,'-depsc')

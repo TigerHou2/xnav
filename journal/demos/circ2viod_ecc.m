@@ -24,25 +24,25 @@ eccVect = linspace(0.1,0.9,23);
 
 mu = 1;
 a = 1e5;
-e = 0;
+e = 0.9;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(0);
+f = deg2rad(160);
 
 orbitParams = [a,e,i,o,w,f];
 
 % total duration spanned by all measurements, as fraction of orbit period
-period = 0.5;
+period = 0.2;
 period = period * 2*pi;
 % select the nth observation's position error for comparison
 selObsv = 1;
 % number of measurements
 numObsv = 10;
 % measurement noise
-noise = 3e-5;
+noise = 3e-6;
 % Monte Carlo simulation size
-numSims = 3000;
+numSims = 1000;
 
 % line styles
 MOD = 'rx:'; % model
@@ -117,7 +117,7 @@ plot(xVar,yVar,MOD,'LineWidth',1,'MarkerSize',5)
 hold off
 % y_lim = ylim .* [1, 1.1]; % the plot was being cut off slightly
 % ylim(y_lim)
-% legend('RMSE$(\tilde{\mathbf{r}})$','RMSE$(\tilde{R})$','Location','Best')
+legend('RMSE$(\tilde{\mathbf{r}})$','RMSE$(\tilde{R})$','Location','Best')
 xlabel('Eccentricity')
 ylabel('RMSE, \%')
 latexify(10,8,16)

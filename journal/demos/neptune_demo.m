@@ -32,8 +32,8 @@ f = deg2rad(90);
 orbitParams = [a,e,i,o,w,f];
 
 noise = 3e-5;
-dM = 0.1 * (2*pi);
-numObsv = 10;
+dM = 0.011 * (2*pi);
+numObsv = 3;
 numSims = 3000;
 selObsv = 1;
 
@@ -99,8 +99,8 @@ setgrid
 expand
 svnm = [savePath 'example_reference'];
 svnm_ppt = [savePath_ppt 'example_reference'];
-print(svnm,'-depsc')
-print(svnm_ppt,'-dsvg')
+% print(svnm,'-depsc')
+% print(svnm_ppt,'-dsvg')
 
 disp(['Baseline Error: ' num2str(baseline.MSE) '%'])
 
@@ -109,16 +109,17 @@ AU = 1.495978e11; % m
 
 mu = 1.327e20; % m^3/s^2
 
-a_tgt = 30.06; % Neptune
+% a_tgt = 30.06; % Neptune
+a_tgt = 1.5236; % Mars
 a = (1+a_tgt)/2 * AU;
 e = a_tgt*2/(1+a_tgt)-1;
 
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(170);
+f = deg2rad(179);
 
-noise = 5; % m/s
+noise = 0.4; % m/s
     % currently we can't predict error change w.r.t. numObsv or dM,
     %   so they are held constant
 %     dM = 0.1 * (2*pi);
@@ -220,5 +221,5 @@ legend([L1,L2],'Location','Best')
 
 svnm = [savePath 'example_neptune'];
 svnm_ppt = [savePath_ppt 'example_neptune'];
-print(svnm,'-depsc')
-print(svnm_ppt,'-dsvg')
+% print(svnm,'-depsc')
+% print(svnm_ppt,'-dsvg')

@@ -28,19 +28,19 @@ e = 0.9;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(0);
+f = deg2rad(170);
     
 orbitParams = [a,e,i,o,w,f];
 
 % total duration spanned by all measurements, as fraction of orbit period
-period = 0.5;
+period = 0.2;
 period = period * 2*pi;
 % measurement noise
-noise = 3e-5;
+noise = 3e-6;
 % number of measurements
 numObsv = 10;
 % Monte Carlo simulation size
-numSims = 3000;
+numSims = 2000;
 % select the nth observation's position error for comparison
 selObsv = 1;
 

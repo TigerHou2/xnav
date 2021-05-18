@@ -21,30 +21,30 @@ savePath_ppt = '..\editions\space_flight_mechanics\figures_svg\';
 latexify
 
 %% setup
-taVect = deg2rad(linspace(0,340,35));
+taVect = deg2rad(linspace(70,260,35));
 taVect(end) = [];
 
 mu = 1;
 a = 1e5;
-e = 0.5;
+e = 0.9356;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(90);
+f = deg2rad(170);
 
 orbitParams = [a,e,i,o,w,f];
 
 % total duration spanned by all measurements, as fraction of orbit period
-period = 0.1;
+period = 0.01;
 period = period * 2*pi;
 % select the nth observation's position error for comparison
 selObsv = 1;
 % number of measurements
 numObsv = 10;
 % measurement noise
-noise = 3e-6;
+noise = 1.6737e-07;
 % Monte Carlo simulation size
-numSims = 3000;
+numSims = 1500;
 
 % line styles
 MOD = 'rx:'; % model
@@ -116,13 +116,13 @@ plot(xRef,yRef,SIM,'LineWidth',1,'MarkerSize',5)
 hold on
 plot(xVar,yVar,MOD,'LineWidth',1.5,'MarkerSize',5)
 hold off
-% legend('VIOD','Hodograph','Location','Best')
+legend('RMSE$(\tilde{\mathbf{r}})$','RMSE$(\tilde{R})$','Location','Best')
 xlabel('Initial True Anomaly, rad')
 ylabel('RMSE, \%')
 latexify(10,8,16)
 setgrid
 expand
-svnm = [savePath 'taProof'];
-svnm_ppt = [savePath_ppt 'taProof'];
-print(svnm,'-depsc')
-print(svnm_ppt,'-dsvg')
+% svnm = [savePath 'taProof'];
+% svnm_ppt = [savePath_ppt 'taProof'];
+% print(svnm,'-depsc')
+% print(svnm_ppt,'-dsvg')

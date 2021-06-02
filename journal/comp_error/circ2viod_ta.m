@@ -26,7 +26,11 @@ taVect(end) = [];
 
 mu = 1;
 a = 1e5;
+<<<<<<< Updated upstream:journal/demos/circ2viod_ta.m
 e = 0.9356;
+=======
+e = 0.9;
+>>>>>>> Stashed changes:journal/comp_error/circ2viod_ta.m
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
@@ -40,9 +44,13 @@ period = period * 2*pi;
 % select the nth observation's position error for comparison
 selObsv = 1;
 % number of measurements
-numObsv = 10;
+numObsv = 20;
 % measurement noise
+<<<<<<< Updated upstream:journal/demos/circ2viod_ta.m
 noise = 1.6737e-07;
+=======
+noise = 1e-6;
+>>>>>>> Stashed changes:journal/comp_error/circ2viod_ta.m
 % Monte Carlo simulation size
 numSims = 1500;
 

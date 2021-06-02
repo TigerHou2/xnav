@@ -31,7 +31,8 @@ else                         %  regular case
     A = W\Astar;
 end
 
-Par = [-(A(2:3))'/A(1)/2+centroid , sqrt(A(2)*A(2)+A(3)*A(3)-4*A(1)*A(4))/abs(A(1))/2];
+Par = [ -(A(2:3))'/A(1)/2+centroid , ...
+        sqrt(A(2)*A(2)+A(3)*A(3)-4*A(1)*A(4))/abs(A(1))/2];
 x = Par(1);
 y = Par(2);
 R = Par(3);

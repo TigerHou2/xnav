@@ -24,11 +24,19 @@ eccVect = linspace(0.1,0.9,23);
 
 mu = 1;
 a = 1e5;
+<<<<<<< Updated upstream:journal/demos/circ2viod_ecc.m
 e = 0.9;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
 f = deg2rad(160);
+=======
+e = 0.6;
+i = deg2rad(0);
+o = deg2rad(0);
+w = deg2rad(0);
+f = deg2rad(100);
+>>>>>>> Stashed changes:journal/comp_error/circ2viod_ecc.m
 
 orbitParams = [a,e,i,o,w,f];
 

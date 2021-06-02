@@ -67,7 +67,7 @@ rRef = Get_Orb_Vects(orbitParams,mu);
 
 for s = 1:numSims
     nvect = ncube(:,:,s);
-    r = hodoHyp(v+nvect,mu);
+    r = hodoHyp_debug(v+nvect,mu);
     r = r(selObsv,:)';
     errDat(s)  = norm(r-rRef) / norm(rRef) * 100;
 end
@@ -109,8 +109,13 @@ AU = 1.495978e11; % m
 
 mu = 1.327e20; % m^3/s^2
 
+<<<<<<< Updated upstream:journal/demos/neptune_demo.m
 % a_tgt = 30.06; % Neptune
 a_tgt = 1.5236; % Mars
+=======
+a_tgt = 30.06; % Neptune
+% a_tgt = 1.5236; % Mars
+>>>>>>> Stashed changes:journal/comp_error/neptune_demo.m
 a = (1+a_tgt)/2 * AU;
 e = a_tgt*2/(1+a_tgt)-1;
 
@@ -169,7 +174,7 @@ rRef = Get_Orb_Vects(orbitParams,mu);
 
 for s = 1:numSims
     nvect = ncube(:,:,s);
-    r = hodoHyp(v+nvect,mu);
+    r = hodoHyp_debug(v+nvect,mu);
     r = r(selObsv,:)';
     errDat(s)  = norm(r-rRef) / norm(rRef) * 100;
 end

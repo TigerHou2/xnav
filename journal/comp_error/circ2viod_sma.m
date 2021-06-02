@@ -1,4 +1,4 @@
-%% circ2viod_dur.m
+%% circ2sma.m
 %
 % Author:
 %   Tiger Hou
@@ -7,7 +7,7 @@
 %   Compares VIOD error trend with the error in the estimate of the
 %   hodograph radius. This is the key assumption upon which the entire
 %   paper is built. We should see matching trends between VIOD error and
-%   hodograph radius error w.r.t. the total measurement time interval.
+%   hodograph radius error w.r.t. semi-major axis.
 
 %% initialization
 close all
@@ -20,25 +20,41 @@ savePath = 'plots\';
 latexify
 
 %% setup
-durVect = linspace(0.05,0.9,25);
-durVect = durVect * 2*pi;
+
+rng(5)
+
+smaVect = linspace(1e4,1e6,15);
 
 mu = 1;
-a = 1e5;
-e = 0.5;
+a = 0;
+e = 0.9;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(90);
+<<<<<<< Updated upstream:journal/demos/circ2viod_sma.m
+f = deg2rad(170);
+=======
+f = deg2rad(190);
+>>>>>>> Stashed changes:journal/comp_error/circ2viod_sma.m
     
 orbitParams = [a,e,i,o,w,f];
 
+% total duration spanned by all measurements, as fraction of orbit period
+<<<<<<< Updated upstream:journal/demos/circ2viod_sma.m
+period = 0.2;
+period = period * 2*pi;
 % measurement noise
-noise = 3e-5;
+noise = 3e-6;
+=======
+period = 0.9;
+period = period * 2*pi;
+% measurement noise
+noise = 8e-5;
+>>>>>>> Stashed changes:journal/comp_error/circ2viod_sma.m
 % number of measurements
-numObsv = 10;
+numObsv = 5;
 % Monte Carlo simulation size
-numSims = 1000;
+numSims = 2000;
 % select the nth observation's position error for comparison
 selObsv = 1;
 
@@ -47,19 +63,18 @@ MOD = 'rx:'; % model
 SIM = 'ko-.'; % simulation
 
 % prepare measurement noise
-nGauss = normrnd(0,noise,numObsv,1,numSims);
-nGauss = repmat(nGauss,1,3,1);
 ncube = randn(numObsv,3,numSims);
-ncube = ncube ./ vecnorm(ncube,2,2) .* nGauss;
+ncube = ncube ./ vecnorm(ncube,2,2) .* normrnd(0,noise,1,1,numSims);
 
-errDat = nan(numSims,length(durVect));
-errCirc = nan(numSims,length(durVect));
+errDat = nan(numSims,length(smaVect));
+errCirc = nan(numSims,length(smaVect));
 v = nan(numObsv,3);
 
 %% simulation
-for i = 1:length(durVect)
-    % vary measurement duration
-    period = durVect(i);
+for i = 1:length(smaVect)
+    % vary semi-major axis length
+    sma = smaVect(i);
+    orbitParams(1) = sma;
     
     % find measurement positions by true anomaly
     E0 = 2 * atan(sqrt((1-e)/(1+e))*tan(f/2));
@@ -70,14 +85,26 @@ for i = 1:length(durVect)
     fvect = 2 * atan(sqrt((1+e)/(1-e))*tan(Evect/2));
     fvect = mod(fvect,2*pi);
     fend = fvect(end);
+    
+    if i==1
+        df = rad2deg(mod(fend-f,2*pi));
+        disp(['df = ' num2str(df) ' deg']);
+    end
 
     % ground truth data
     for j = 1:numObsv
         orbitParams(6) = fvect(j);
         [~,v(j,:)] = Get_Orb_Vects(orbitParams,mu);
     end
-    [~,R,A,B] = hodoHyp_debug(v,mu);
     
+    [~,R,a,b,vel] = hodoHyp_debug(v,mu);
+    A = 1;
+    B = -2*a;
+    C = -2*b;
+    D = a^2 + b^2 - R^2;
+    u = [B,C,D]';
+    u = u / norm(u);
+
     % get position reference
     orbitParams(6) = fvect(selObsv);
     rRef = Get_Orb_Vects(orbitParams,mu);
@@ -85,44 +112,39 @@ for i = 1:length(durVect)
     % Monte Carlo
     for s = 1:numSims
         nvect = ncube(:,:,s);
-        [r,Rest,Aest,Best] = hodoHyp_debug(v+nvect,mu);
+        [r,Rest,a_est,b_est,vel_2d] = hodoHyp_debug(v+nvect,mu);
         r = r(selObsv,:)';
-        errDat(s,i)  = norm(r-rRef) / norm(rRef) * 100;
         
-        % test svd
-        [~,~,V] = svd(v+nvect,0);
-        k = V(:,end);
-        if k'*[0;0;1]<0
-            k = -k;
+        if (Rest > R*4) || (Rest < R/4)
+            continue
         end
         
-        % test svd with centroid subtracted
-        v_temp = v+nvect;
-        [~,~,V] = svd(v_temp-mean(v),0);
-        kc = V(:,end);
-        if kc'*[0;0;1]<0
-            kc = -kc;
-        end
+        Ae = 1;
+        Be = -2*a_est;
+        Ce = -2*b_est;
+        De = a_est^2 + b_est^2 - Rest^2;
+        ue = [Be,Ce,De]';
+        ue = ue/norm(ue);
         
-        errCirc(s,i) = 1;
-        errCirc(s,i) = errCirc(s,i) * abs(R-Rest) / abs(R) * 100;
-%         errCirc(s,i) = errCirc(s,i) * ( norm([A-Aest,B-Best]) / abs(R) * 100 );
-%         errCirc(s,i) = errCirc(s,i) * norm(k-[0;0;1])^(1/2);
-%         errCirc(s,i) = errCirc(s,i) * (period)^(1/6);
-%         errCirc(s,i) = ( abs(R-Rest) / abs(R) * 100 ) + ( norm([A-Aest,B-Best]) / abs(R) * 100 );
-%         errCirc(s,i) = errCirc(s,i) / mean(vecnorm(v,2,2));
-
-%         errDat(s,i)  = abs(R-Rest) / abs(R) * 100;
-%         errDat(s,i)  = norm(k-[0;0;1]);
+        errDat(s,i) = norm(r-rRef) / norm(rRef) * 100;
+        errCirc(s,i) = abs(R-Rest) / abs(R) * 100;
+        
+%         errCirc(s,i) = norm(u-ue);
         
     end
+    
 end
 
-xRef = durVect / (2*pi) * 100;
-yRef = sqrt(mean(errDat.^2));
+xRef = smaVect;
+yRef = sqrt(mean(errDat.^2,'omitnan'));
 
-xVar = durVect / (2*pi) * 100;
-yVar = sqrt(mean(errCirc.^2));
+xVar = smaVect;
+yVar = sqrt(mean(errCirc.^2,'omitnan'));
+
+if max(sum(isnan(errDat))) > 0
+    disp([  'Removed ' num2str(max(sum(isnan(errDat)))) ...
+            ' extreme cases with large errors.'])
+end
 
 %% data processing & plotting
 scaling = 1 / (max(yVar)-min(yVar)) * (max(yRef)-min(yRef));
@@ -139,13 +161,11 @@ plot(xRef,yRef,SIM,'LineWidth',1,'MarkerSize',5)
 hold on
 plot(xVar,yVar,MOD,'LineWidth',1,'MarkerSize',5)
 hold off
-y_lim = ylim .* [0.9, 1.1]; % the plot was being cut off slightly
-ylim(y_lim)
 legend('RMSE$(\tilde{\mathbf{r}})$','RMSE$(\tilde{R})$','Location','Best')
-xlabel('\% of Orbit Period')
+xlabel('Semi-Major Axis, DU')
 ylabel('RMSE, \%')
-latexify(10,8,16)
+latexify(10,8,15)
 setgrid
 expand
-% svnm = [savePath 'durProof'];
+% svnm = [savePath 'smaProof'];
 % print(svnm,'-depsc')

@@ -1,9 +1,13 @@
 %% hodo.m
 function [r,params] = hodo(N,mu)
-%HODO Solves the three-velocity initial orbit determination problem.
+%HODO Solves the three-velocity initial orbit determination problem. 
 %
 % Author:
 %   Tiger Hou
+%
+% Note:
+%   This version uses the naive Kasa circle fit to find the orbit
+%   hodograph, which can be unstable when given data along a short arc.
 %
 % Description:
 %   The spacecraft's orbit is calculated using the velocity hodograph from

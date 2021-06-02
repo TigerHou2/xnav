@@ -20,11 +20,7 @@ savePath = 'plots\';
 latexify
 
 %% setup
-<<<<<<< Updated upstream:journal/demos/circ2viod_dur.m
-durVect = linspace(0.05,0.9,25);
-=======
 durVect = linspace(0.1,0.9,25);
->>>>>>> Stashed changes:journal/comp_error/circ2viod_dur.m
 durVect = durVect * 2*pi;
 
 mu = 1;
@@ -33,20 +29,16 @@ e = 0.8;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(90);
+f = deg2rad(0);
     
 orbitParams = [a,e,i,o,w,f];
 
 % measurement noise
-<<<<<<< Updated upstream:journal/demos/circ2viod_dur.m
-noise = 3e-5;
-=======
 noise = 8e-4;
->>>>>>> Stashed changes:journal/comp_error/circ2viod_dur.m
 % number of measurements
 numObsv = 10;
 % Monte Carlo simulation size
-numSims = 1000;
+numSims = 3000;
 % select the nth observation's position error for comparison
 selObsv = 1;
 

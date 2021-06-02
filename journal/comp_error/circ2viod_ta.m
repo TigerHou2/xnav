@@ -21,38 +21,30 @@ savePath_ppt = '..\editions\space_flight_mechanics\figures_svg\';
 latexify
 
 %% setup
-taVect = deg2rad(linspace(70,260,35));
+taVect = deg2rad(linspace(0,340,35));
 taVect(end) = [];
 
 mu = 1;
 a = 1e5;
-<<<<<<< Updated upstream:journal/demos/circ2viod_ta.m
-e = 0.9356;
-=======
 e = 0.9;
->>>>>>> Stashed changes:journal/comp_error/circ2viod_ta.m
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(170);
+f = deg2rad(90);
 
 orbitParams = [a,e,i,o,w,f];
 
 % total duration spanned by all measurements, as fraction of orbit period
-period = 0.01;
+period = 0.1;
 period = period * 2*pi;
 % select the nth observation's position error for comparison
 selObsv = 1;
 % number of measurements
 numObsv = 20;
 % measurement noise
-<<<<<<< Updated upstream:journal/demos/circ2viod_ta.m
-noise = 1.6737e-07;
-=======
 noise = 1e-6;
->>>>>>> Stashed changes:journal/comp_error/circ2viod_ta.m
 % Monte Carlo simulation size
-numSims = 1500;
+numSims = 3000;
 
 % line styles
 MOD = 'rx:'; % model
@@ -124,13 +116,13 @@ plot(xRef,yRef,SIM,'LineWidth',1,'MarkerSize',5)
 hold on
 plot(xVar,yVar,MOD,'LineWidth',1.5,'MarkerSize',5)
 hold off
-legend('RMSE$(\tilde{\mathbf{r}})$','RMSE$(\tilde{R})$','Location','Best')
+% legend('VIOD','Hodograph','Location','Best')
 xlabel('Initial True Anomaly, rad')
 ylabel('RMSE, \%')
 latexify(10,8,16)
 setgrid
 expand
-% svnm = [savePath 'taProof'];
-% svnm_ppt = [savePath_ppt 'taProof'];
+svnm = [savePath 'taProof'];
+svnm_ppt = [savePath_ppt 'taProof'];
 % print(svnm,'-depsc')
 % print(svnm_ppt,'-dsvg')

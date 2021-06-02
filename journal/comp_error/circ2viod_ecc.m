@@ -24,33 +24,25 @@ eccVect = linspace(0.1,0.9,23);
 
 mu = 1;
 a = 1e5;
-<<<<<<< Updated upstream:journal/demos/circ2viod_ecc.m
-e = 0.9;
-i = deg2rad(0);
-o = deg2rad(0);
-w = deg2rad(0);
-f = deg2rad(160);
-=======
 e = 0.6;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
 f = deg2rad(100);
->>>>>>> Stashed changes:journal/comp_error/circ2viod_ecc.m
 
 orbitParams = [a,e,i,o,w,f];
 
 % total duration spanned by all measurements, as fraction of orbit period
-period = 0.2;
+period = 0.5;
 period = period * 2*pi;
 % select the nth observation's position error for comparison
 selObsv = 1;
 % number of measurements
 numObsv = 10;
 % measurement noise
-noise = 3e-6;
+noise = 3e-5;
 % Monte Carlo simulation size
-numSims = 1000;
+numSims = 3000;
 
 % line styles
 MOD = 'rx:'; % model
@@ -123,8 +115,8 @@ plot(xRef,yRef,SIM,'LineWidth',1,'MarkerSize',5)
 hold on
 plot(xVar,yVar,MOD,'LineWidth',1,'MarkerSize',5)
 hold off
-% y_lim = ylim .* [1, 1.1]; % the plot was being cut off slightly
-% ylim(y_lim)
+y_lim = ylim .* [1, 1.1]; % the plot was being cut off slightly
+ylim(y_lim)
 legend('RMSE$(\tilde{\mathbf{r}})$','RMSE$(\tilde{R})$','Location','Best')
 xlabel('Eccentricity')
 ylabel('RMSE, \%')

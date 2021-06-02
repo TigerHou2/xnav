@@ -24,23 +24,23 @@ obsvVect = 4:5:100;
 
 mu = 1;
 a = 1e5;
-e = 0.5;
+e = 0.9;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(90);
+f = deg2rad(0);
 
 orbitParams = [a,e,i,o,w,f];
 
 % total duration spanned by all measurements, as fraction of orbit period
-period = 0.8;
+period = 0.9;
 period = period * 2*pi;
 % select the nth observation's position error for comparison
 selObsv = 1;
 % measurement noise
-noise = 3e-5;
+noise = 3e-4;
 % Monte Carlo simulation size
-numSims = 1000;
+numSims = 3000;
 
 % line styles
 MOD = 'rx:'; % model
@@ -134,7 +134,7 @@ plot(xVar,yVar,MOD,'LineWidth',1,'MarkerSize',5)
 hold off
 y_lim = ylim .* [0.9, 1.05]; % the plot was being cut off slightly
 ylim(y_lim)
-legend('RMSE$(\tilde{\mathbf{r}})$','RMSE$(\tilde{R})$','Location','Best')
+% legend('RMSE$(\tilde{\mathbf{r}})$','RMSE$(\tilde{R})$','Location','Best')
 xlabel('Number of Measurements')
 ylabel('RMSE, \%')
 latexify(10,8,16)

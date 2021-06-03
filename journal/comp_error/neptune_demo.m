@@ -15,7 +15,7 @@ addpath('..\fcns_orb')
 addpath('..\fcns_vis')
 addpath('..\fcns_misc')
 savePath = 'plots\';
-savePath_ppt = '..\editions\space_flight_mechanics\figures_svg\';
+savePath_ppt = '..\papers\space_flight_mechanics\figures_svg\';
 latexify
 
 %% Monte Carlo Simulation for Baseline Case
@@ -99,8 +99,8 @@ setgrid
 expand
 svnm = [savePath 'example_reference'];
 svnm_ppt = [savePath_ppt 'example_reference'];
-print(svnm,'-depsc')
-print(svnm_ppt,'-dsvg')
+% print(svnm,'-depsc')
+% print(svnm_ppt,'-dsvg')
 
 disp(['Baseline Error: ' num2str(baseline.MSE) '%'])
 
@@ -220,5 +220,5 @@ legend([L1,L2],'Location','Best')
 
 svnm = [savePath 'example_neptune'];
 svnm_ppt = [savePath_ppt 'example_neptune'];
-print(svnm,'-depsc')
-print(svnm_ppt,'-dsvg')
+% print(svnm,'-depsc')
+% print(svnm_ppt,'-dsvg')

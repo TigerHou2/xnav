@@ -1,5 +1,5 @@
 %% hodoHyp_debug.m
-function [r,R,a,b,N2d] = hodoHyp_debug(v_noisy,mu,v_truth)
+function [r,R,a,b,N2d,vel2d] = hodoHyp_debug(v_noisy,mu,v_truth)
 %HODOHYP_DEBUG returns extra debug info compared to hodoHyp.m.
 %
 % Author:

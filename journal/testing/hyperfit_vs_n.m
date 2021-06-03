@@ -15,7 +15,7 @@ c = [0,0];
 
 n = 5:3:100;
 
-numSims = 100000;
+numSims = 10000;
 R_est_vect = nan(length(n),numSims);
 
 noise_cube = randn(max(n),2,numSims) * 0.003;

@@ -1,4 +1,3 @@
-%% latexify.m
 function latexify(v1,v2,v3)
 %LATEXIFY Sets text interpreter to latex for all figures.
 %   Optional arguments also allow custom font and figure sizing.
@@ -45,4 +44,3 @@ if ~isempty(g.Children) % only set figure properties if figure exists
 end
 
 end %latexify.m
-

@@ -39,11 +39,11 @@ orbitParams = [a,e,i,o,w,f];
 period = 0.9;
 period = period * 2*pi;
 % measurement noise
-noise = 8e-5;
+noise = 12e-5;
 % number of measurements
-numObsv = 5;
+numObsv = 10;
 % Monte Carlo simulation size
-numSims = 3000;
+numSims = 1000;
 % select the nth observation's position error for comparison
 selObsv = 1;
 
@@ -87,12 +87,6 @@ for i = 1:length(smaVect)
     end
     
     [~,R,a,b,vel] = hodoHyp_debug(v,mu);
-    A = 1;
-    B = -2*a;
-    C = -2*b;
-    D = a^2 + b^2 - R^2;
-    u = [B,C,D]';
-    u = u / norm(u);
 
     % get position reference
     orbitParams(6) = fvect(selObsv);
@@ -101,24 +95,15 @@ for i = 1:length(smaVect)
     % Monte Carlo
     for s = 1:numSims
         nvect = ncube(:,:,s);
-        [r,Rest,a_est,b_est,vel_2d] = hodoHyp_debug(v+nvect,mu);
+        [r,Rest,a_est,b_est,dat2d,datProj] = hodoHyp_debug(v+nvect,mu);
         r = r(selObsv,:)';
         
         if (Rest > R*4) || (Rest < R/4)
             continue
         end
         
-        Ae = 1;
-        Be = -2*a_est;
-        Ce = -2*b_est;
-        De = a_est^2 + b_est^2 - Rest^2;
-        ue = [Be,Ce,De]';
-        ue = ue/norm(ue);
-        
         errDat(s,i) = norm(r-rRef) / norm(rRef) * 100;
         errCirc(s,i) = abs(R-Rest) / abs(R) * 100;
-        
-%         errCirc(s,i) = norm(u-ue);
         
     end
     

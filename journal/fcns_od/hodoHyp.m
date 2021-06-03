@@ -1,5 +1,5 @@
 %% hodoHyp.m
-function [r] = hodoHyp(N,mu)
+function [r,R] = hodoHyp(N,mu)
 %HODOHYP Solves the three-velocity initial orbit determination problem.
 %
 % Author:

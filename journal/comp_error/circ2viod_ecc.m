@@ -24,23 +24,23 @@ eccVect = linspace(0.1,0.9,23);
 
 mu = 1;
 a = 1e5;
-e = 0.6;
+e = 0.9;
 i = deg2rad(0);
 o = deg2rad(0);
 w = deg2rad(0);
-f = deg2rad(100);
+f = deg2rad(190);
 
 orbitParams = [a,e,i,o,w,f];
 
 % total duration spanned by all measurements, as fraction of orbit period
-period = 0.5;
+period = 0.9;
 period = period * 2*pi;
 % select the nth observation's position error for comparison
 selObsv = 1;
 % number of measurements
 numObsv = 10;
 % measurement noise
-noise = 3e-5;
+noise = 10e-5;
 % Monte Carlo simulation size
 numSims = 3000;
 

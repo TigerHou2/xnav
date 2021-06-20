@@ -45,12 +45,12 @@ f = deg2rad(180);
 orbitParams = [a,e,i,o,w,f];
 
 % total duration spanned by all measurements, as fraction of orbit period
-period = 0.01;
+period = 0.06;
 period = period * 2*pi;
 % measurement noise
 noise = 4e-8;
 % number of measurements
-numObsv = 100;
+numObsv = 10;
 % Monte Carlo simulation size
 numSims = 1000;
 % select the nth observation's position error for comparison

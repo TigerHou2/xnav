@@ -19,15 +19,15 @@
 close all
 clear;clc
 
-R = 3;
-c = [1,0,0];
-angs = deg2rad(1:360)';
+R = 1;
+c = [0.7,0,0];
+angs = deg2rad(linspace(1,360,2000))';
 x = R * cos(angs) + c(1);
 y = R * sin(angs) + c(2);
 z = zeros(size(x));
 points = [x,y,z];
 
-test_vec = [1,5,5];
+test_vec = [1,0,10];
 
 proj_length = nan(size(x));
 

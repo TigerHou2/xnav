@@ -28,7 +28,7 @@ pulsarRotationMatrix = rotz(25) * rotx(12) * roty(2);
 
 mu = 3.986e14;
 a = (6378+600)*1e3;
-e = 0.93423;
+e = 0.97423;
 i = deg2rad(45);
 o = deg2rad(0);
 w = deg2rad(0);
@@ -65,7 +65,7 @@ memberInterval = 1;     % after each measurement within the same group
 groupInterval = 1;      % between groups
 
 numObsvPerPulsar = 3;
-dM = 2*pi * 0.17235;
+dM = 2*pi * 0.02235;
 E0 = 2*atan( tan(f0/2) * sqrt((1-e)/(1+e)) );
 M0 = E0 - e*sin(E0);
 Mf = M0 + dM;
@@ -156,10 +156,11 @@ iteration = 0;
 residual = fun_scalar(initGuess)^2;
 residualBest = residual;
 % res = [24,16,24];
-res = [10,10,10];
+res = [20,20,20];
 
 %% Guess and Search for Solution
 % profile on
+tic
 
 converged = 0;
 
@@ -211,7 +212,7 @@ disp(['    Guess:      ' num2str(initGuess)])
 disp(['    True Soln.: ' num2str(trueVars)])
 disp(['    Residual:   ' num2str(residual)])
 
-if converged >= 2
+if converged >= 1
     disp('Residual converged')
     break
 end
@@ -245,6 +246,7 @@ warning('on','MATLAB:nearlySingularMatrix')
 warning('on','MATLAB:rankDeficientMatrix')
 
 % profile viewer
+toc
 
 %% Show fVal trend between guess and true solution
 step = trueVars-initGuess;

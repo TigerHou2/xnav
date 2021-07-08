@@ -32,8 +32,8 @@ f_pp = 2*atan( tan(pi/2/2) * sqrt((1+e)/(1-e)) );
 componentVectors = nan(2,3);
 
 for j = 1:numPulsars
-    thisF = Fvect(j,:);
-    A = R*[e+cos(thisF)', sin(thisF)'];
+    thisF = Fvect(j,:)';
+    A = R*[e+cos(thisF), sin(thisF)];
     b = rangeRateData(j,:)';
     x = A\b;
     x(1) = max(-1,min(1,x(1)));
@@ -60,15 +60,15 @@ for j = 1:numPulsars
 end
 
 % find the orbit plane normal
-v11 = pulsars(:,1) * componentVectors(1,1);
-v12 = pulsars(:,2) * componentVectors(1,2);
-v13 = pulsars(:,3) * componentVectors(1,3);
-v21 = pulsars(:,1) * componentVectors(2,1);
-v22 = pulsars(:,2) * componentVectors(2,2);
-v23 = pulsars(:,3) * componentVectors(2,3);
+v11 = pulsars(:,1)' * componentVectors(1,1);
+v12 = pulsars(:,2)' * componentVectors(1,2);
+v13 = pulsars(:,3)' * componentVectors(1,3);
+v21 = pulsars(:,1)' * componentVectors(2,1);
+v22 = pulsars(:,2)' * componentVectors(2,2);
+v23 = pulsars(:,3)' * componentVectors(2,3);
 
-v_pe = [v11'; v12'; v13'] \ [v11'*v11; v12'*v12; v13'*v13];
-v_pp = [v21'; v22'; v23'] \ [v21'*v21; v22'*v22; v23'*v23];
+v_pe = [v11; v12; v13] \ [v11*v11'; v12*v12'; v13*v13'];
+v_pp = [v21; v22; v23] \ [v21*v21'; v22*v22'; v23*v23'];
 % The E = 0 and E = 90 velocities are constructed in the pulsar coordinate
 % system. To align the hodogrpah coordinate system to the pulsar system, we
 % need to apply the convention that the periapsis velocity vector points in
@@ -109,7 +109,7 @@ for j = 1:numPulsars
     for k = 1:numPulsars
         if j>k
             localErrorMin = 1;
-            trueDiff = acos(abs(pulsars(:,j)' * pulsars(:,k)));
+            trueDiff = pulsars(:,j)' * pulsars(:,k);
             for i = 1:4
                 RA_1  = pulsarCoordinates(1,j) * pm(1,i);
                 RA_2  = pulsarCoordinates(1,k) * pm(2,i);
@@ -122,10 +122,9 @@ for j = 1:numPulsars
 %                         cos(INC_2)*sin(RA_2);...
 %                        -sin(INC_2)];
 %                 thisDiff = acos(abs(p1' * p2));
-                thisDiff = acos(abs( ...
-                           cos(INC_1)*cos(RA_1) * cos(INC_2)*cos(RA_2) ...
+                thisDiff = cos(INC_1)*cos(RA_1) * cos(INC_2)*cos(RA_2) ...
                          + cos(INC_1)*sin(RA_1) * cos(INC_2)*sin(RA_2) ...
-                         + sin(INC_1) * sin(INC_2) ));
+                         + sin(INC_1) * sin(INC_2);
                 localError = abs(thisDiff-trueDiff);
                 if localErrorMin > localError
                     localErrorMin = localError;
@@ -142,3 +141,10 @@ fVal = [fVal, AlignmentError, AngularError];
 
 end
 
+
+% function c = cross(a,b)
+% %CROSS Faster cross product, only accepts 3x1 vectors
+%     c = [ a(2)*b(3)-a(3)*b(2);...
+%           a(3)*b(1)-a(1)*b(3);...
+%           a(1)*b(2)-a(2)*b(1)];
+% end

@@ -28,11 +28,11 @@ pulsarRotationMatrix = rotz(25) * rotx(12) * roty(2);
 
 mu = 3.986e14;
 a = (6378+600)*1e3;
-e = 0.97423;
+e = 0.07423;
 i = deg2rad(45);
-o = deg2rad(0);
-w = deg2rad(0);
-f0 = deg2rad(50.62);
+o = deg2rad(14);
+w = deg2rad(19);
+f0 = deg2rad(150.62);
 orbitParams = [a, e, i, o, w, f0];
 R = sqrt(mu/a/(1-e^2));
 
@@ -140,7 +140,7 @@ fun_vector = @(x) objFcn(x,rangeRateData,Tvect,pulsarMat,mu);
 options = optimoptions('fsolve','Display','none' ...
                                ,'MaxFunctionEvaluations',8000 ...
                                ,'StepTolerance', 1e-12 ...
-                               ,'FunctionTolerance', 1e-12 ...
+                               ,'FunctionTolerance', 1e-18 ...
                                ,'MaxIterations',2000 ...
                                ,'Algorithm','levenberg-marquardt');
 options_lsq = optimoptions('lsqnonlin','Display','none' ...
@@ -156,13 +156,14 @@ iteration = 0;
 residual = fun_scalar(initGuess)^2;
 residualBest = residual;
 % res = [24,16,24];
-res = [20,20,20];
+res = [40,40,40];
 
 %% Guess and Search for Solution
 % profile on
 tic
 
 converged = 0;
+doubled = false;
 
 while 1
 
@@ -184,27 +185,43 @@ thisRes = [length(range_f0),length(range_e),length(range_dM)];
 
 [initGuess,fVal] = ...
         bounded_search(fun_scalar,range_f0,range_e,range_dM,thisRes);
-residual = fVal^2;
-if residual / residualBest > 0.95
-    [initGuess,fVal] = fsolve(fun_scalar,initGuess,options);
-%     [initGuess,fVal] = fminsearch(fun_scalar,initGuess,options_fminsearch);
-    residual = fVal^2;
-    disp('**fsolve used**')
-else
-    [initGuess,fVal] = ...
+[initGuess,fVal] = ...
         fminsearch(fun_scalar,initGuess,options_fminsearch);
-    residual = fVal^2;
-    disp('**fminsearch used**')
-end
+residual = fVal^2;
+
+radius = radius / 8;
+res = [16,16,16];
+lb = initGuess - radius;
+ub = initGuess + radius;
+range_f0 = linspace(lb(1),ub(1),res(1)+1);
+range_e  = linspace(lb(2),ub(2),res(2)+1);
+range_dM = linspace(lb(3),ub(3),res(3)+1);
+range_f0(range_f0<-0.1) = [];       % f0 >= -0.1
+range_f0(range_f0>=2*pi+0.1) = [];  % f0 <=  0.1 + 2*pi
+range_e(range_e<0) = [];            % ecc >= 0
+range_e(range_e>0.999) = [];        % ecc < 0.999
+range_dM(range_dM<1e-7) = [];       % dM >= 1e-7
+thisRes = [length(range_f0),length(range_e),length(range_dM)];
+[initGuess,fVal] = ...
+        bounded_search(fun_scalar,range_f0,range_e,range_dM,thisRes);
+[initGuess,fVal] = ...
+        fminsearch(fun_scalar,initGuess,options_fminsearch);
+
 if abs(residual-residualBest)/residualBest < 1e-5
     radius = radius * 0.8;
     converged = converged + 1;
 elseif residual < residualBest
     residualBest = residual;
-    radius = radius * 0.8^(1+iteration/20);
+    radius = radius * 0.8;
     converged = 0;
 else
     converged = converged + 1;
+end
+
+if iteration > 9 && ( initGuess(2) > 0.9 || initGuess(3) < 0.3 ) ...
+                 && ~doubled
+    res = res*2;
+    doubled = true;
 end
 
 initGuess(1) = mod(initGuess(1),2*pi);
@@ -212,7 +229,7 @@ disp(['    Guess:      ' num2str(initGuess)])
 disp(['    True Soln.: ' num2str(trueVars)])
 disp(['    Residual:   ' num2str(residual)])
 
-if converged >= 1
+if converged >= 0
     disp('Residual converged')
     break
 end
@@ -245,8 +262,8 @@ warning('on','MATLAB:singularMatrix')
 warning('on','MATLAB:nearlySingularMatrix')
 warning('on','MATLAB:rankDeficientMatrix')
 
-% profile viewer
 toc
+% profile viewer
 
 %% Show fVal trend between guess and true solution
 step = trueVars-initGuess;

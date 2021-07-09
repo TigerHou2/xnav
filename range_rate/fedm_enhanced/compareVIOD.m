@@ -24,14 +24,14 @@ a_earth = 1.00 * AU;
 
 %% Define Orbit
 
-rng(10)
+rng(4)
 
 mu = mu_sun;
 targets = [a_earth, a_mars];
 a = sum(targets) / 2;
 e = max(targets) / a - 1;
-% e = 0.03;
-i = deg2rad(1.6);
+% e = 0.02;
+i = deg2rad(51.6);
 o = deg2rad(0);
 w = deg2rad(0);
 f0 = deg2rad(140.00);
@@ -48,7 +48,7 @@ groupByPulsar = false; % see Section: Calculate Measurement Times
 memberInterval = 0;     % after each measurement within the same group
 groupInterval = 1;      % between groups
 numObsvPerPulsar = 10;
-numSims = 300;
+numSims = 70;
 
 %% Define Pulsars
 
@@ -62,7 +62,7 @@ pulsarMat = pulsars' ./ vecnorm(pulsars'); % transpose and normalize
 pulsarRotationMatrix = rotz(rand*90) * rotx(rand*90) * roty(rand*90);
 pulsarMat = pulsarRotationMatrix * pulsarMat;
 
-numPulsars = Size(pulsars,1); % counter the number of pulsars
+numPulsars = size(pulsars,1); % counter the number of pulsars
 
 %% Display Basic Info
 
@@ -243,7 +243,8 @@ removeByNan = isnan(errorData_RROD) | ...
 removeByOutlier = isoutlier(errorData_RROD) | ...
                   isoutlier(errorData_VIOD) | ...
                   isoutlier(errorData_VIOD_timed) ;
-toRemove = removeByNan | removeByOutlier;
+% toRemove = removeByNan | removeByOutlier;
+toRemove = removeByNan;
 
 subplot(3,1,1)
 temp1 = errorData_RROD * norm(rTrue)/100/1000;
@@ -266,7 +267,7 @@ h3 = histogram(temp3,'FaceColor',corder(3,:));
 h3.Normalization = 'probability';
 legend('VIOD w/ time')
 
-scale = 20;
+scale = 1;
 width = min([h1.BinWidth,h2.BinWidth,h3.BinWidth]);
 h1.BinWidth = width * scale;
 h2.BinWidth = width * scale;
@@ -287,13 +288,13 @@ limY = [0,max([ylim1(2),ylim2(2),ylim3(2)])] * 1.05;
 
 subplot(3,1,1)
 xlim(limX)
-ylim(limY)
+% ylim(limY)
 subplot(3,1,2)
 xlim(limX)
-ylim(limY)
+% ylim(limY)
 subplot(3,1,3)
 xlim(limX)
-ylim(limY)
+% ylim(limY)
 
 h = axes(fig,'Visible','off');
 h.Title.Visible='on';

@@ -9,35 +9,26 @@ options = optimset( 'Display','none', ...
 initGuess = [pi, 0.5, pi];
 radius = [pi+0.1, 0.5, pi];
 
-resolution = [40,40,40];
+guesses = nan(3,3);
+for ii = 1:3
+resolution = [25,25,25];
+initGuess(ii) = initGuess(ii) + radius(ii)/resolution(ii);
 lb = initGuess - radius;
 ub = initGuess + radius;
 range_f0 = linspace(lb(1),ub(1),resolution(1)+1);
 range_e  = linspace(lb(2),ub(2),resolution(2)+1);
 range_dM = linspace(lb(3),ub(3),resolution(3)+1);
 
-initGuess = local_search(fun,range_f0,range_e,range_dM,resolution);
-initGuess = fminsearch(fun,initGuess,options);
+temp = local_search(fun,range_f0,range_e,range_dM,resolution);
+temp = fminsearch(fun,temp,options);
+temp(1) = mod(temp(1),2*pi);
+
+guesses(ii,:) = temp;
+end
+[~,idx] = min([fun(guesses(1,:)),fun(guesses(2,:)),fun(guesses(3,:))]);
+initGuess = guesses(idx,:);
+
 initGuess(1) = mod(initGuess(1),2*pi);
-
-radius = radius / 8;
-resolution = [16,16,16];
-lb = initGuess - radius;
-ub = initGuess + radius;
-range_f0 = linspace(lb(1),ub(1),resolution(1)+1);
-range_e  = linspace(lb(2),ub(2),resolution(2)+1);
-range_dM = linspace(lb(3),ub(3),resolution(3)+1);
-range_f0(range_f0<-0.1) = [];       % f0 >= -0.1
-range_f0(range_f0>=2*pi+0.1) = [];  % f0 <=  0.1 + 2*pi
-range_e(range_e<0) = [];            % ecc >= 0
-range_e(range_e>0.999) = [];        % ecc < 0.999
-range_dM(range_dM<1e-7) = [];       % dM >= 1e-7
-thisRes = [length(range_f0),length(range_e),length(range_dM)];
-
-initGuess = local_search(fun,range_f0,range_e,range_dM,thisRes);
-initGuess = fminsearch(fun,initGuess,options);
-initGuess(1) = mod(initGuess(1),2*pi);
-
 [rot,params] = get_rot(initGuess,rangeRateData,Tvect,pulsars,mu);
 [r,v] = Get_Orb_Vects(params,mu);
 r = rot'*r;
@@ -50,11 +41,6 @@ function [initGuess,fVal] = ...
     local_search(fun,f0Vect,eVect,dMVect,res)
 %LOCAL_SEARCH searches a given space for fmin at a fixed resolution.
 
-% options = optimset( 'Display','none', ...
-%                     'MaxFunEvals', 10, ...
-%                     'MaxIter', 10, ...
-%                     'TolFun',1e-16, 'TolX', 1e-10);
-
 fVal = Inf;
 initGuess = [pi,0.5,pi];
 for i = 1:res(1)
@@ -62,7 +48,6 @@ for j = 1:res(2)
 for k = 1:res(3)
     in = [f0Vect(i),eVect(j),dMVect(k)];
     fValThis = fun(in);
-%     [out,fValThis] = fminsearch(fun,in,options);
     if fValThis < fVal
         fVal = fValThis;
         initGuess = in;

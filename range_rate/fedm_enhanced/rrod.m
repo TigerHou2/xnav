@@ -11,7 +11,7 @@ radius = [pi+0.1, 0.5, pi];
 
 guesses = nan(3,3);
 for ii = 1:3
-resolution = [25,25,25];
+resolution = [35,35,35];
 initGuess(ii) = initGuess(ii) + radius(ii)/resolution(ii);
 lb = initGuess - radius;
 ub = initGuess + radius;
@@ -55,6 +55,7 @@ for k = 1:res(3)
 end
 end
 end
+
 end
 
 %%

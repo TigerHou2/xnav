@@ -25,31 +25,31 @@ a_earth = 1.00 * AU;
 
 %% Define Orbit
 
-rng(4)
+rng(1)
 
-mu = mu_sun;
-targets = [a_earth, a_mars];
+mu = mu_earth;
+targets = [a_leo, a_leo];
 a = sum(targets) / 2;
 e = max(targets) / a - 1;
-% e = 0.03;
-i = deg2rad(51.6);
+e = 0.03;
+i = deg2rad(1.6);
 o = deg2rad(0);
 w = deg2rad(0);
-f0 = deg2rad(90.00);
+f0 = deg2rad(10.00);
 orbitParams = [a, e, i, o, w, f0];
 R = sqrt(mu/a/(1-e^2));
 period = 2*pi*sqrt(a^3/mu);
 
 noise_1sigma = 0.5;
 Moffset = rand;
-dM = 2*pi * 0.05;
+dM = 2*pi * 0.92;
 measPeriod = period*dM/2/pi;
 
 groupByPulsar = false; % see Section: Calculate Measurement Times
 memberInterval = 0;     % after each measurement within the same group
 groupInterval = 1;      % between groups
-numObsvPerPulsar = 20;
-numSims = 100;
+numObsvPerPulsar = 50;
+numSims = 70;
 
 %% Define Pulsars
 
@@ -70,7 +70,7 @@ numPulsars = size(pulsars,1); % counter the number of pulsars
 imPulsars = [ [1, 0, 0]; ... pulsar 1
               [0, 1, 0]; ... pulsar 2
               [0, 0, 1]; ... pulsar 3
-              [1, 1, 1]; ... pulsar 4
+%               [1, 1, 1]; ... pulsar 4
 %             [-1, -1, 2]; ... pulsar 5
           ];
 imPulsarMat = imPulsars' ./ vecnorm(imPulsars'); % transpose and normalize
@@ -158,7 +158,7 @@ p3 = pulsarMat(:,3);
 % profile on
 tic
 
-parfor ii = 1:numSims
+for ii = 1:numSims
     
 disp(ii)
 
@@ -272,7 +272,7 @@ temp2 = errorData_RROD_Im * norm(rTrue)/100/1000;
 temp2(toRemove) = [];
 h2 = histogram(temp2,'FaceColor',corder(2,:));
 h2.Normalization = 'probability';
-legend('RROD_Im')
+legend('RROD\_Im')
 
 subplot(4,1,3)
 temp3 = errorData_VIOD * norm(rTrue)/100/1000;
@@ -341,6 +341,7 @@ hold on
 scatter(      pos_VIOD(1,:)-rTrue(1),      pos_VIOD(2,:)-rTrue(2), Size  , 'k', 'filled')
 scatter(pos_VIOD_timed(1,:)-rTrue(1),pos_VIOD_timed(2,:)-rTrue(2), Size-1, 'g', 'filled')
 scatter(      pos_RROD(1,:)-rTrue(1),      pos_RROD(2,:)-rTrue(2), Size-2, 'r', 'filled')
+scatter(   pos_RROD_im(1,:)-rTrue(1),   pos_RROD_im(2,:)-rTrue(2), Size-2, 'b', 'filled')
 hold off
 xlabel('X, m')
 ylabel('Y, m')
@@ -353,6 +354,7 @@ hold on
 scatter(      pos_VIOD(2,:)-rTrue(2),      pos_VIOD(3,:)-rTrue(3), Size  , 'k', 'filled')
 scatter(pos_VIOD_timed(2,:)-rTrue(2),pos_VIOD_timed(3,:)-rTrue(3), Size-1, 'g', 'filled')
 scatter(      pos_RROD(2,:)-rTrue(2),      pos_RROD(3,:)-rTrue(3), Size-2, 'r', 'filled')
+scatter(   pos_RROD_im(2,:)-rTrue(2),   pos_RROD_im(3,:)-rTrue(3), Size-2, 'b', 'filled')
 hold off
 xlabel('Y, m')
 ylabel('Z, m')
@@ -365,6 +367,7 @@ hold on
 scatter(      pos_VIOD(3,:)-rTrue(3),      pos_VIOD(1,:)-rTrue(1), Size  , 'k', 'filled')
 scatter(pos_VIOD_timed(3,:)-rTrue(3),pos_VIOD_timed(1,:)-rTrue(1), Size-1, 'g', 'filled')
 scatter(      pos_RROD(3,:)-rTrue(3),      pos_RROD(1,:)-rTrue(1), Size-2, 'r', 'filled')
+scatter(   pos_RROD_im(3,:)-rTrue(3),   pos_RROD_im(1,:)-rTrue(1), Size-2, 'b', 'filled')
 hold off
 xlabel('Z, m')
 ylabel('X, m')
